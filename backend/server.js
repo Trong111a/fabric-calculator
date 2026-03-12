@@ -12,7 +12,7 @@ const projectRoutes = require('./routes/projects');
 const app = express();
 
 // ── Auto init DB ──────────────────────────────────────────────
-const { initDatabase } = require('./initDB');
+const { initDatabase } = require('./init-db');
 initDatabase()
     .then(() => console.log('✅ Database initialized'))
     .catch(err => console.error('❌ DB init error:', err.message));
