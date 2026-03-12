@@ -312,7 +312,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                         <button className="pd-upload-btn" disabled={!cvReady} onClick={() => cameraRef.current?.click()}>
                             <Camera size={22} />
                             <span>Chụp ảnh</span>
-                            <small>Dùng camera</small>
+                            <small>Dùng thiết bị di động</small>
                         </button>
                     </div>
                 </div>
