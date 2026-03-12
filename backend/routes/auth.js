@@ -7,8 +7,8 @@ const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
@@ -92,8 +92,8 @@ router.post('/forgot-password', async (req, res) => {
 
         const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
-        await sgMail.send({
-            from: `"Fabric Calculator" <${process.env.EMAIL_USER}>`,
+        await resend.emails.send({
+            from: 'Fabric Calculator <onboarding@resend.dev>',
             to: email,
             subject: 'Đặt lại mật khẩu',
             html: `
