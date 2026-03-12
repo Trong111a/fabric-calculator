@@ -112,7 +112,7 @@ router.post('/forgot-password', async (req, res) => {
                     <tr>
                         <td style="background:#6366f1;padding:28px 32px;text-align:center;">
                             <h1 style="margin:0;color:#ffffff;font-size:20px;font-family:Arial,sans-serif;font-weight:700;">
-                                Dat lai mat khau
+                                Đặt lại mật khẩu
                             </h1>
                             <p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:13px;font-family:Arial,sans-serif;">
                                 Fabric Area Calculator
@@ -150,7 +150,7 @@ router.post('/forgot-password', async (req, res) => {
                                                               text-decoration:none;
                                                               border-radius:8px;
                                                               border:none;">
-                                                        DAT LAI MAT KHAU
+                                                        ĐẶT LẠI MẬT KHẨU
                                                     </a>
                                                 </td>
                                             </tr>
