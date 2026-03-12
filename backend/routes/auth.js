@@ -86,8 +86,9 @@ router.post('/forgot-password', async (req, res) => {
         );
 
         // Luôn trả success để tránh lộ thông tin user
-        if (result.rows.length === 0)
-            return res.json({ message: 'Nếu email tồn tại, link đặt lại đã được gửi' });
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Email chưa được đăng ký' });
+        }
 
         const user = result.rows[0];
         const resetToken = crypto.randomBytes(32).toString('hex');
