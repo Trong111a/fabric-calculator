@@ -344,7 +344,7 @@ function ViewMain({ user, onLogout }) {
                             <button className="vm-upload-btn" disabled={!cvReady} onClick={() => cameraRef.current?.click()}>
                                 <Camera size={22} />
                                 <span>Chụp ảnh</span>
-                                <small>Dùng camera</small>
+                                <small>Dùng thiết bị di động</small>
                             </button>
                         </div>
                     </div>
