@@ -1,6 +1,5 @@
-const API_URL = 'http://localhost:5000/api';
-const BASE_URL = 'http://localhost:5000';
-
+const API_URL = 'https://fabric-calculator-production.up.railway.app/api';
+const BASE_URL = 'https://fabric-calculator-production.up.railway.app';
 
 const prefixImageUrls = (data) => {
     if (!data) return data;
