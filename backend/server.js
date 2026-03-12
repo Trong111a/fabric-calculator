@@ -11,9 +11,15 @@ const projectRoutes = require('./routes/projects');
 
 const app = express();
 
+// ── Auto init DB ──────────────────────────────────────────────
+const { initDatabase } = require('./initDB');
+initDatabase()
+    .then(() => console.log('✅ Database initialized'))
+    .catch(err => console.error('❌ DB init error:', err.message));
+
 // Middleware
 app.use(helmet({
-    crossOriginResourcePolicy: { policy: 'cross-origin' } 
+    crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 app.use(cors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
@@ -22,7 +28,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
 
-// Static files — phải đặt TRƯỚC routes, thêm header CORS riêng cho ảnh
+// Static files
 app.use('/uploads', (req, res, next) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     next();

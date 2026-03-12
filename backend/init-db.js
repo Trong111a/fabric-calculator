@@ -1,13 +1,11 @@
 const { pool } = require('./config/database');
 
-const initDB = async () => {
+const initDatabase = async () => {
     try {
         console.log('🚀 Initializing database...');
 
-        // Create extension
         await pool.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
 
-        // Users table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -18,11 +16,19 @@ const initDB = async () => {
                 is_active BOOLEAN DEFAULT true,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                last_login TIMESTAMP
+                last_login TIMESTAMP,
+                reset_token VARCHAR(255),
+                reset_token_expires TIMESTAMP
             )
         `);
 
-        // Measurements table
+        // Thêm cột reset_token nếu bảng đã tồn tại
+        await pool.query(`
+            ALTER TABLE users
+            ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255),
+            ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP
+        `);
+
         await pool.query(`
             CREATE TABLE IF NOT EXISTS measurements (
                 id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -37,11 +43,17 @@ const initDB = async () => {
                 image_height INTEGER,
                 notes TEXT,
                 tags TEXT[],
+                quantity INTEGER DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
 
-        // Projects table
+        // Thêm cột quantity nếu bảng đã tồn tại
+        await pool.query(`
+            ALTER TABLE measurements
+            ADD COLUMN IF NOT EXISTS quantity INTEGER DEFAULT 1
+        `);
+
         await pool.query(`
             CREATE TABLE IF NOT EXISTS projects (
                 id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -53,7 +65,6 @@ const initDB = async () => {
             )
         `);
 
-        // Project measurements junction
         await pool.query(`
             CREATE TABLE IF NOT EXISTS project_measurements (
                 project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
@@ -62,22 +73,27 @@ const initDB = async () => {
             )
         `);
 
-        // Seed data
+        // Seed admin
         const bcrypt = require('bcryptjs');
         const hashedPassword = await bcrypt.hash('admin123', 10);
-
         await pool.query(`
-            INSERT INTO users (email, password_hash, name, role) 
+            INSERT INTO users (email, password_hash, name, role)
             VALUES ('admin@example.com', $1, 'Admin', 'admin')
             ON CONFLICT (email) DO NOTHING
         `, [hashedPassword]);
 
         console.log('✅ Database initialized successfully!');
-        process.exit(0);
     } catch (err) {
-        console.error('❌ Error:', err);
-        process.exit(1);
+        console.error('❌ DB init error:', err.message);
+        throw err;
     }
 };
 
-initDB();
+// Chạy trực tiếp nếu gọi: node initDB.js
+if (require.main === module) {
+    initDatabase()
+        .then(() => process.exit(0))
+        .catch(() => process.exit(1));
+}
+
+module.exports = { initDatabase };
