@@ -559,10 +559,19 @@
 }
 
 .vm-btn.success {
+   display: inline-flex;         /* ← thêm */
+    align-items: center;          /* ← thêm */
+    gap: 7px;                     /* ← thêm */
     background: linear-gradient(135deg, #10b981, #059669);
     color: #fff;
     border: none;
     box-shadow: 0 3px 10px rgba(16,185,129,0.3);
+    padding: 10px 20px;           /* ← thêm */
+    border-radius: 8px;           /* ← thêm */
+    font-size: 14px;              /* ← thêm */
+    font-weight: 600;             /* ← thêm */
+    font-family: inherit;         /* ← thêm */
+    cursor: pointer;  
 }
 .vm-btn.success:hover {
     transform: translateY(-1px);

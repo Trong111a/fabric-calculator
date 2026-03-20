@@ -571,10 +571,19 @@
 }
 
 .pd-btn.success {
+   display: inline-flex;         /* ← thêm */
+    align-items: center;          /* ← thêm */
+    gap: 7px;                     /* ← thêm */
     background: linear-gradient(135deg, #10b981, #059669);
     color: #fff;
     border: none;
     box-shadow: 0 3px 10px rgba(16,185,129,0.3);
+    padding: 10px 20px;           /* ← thêm */
+    border-radius: 8px;           /* ← thêm */
+    font-size: 14px;              /* ← thêm */
+    font-weight: 600;             
+    font-family: inherit;         
+    cursor: pointer; 
 }
 .pd-btn.success:hover {
     transform: translateY(-1px);
@@ -623,15 +632,23 @@
 }
 
 .pd-step-dot {
-    width: 26px; height: 26px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     background: #f4f6fb;
     border: 2px solid #e0e4ef;
     color: #9ca3af;
-    font-size: 11px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s; flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    white-space: nowrap;   
+    min-width: 26px;       
 }
+
 .pd-step.active .pd-step-dot {
     background: #6366f1; border-color: #6366f1; color: #fff;
     box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
@@ -641,7 +658,8 @@
 }
 
 .pd-step-label {
-    font-size: 12px; font-weight: 600; color: #9ca3af;
+    font-size: 12px; font-weight: 600; color: #9ca3af;white-space: nowrap;   
+    flex-shrink: 0;   
 }
 .pd-step.active .pd-step-label { color: #6366f1; }
 .pd-step.done   .pd-step-label { color: #10b981; }
