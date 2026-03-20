@@ -71,6 +71,7 @@ export default function ViewMain({ user, onLogout }) {
         canvas.height = image.height;
         ctx.drawImage(image, 0, 0);
         const W = image.width;
+        const displayScale = canvas.width / (canvas.getBoundingClientRect().width || canvas.width);
 
         if (step === 'calibrate') {
             ctx.save();
@@ -82,11 +83,9 @@ export default function ViewMain({ user, onLogout }) {
             ctx.fillStyle = 'rgba(255,255,255,0.97)';
             ctx.fillRect(-rw / 2, 0, rw, rulerLength);
             ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
-            ctx.strokeStyle = '#6366f1';
-            ctx.lineWidth = Math.max(2, W / 300);
+            ctx.strokeStyle = '#6366f1'; ctx.lineWidth = Math.max(2, W / 300);
             ctx.strokeRect(-rw / 2, 0, rw, rulerLength);
-            const ppc = rulerLength / 30;
-            const fs = Math.max(10, W / 80);
+            const ppc = rulerLength / 30; const fs = Math.max(10, W / 80);
             for (let i = 0; i <= 30; i++) {
                 const y = i * ppc; const major = i % 5 === 0;
                 ctx.strokeStyle = major ? '#4f46e5' : '#bbb';
@@ -100,7 +99,7 @@ export default function ViewMain({ user, onLogout }) {
                     ctx.textAlign = 'center'; ctx.fillText(i, 0, y - fs * 0.3);
                 }
             }
-            const hr = Math.max(16, W / 46);
+            const hr = Math.max(8, Math.min(16, 12 * displayScale));
             ctx.fillStyle = '#6366f1';
             ctx.shadowColor = 'rgba(99,102,241,0.55)'; ctx.shadowBlur = 16;
             ctx.beginPath(); ctx.arc(0, 0, hr, 0, Math.PI * 2); ctx.fill();
@@ -123,8 +122,9 @@ export default function ViewMain({ user, onLogout }) {
             ctx.setLineDash([Math.max(7, W / 90), Math.max(5, W / 130)]); ctx.stroke();
             ctx.setLineDash([]);
 
-            const R = Math.max(18, W / 42);
-            const RH = R * 1.7;
+            const R = Math.max(8, Math.min(18, 14 * displayScale));
+            const RH = R * 1.6;
+
             polygonPoints.forEach((p, i) => {
                 const isHover = i === hoverPointIdx; const isDrag = i === dragPointIdx;
                 if (isHover || isDrag) {
@@ -135,11 +135,11 @@ export default function ViewMain({ user, onLogout }) {
                     ctx.fillStyle = g; ctx.fill();
                 }
                 ctx.shadowColor = 'rgba(0,0,0,0.28)'; ctx.shadowBlur = 10;
-                ctx.beginPath(); ctx.arc(p.x, p.y, R + Math.max(3.5, W / 230), 0, Math.PI * 2);
+                ctx.beginPath(); ctx.arc(p.x, p.y, R + Math.max(2, W / 400), 0, Math.PI * 2);
                 ctx.fillStyle = '#fff'; ctx.fill(); ctx.shadowBlur = 0;
                 ctx.beginPath(); ctx.arc(p.x, p.y, R, 0, Math.PI * 2);
                 ctx.fillStyle = isDrag ? '#f59e0b' : isHover ? '#818cf8' : '#6366f1'; ctx.fill();
-                ctx.fillStyle = '#fff'; ctx.font = `bold ${Math.max(12, R * 0.72)}px Arial`;
+                ctx.fillStyle = '#fff'; ctx.font = `bold ${Math.max(10, R * 0.72)}px Arial`;
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 ctx.fillText(i + 1, p.x, p.y); ctx.textBaseline = 'alphabetic';
             });
@@ -174,14 +174,16 @@ export default function ViewMain({ user, onLogout }) {
     };
 
     const hitTestPoint = useCallback((cx, cy) => {
-        const R = Math.max(18, image ? image.width / 42 : 18) + 14;
+        const canvas = canvasRef.current;
+        const displayScale = canvas ? canvas.width / (canvas.getBoundingClientRect().width || canvas.width) : 1;
+        const R = Math.max(8, Math.min(18, 14 * displayScale)) + 10;
         for (let i = polygonPoints.length - 1; i >= 0; i--) {
             const p = polygonPoints[i];
             const dx = cx - p.x, dy = cy - p.y;
             if (Math.sqrt(dx * dx + dy * dy) <= R) return i;
         }
         return -1;
-    }, [polygonPoints, image]);
+    }, [polygonPoints]);
 
     const onPointerDown = (clientX, clientY) => {
         const { x, y } = toCanvas(clientX, clientY);

@@ -570,6 +570,17 @@
     border-color: #c7d2fe;
 }
 
+.pd-btn.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    border: none;
+    box-shadow: 0 3px 10px rgba(16,185,129,0.3);
+}
+.pd-btn.success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 16px rgba(16,185,129,0.4);
+}
+
 /* ─── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .pd-header { padding: 14px 16px; }
@@ -591,4 +602,82 @@
     .pd-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .pd-modal-grid { grid-template-columns: 1fr 1fr; }
     .pd-modal-body { padding: 16px 16px 24px; }
+}
+
+/* Step bar trong ScanPanel */
+.pd-step-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    padding-bottom: 4px;
+}
+
+.pd-step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.pd-step-dot {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: #f4f6fb;
+    border: 2px solid #e0e4ef;
+    color: #9ca3af;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0;
+}
+.pd-step.active .pd-step-dot {
+    background: #6366f1; border-color: #6366f1; color: #fff;
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
+}
+.pd-step.done .pd-step-dot {
+    background: #10b981; border-color: #10b981; color: #fff;
+}
+
+.pd-step-label {
+    font-size: 12px; font-weight: 600; color: #9ca3af;
+}
+.pd-step.active .pd-step-label { color: #6366f1; }
+.pd-step.done   .pd-step-label { color: #10b981; }
+
+.pd-step-line {
+    width: 24px; height: 2px;
+    background: #e0e4ef;
+    margin: 0 6px; flex-shrink: 0; border-radius: 2px;
+}
+
+/* badge diện tích realtime trên canvas */
+.pd-area-badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: rgba(99,102,241,0.9);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px; font-weight: 700;
+    font-family: 'DM Mono', monospace;
+    backdrop-filter: blur(4px);
+    pointer-events: none;
+}
+
+/* close button modal qty */
+.pd-modal-x {
+    position: absolute; top: 14px; right: 14px;
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid #e0e4ef; background: #f4f6fb;
+    color: #6b7280; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+}
+.pd-modal-x:hover { background: #fee2e2; color: #ef4444; border-color: #fca5a5; }
+
+@media (max-width: 480px) {
+    .pd-step-label { display: none; }
+    .pd-step-line { width: 14px; margin: 0 3px; }
 }

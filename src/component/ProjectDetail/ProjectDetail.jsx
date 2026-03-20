@@ -24,27 +24,27 @@ function calcArea(pts, ppc) {
    upload → calibrate → scan → adjust (kéo polygon) → result
 ══════════════════════════════════════════════════════════ */
 function ScanPanel({ project, cvReady, onSaved }) {
-    const [image, setImage]               = useState(null);
+    const [image, setImage] = useState(null);
     const [rawImageData, setRawImageData] = useState(null);
-    const [step, setStep]                 = useState('upload');
-    const [loading, setLoading]           = useState(false);
+    const [step, setStep] = useState('upload');
+    const [loading, setLoading] = useState(false);
 
-    const [rulerPos, setRulerPos]         = useState({ x: 100, y: 100 });
-    const [rulerLength, setRulerLength]   = useState(300);
-    const [rulerAngle, setRulerAngle]     = useState(90);
-    const [pixelsPerCm, setPixelsPerCm]   = useState(null);
+    const [rulerPos, setRulerPos] = useState({ x: 100, y: 100 });
+    const [rulerLength, setRulerLength] = useState(300);
+    const [rulerAngle, setRulerAngle] = useState(90);
+    const [pixelsPerCm, setPixelsPerCm] = useState(null);
     const [isDraggingRuler, setIsDraggingRuler] = useState(false);
     const [rulerDragOffset, setRulerDragOffset] = useState({ x: 0, y: 0 });
 
     const [polygonPoints, setPolygonPoints] = useState([]);
-    const [area, setArea]                   = useState(null);
-    const [dragPointIdx, setDragPointIdx]   = useState(-1);
+    const [area, setArea] = useState(null);
+    const [dragPointIdx, setDragPointIdx] = useState(-1);
     const [hoverPointIdx, setHoverPointIdx] = useState(-1);
 
     const [showSaveModal, setShowSaveModal] = useState(false);
-    const [fileName, setFileName]           = useState('');
-    const [quantity, setQuantity]           = useState(1);
-    const [saving, setSaving]               = useState(false);
+    const [fileName, setFileName] = useState('');
+    const [quantity, setQuantity] = useState(1);
+    const [saving, setSaving] = useState(false);
 
     const canvasRef = useRef(null);
     const uploadRef = useRef(null);
@@ -55,11 +55,12 @@ function ScanPanel({ project, cvReady, onSaved }) {
         const canvas = canvasRef.current;
         if (!canvas || !image) return;
         const ctx = canvas.getContext('2d');
-        canvas.width = image.width; canvas.height = image.height;
+        canvas.width = image.width;
+        canvas.height = image.height;
         ctx.drawImage(image, 0, 0);
         const W = image.width;
+        const displayScale = canvas.width / (canvas.getBoundingClientRect().width || canvas.width);
 
-        /* Thước */
         if (step === 'calibrate') {
             ctx.save();
             ctx.translate(rulerPos.x, rulerPos.y);
@@ -79,14 +80,14 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 ctx.lineWidth = major ? Math.max(1.5, W / 500) : 1;
                 ctx.beginPath();
                 ctx.moveTo(major ? -rw / 2 : -rw / 4, y);
-                ctx.lineTo(major ?  rw / 2 :  rw / 4, y);
+                ctx.lineTo(major ? rw / 2 : rw / 4, y);
                 ctx.stroke();
                 if (major && i > 0) {
                     ctx.fillStyle = '#1e1b4b'; ctx.font = `bold ${fs}px Arial`;
                     ctx.textAlign = 'center'; ctx.fillText(i, 0, y - fs * 0.3);
                 }
             }
-            const hr = Math.max(16, W / 46);
+            const hr = Math.max(8, Math.min(16, 12 * displayScale));
             ctx.fillStyle = '#6366f1';
             ctx.shadowColor = 'rgba(99,102,241,0.55)'; ctx.shadowBlur = 16;
             ctx.beginPath(); ctx.arc(0, 0, hr, 0, Math.PI * 2); ctx.fill();
@@ -98,7 +99,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
             ctx.restore();
         }
 
-        /* Polygon */
         if (polygonPoints.length > 1 && (step === 'adjust' || step === 'result')) {
             ctx.beginPath();
             polygonPoints.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
@@ -110,7 +110,9 @@ function ScanPanel({ project, cvReady, onSaved }) {
             ctx.setLineDash([Math.max(7, W / 90), Math.max(5, W / 130)]); ctx.stroke();
             ctx.setLineDash([]);
 
-            const R = Math.max(18, W / 42); const RH = R * 1.7;
+            const R = Math.max(8, Math.min(18, 14 * displayScale));
+            const RH = R * 1.6;
+
             polygonPoints.forEach((p, i) => {
                 const isHover = i === hoverPointIdx; const isDrag = i === dragPointIdx;
                 if (isHover || isDrag) {
@@ -121,11 +123,11 @@ function ScanPanel({ project, cvReady, onSaved }) {
                     ctx.fillStyle = g; ctx.fill();
                 }
                 ctx.shadowColor = 'rgba(0,0,0,0.28)'; ctx.shadowBlur = 10;
-                ctx.beginPath(); ctx.arc(p.x, p.y, R + Math.max(3.5, W / 230), 0, Math.PI * 2);
+                ctx.beginPath(); ctx.arc(p.x, p.y, R + Math.max(2, W / 400), 0, Math.PI * 2);
                 ctx.fillStyle = '#fff'; ctx.fill(); ctx.shadowBlur = 0;
                 ctx.beginPath(); ctx.arc(p.x, p.y, R, 0, Math.PI * 2);
                 ctx.fillStyle = isDrag ? '#f59e0b' : isHover ? '#818cf8' : '#6366f1'; ctx.fill();
-                ctx.fillStyle = '#fff'; ctx.font = `bold ${Math.max(12, R * 0.72)}px Arial`;
+                ctx.fillStyle = '#fff'; ctx.font = `bold ${Math.max(10, R * 0.72)}px Arial`;
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 ctx.fillText(i + 1, p.x, p.y); ctx.textBaseline = 'alphabetic';
             });
@@ -140,8 +142,8 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 const tw = ctx.measureText(txt).width; const pad = fs * 0.55;
                 ctx.fillStyle = 'rgba(79,70,229,0.88)';
                 ctx.beginPath();
-                if (ctx.roundRect) ctx.roundRect(cx - tw/2 - pad, cy - fs/2 - pad*0.6, tw + pad*2, fs + pad*1.2, 10);
-                else ctx.rect(cx - tw/2 - pad, cy - fs/2 - pad*0.6, tw + pad*2, fs + pad*1.2);
+                if (ctx.roundRect) ctx.roundRect(cx - tw / 2 - pad, cy - fs / 2 - pad * 0.6, tw + pad * 2, fs + pad * 1.2, 10);
+                else ctx.rect(cx - tw / 2 - pad, cy - fs / 2 - pad * 0.6, tw + pad * 2, fs + pad * 1.2);
                 ctx.fill();
                 ctx.fillStyle = '#fff'; ctx.fillText(txt, cx, cy);
                 ctx.textBaseline = 'alphabetic';
@@ -155,20 +157,22 @@ function ScanPanel({ project, cvReady, onSaved }) {
     const toCanvas = (clientX, clientY) => {
         const c = canvasRef.current; const r = c.getBoundingClientRect();
         return {
-            x: (clientX - r.left) * (c.width  / r.width),
-            y: (clientY - r.top)  * (c.height / r.height),
+            x: (clientX - r.left) * (c.width / r.width),
+            y: (clientY - r.top) * (c.height / r.height),
         };
     };
 
     const hitTestPoint = useCallback((cx, cy) => {
-        const R = Math.max(18, image ? image.width / 42 : 18) + 14;
+        const canvas = canvasRef.current;
+        const displayScale = canvas ? canvas.width / (canvas.getBoundingClientRect().width || canvas.width) : 1;
+        const R = Math.max(8, Math.min(18, 14 * displayScale)) + 10;
         for (let i = polygonPoints.length - 1; i >= 0; i--) {
             const p = polygonPoints[i];
             const dx = cx - p.x, dy = cy - p.y;
             if (Math.sqrt(dx * dx + dy * dy) <= R) return i;
         }
         return -1;
-    }, [polygonPoints, image]);
+    }, [polygonPoints]);
 
     const onPointerDown = (clientX, clientY) => {
         const { x, y } = toCanvas(clientX, clientY);
@@ -241,13 +245,13 @@ function ScanPanel({ project, cvReady, onSaved }) {
             const src = cv.matFromImageData(rawImageData);
             const hsv = new cv.Mat();
             cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB); cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
-            const lo = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [0,   0,  60, 0]);
+            const lo = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [0, 0, 60, 0]);
             const hi = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [180, 60, 255, 255]);
             const mask = new cv.Mat(); cv.inRange(hsv, lo, hi, mask);
             const k1 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
-            const cl = new cv.Mat(); cv.morphologyEx(mask, cl, cv.MORPH_OPEN,  k1, new cv.Point(-1,-1), 1);
+            const cl = new cv.Mat(); cv.morphologyEx(mask, cl, cv.MORPH_OPEN, k1, new cv.Point(-1, -1), 1);
             const k2 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
-            const fi = new cv.Mat(); cv.morphologyEx(cl,   fi, cv.MORPH_CLOSE, k2, new cv.Point(-1,-1), 1);
+            const fi = new cv.Mat(); cv.morphologyEx(cl, fi, cv.MORPH_CLOSE, k2, new cv.Point(-1, -1), 1);
             const cs = new cv.MatVector(); const hr = new cv.Mat();
             cv.findContours(fi, cs, hr, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
             let best = null, mx = 0;
@@ -258,7 +262,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 const rb = cv.boundingRect(c);
                 const ar = Math.max(rb.width, rb.height) / Math.min(rb.width, rb.height);
                 if (ar > 20) continue;
-                if (rb.x<=10||rb.y<=10||rb.x+rb.width>=src.cols-10||rb.y+rb.height>=src.rows-10) continue;
+                if (rb.x <= 10 || rb.y <= 10 || rb.x + rb.width >= src.cols - 10 || rb.y + rb.height >= src.rows - 10) continue;
                 const p = cv.arcLength(c, true); const sc = a * ((4 * Math.PI * a) / (p * p));
                 if (sc > mx) { mx = sc; best = c; }
             }
@@ -266,14 +270,14 @@ function ScanPanel({ project, cvReady, onSaved }) {
             const pe = cv.arcLength(best, true); const ap = new cv.Mat();
             cv.approxPolyDP(best, ap, 0.002 * pe, true);
             let pts = [];
-            for (let i = 0; i < ap.rows; i++) pts.push({ x: ap.data32S[i*2], y: ap.data32S[i*2+1] });
+            for (let i = 0; i < ap.rows; i++) pts.push({ x: ap.data32S[i * 2], y: ap.data32S[i * 2 + 1] });
             if (pts.length < 4) {
                 const hu = new cv.Mat(); cv.convexHull(best, hu, false, true); pts = [];
-                for (let i = 0; i < hu.data32S.length; i+=2) pts.push({ x: hu.data32S[i], y: hu.data32S[i+1] });
+                for (let i = 0; i < hu.data32S.length; i += 2) pts.push({ x: hu.data32S[i], y: hu.data32S[i + 1] });
                 hu.delete();
             }
             setPolygonPoints(pts); setArea(calcArea(pts, pixelsPerCm)); setStep('adjust');
-            [src,hsv,lo,hi,mask,k1,cl,k2,fi,cs,hr,ap].forEach(m => m?.delete?.());
+            [src, hsv, lo, hi, mask, k1, cl, k2, fi, cs, hr, ap].forEach(m => m?.delete?.());
         } catch (err) { alert(`⚠️ ${err.message}`); } finally { setLoading(false); }
     };
 
@@ -302,11 +306,11 @@ function ScanPanel({ project, cvReady, onSaved }) {
     };
 
     const STEPS = [
-        { key: 'upload',    label: 'Tải ảnh' },
+        { key: 'upload', label: 'Tải ảnh' },
         { key: 'calibrate', label: 'Hiệu chuẩn' },
-        { key: 'scan',      label: 'Quét rập' },
-        { key: 'adjust',    label: 'Chỉnh sửa' },
-        { key: 'result',    label: 'Kết quả' },
+        { key: 'scan', label: 'Quét rập' },
+        { key: 'adjust', label: 'Chỉnh sửa' },
+        { key: 'result', label: 'Kết quả' },
     ];
     const stepIdx = STEPS.findIndex(s => s.key === step);
 
@@ -314,7 +318,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
         <div className="pd-scan-wrap">
 
             {/* CV badge */}
-            <div style={{ display:'flex', justifyContent:'flex-end', marginBottom: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
                 <span className={`pd-cv-badge ${cvReady ? 'ready' : ''}`}>
                     {cvReady ? '✓ OpenCV sẵn sàng' : '⏳ Đang tải OpenCV...'}
                 </span>
@@ -343,8 +347,8 @@ function ScanPanel({ project, cvReady, onSaved }) {
                         <h2>Đo chi tiết mới</h2>
                         <p>Tải ảnh hoặc chụp ảnh bản rập để đo &amp; lưu vào folder <strong>{project.name}</strong></p>
                     </div>
-                    <input ref={uploadRef} type="file" accept="image/*" onChange={handleImageUpload} style={{ display:'none' }} />
-                    <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImageUpload} style={{ display:'none' }} />
+                    <input ref={uploadRef} type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
+                    <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImageUpload} style={{ display: 'none' }} />
                     <div className="pd-upload-btns">
                         <button className="pd-upload-btn primary" disabled={!cvReady} onClick={() => uploadRef.current?.click()}>
                             <Upload size={22} /><span>Tải ảnh lên</span><small>JPG, PNG, WEBP</small>
@@ -366,15 +370,15 @@ function ScanPanel({ project, cvReady, onSaved }) {
                         <div>
                             <strong>
                                 {step === 'calibrate' && 'Hiệu chuẩn thước đo'}
-                                {step === 'scan'      && 'Quét & nhận diện rập'}
-                                {step === 'adjust'    && 'Chỉnh polygon — kéo từng điểm để khớp viền rập'}
-                                {step === 'result'    && 'Hoàn tất — đã lưu thành công'}
+                                {step === 'scan' && 'Quét & nhận diện rập'}
+                                {step === 'adjust' && 'Chỉnh polygon — kéo từng điểm để khớp viền rập'}
+                                {step === 'result' && 'Hoàn tất — đã lưu thành công'}
                             </strong>
                             <span>
                                 {step === 'calibrate' && 'Kéo thước vào vật chuẩn 30cm · chỉnh độ dài & góc bên dưới'}
-                                {step === 'scan'      && `Tỷ lệ: ${pixelsPerCm?.toFixed(2)} px/cm · Folder: ${project.name}`}
-                                {step === 'adjust'    && 'Diện tích cập nhật realtime · Xác nhận để đặt tên & lưu'}
-                                {step === 'result'    && `${area?.toFixed(2)} cm² · ${(area / 10000)?.toFixed(4)} m²`}
+                                {step === 'scan' && `Tỷ lệ: ${pixelsPerCm?.toFixed(2)} px/cm · Folder: ${project.name}`}
+                                {step === 'adjust' && 'Diện tích cập nhật realtime · Xác nhận để đặt tên & lưu'}
+                                {step === 'result' && `${area?.toFixed(2)} cm² · ${(area / 10000)?.toFixed(4)} m²`}
                             </span>
                         </div>
                     </div>
@@ -421,12 +425,12 @@ function ScanPanel({ project, cvReady, onSaved }) {
                                 <label>Góc xoay</label>
                                 <div className="pd-angle-row">
                                     <button onClick={() => setRulerAngle(a => (a - 10 + 360) % 360)}>↺ −10°</button>
-                                    <button onClick={() => setRulerAngle(a => (a - 1  + 360) % 360)}>−1°</button>
+                                    <button onClick={() => setRulerAngle(a => (a - 1 + 360) % 360)}>−1°</button>
                                     <input type="number" min="0" max="359" value={rulerAngle}
                                         onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setRulerAngle(((v % 360) + 360) % 360); }}
                                         className="pd-angle-input" />
                                     <span className="pd-angle-deg">°</span>
-                                    <button onClick={() => setRulerAngle(a => (a + 1)  % 360)}>+1°</button>
+                                    <button onClick={() => setRulerAngle(a => (a + 1) % 360)}>+1°</button>
                                     <button onClick={() => setRulerAngle(a => (a + 10) % 360)}>↻ +10°</button>
                                     <button onClick={() => setRulerAngle(90)}>90°</button>
                                     <button onClick={() => setRulerAngle(0)}>0°</button>
@@ -530,7 +534,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                             Diện tích: <strong>{area?.toFixed(2)} cm²</strong> · Folder: <strong>{project.name}</strong>
                         </p>
                         <div className="pd-field-group">
-                            <label className="pd-field-label">Tên chi tiết <span style={{ color:'#ef4444' }}>*</span></label>
+                            <label className="pd-field-label">Tên chi tiết <span style={{ color: '#ef4444' }}>*</span></label>
                             <input
                                 className="pd-field-input" type="text" value={fileName}
                                 onChange={e => setFileName(e.target.value)}
@@ -569,12 +573,12 @@ function ScanPanel({ project, cvReady, onSaved }) {
    PROJECT DETAIL — MAIN COMPONENT
 ══════════════════════════════════════════════════════════ */
 export default function ProjectDetail({ project, onBack }) {
-    const [tab, setTab]               = useState('list');
+    const [tab, setTab] = useState('list');
     const [measurements, setMeasurements] = useState([]);
-    const [loading, setLoading]       = useState(true);
-    const [selected, setSelected]     = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [selected, setSelected] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
-    const [cvReady, setCvReady]       = useState(false);
+    const [cvReady, setCvReady] = useState(false);
 
     useEffect(() => {
         const check = () => {
@@ -609,7 +613,7 @@ export default function ProjectDetail({ project, onBack }) {
         } catch { alert('Xóa thất bại'); } finally { setDeletingId(null); }
     };
 
-    const fmt = d => new Date(d).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric' });
+    const fmt = d => new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
     const parsePolygon = (raw) => {
         try { const p = typeof raw === 'string' ? JSON.parse(raw) : raw; return Array.isArray(p) ? p.length : 0; }
@@ -617,7 +621,7 @@ export default function ProjectDetail({ project, onBack }) {
     };
 
     const totalArea = measurements.reduce((s, m) => s + (Number(m.area_cm2) * (m.quantity || 1)), 0);
-    const totalQty  = measurements.reduce((s, m) => s + (m.quantity || 1), 0);
+    const totalQty = measurements.reduce((s, m) => s + (m.quantity || 1), 0);
 
     return (
         <div className="pd-wrap">
@@ -654,9 +658,9 @@ export default function ProjectDetail({ project, onBack }) {
                 <>
                     <div className="pd-stats-bar">
                         {[
-                            { icon: <Layers size={16} />,   label: 'Số chi tiết',    value: measurements.length },
-                            { icon: <Package size={16} />,  label: 'Tổng số lượng',  value: totalQty },
-                            { icon: <TrendingUp size={16}/>, label: 'Tổng diện tích', value: `${(totalArea / 10000).toFixed(4)} m²` },
+                            { icon: <Layers size={16} />, label: 'Số chi tiết', value: measurements.length },
+                            { icon: <Package size={16} />, label: 'Tổng số lượng', value: totalQty },
+                            { icon: <TrendingUp size={16} />, label: 'Tổng diện tích', value: `${(totalArea / 10000).toFixed(4)} m²` },
                         ].map((stat, i) => (
                             <div key={i} className="pd-stat-item">
                                 <div className="pd-stat-icon">{stat.icon}</div>
@@ -739,12 +743,12 @@ export default function ProjectDetail({ project, onBack }) {
                 <div className="pd-modal-bg" onClick={() => setSelected(null)}>
                     <div className="pd-modal" onClick={e => e.stopPropagation()}>
                         {selected.image_url ? (
-                            <div style={{ position:'relative' }}>
+                            <div style={{ position: 'relative' }}>
                                 <img className="pd-modal-img" src={selected.image_url} alt={selected.name} />
                                 <button className="pd-modal-close" onClick={() => setSelected(null)}><X size={18} /></button>
                             </div>
                         ) : (
-                            <div className="pd-modal-img-placeholder" style={{ position:'relative' }}>
+                            <div className="pd-modal-img-placeholder" style={{ position: 'relative' }}>
                                 <Layers size={56} />
                                 <button className="pd-modal-close" onClick={() => setSelected(null)}><X size={18} /></button>
                             </div>
@@ -777,7 +781,7 @@ export default function ProjectDetail({ project, onBack }) {
                                     <div className="pd-modal-card-label">Tỷ lệ px/cm</div>
                                     <div className="pd-modal-card-row">
                                         <Ruler size={15} color="#6366f1" />
-                                        <div className="pd-modal-card-value" style={{ fontSize:17 }}>
+                                        <div className="pd-modal-card-value" style={{ fontSize: 17 }}>
                                             {Number(selected.pixels_per_cm).toFixed(2)}<em>px/cm</em>
                                         </div>
                                     </div>
@@ -806,5 +810,5 @@ ScanPanel.propTypes = {
 
 ProjectDetail.propTypes = {
     project: PropTypes.shape({ id: PropTypes.string.isRequired, name: PropTypes.string.isRequired }).isRequired,
-    onBack:  PropTypes.func.isRequired,
+    onBack: PropTypes.func.isRequired,
 };

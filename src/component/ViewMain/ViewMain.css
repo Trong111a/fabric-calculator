@@ -138,6 +138,8 @@
     border-bottom: 1px solid #e8eaf0;
     gap: 0;
     overflow-x: auto;
+    flex-wrap: nowrap;
+    white-space: nowrap;
 }
 
 .vm-step {
@@ -554,6 +556,42 @@
 }
 .vm-field-input::placeholder {
     color: #c4c9d9;
+}
+
+.vm-btn.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    border: none;
+    box-shadow: 0 3px 10px rgba(16,185,129,0.3);
+}
+.vm-btn.success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 16px rgba(16,185,129,0.4);
+}
+
+.vm-area-badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: rgba(99,102,241,0.9);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px; font-weight: 700;
+    font-family: 'DM Mono', monospace;
+    backdrop-filter: blur(4px);
+    pointer-events: none;
+}
+.vm-angle-input {
+    width: 64px; text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px; font-weight: 600;
+    border: 1.5px solid #6366f1; border-radius: 7px;
+    padding: 5px 4px; color: #4f46e5;
+    outline: none; background: #eef2ff;
+}
+
+.vm-angle-deg {
+    font-size: 13px; color: #9ca3af; margin-left: -4px;
 }
 
 /* ── Misc ────────────────────────────────────────────────────── */
