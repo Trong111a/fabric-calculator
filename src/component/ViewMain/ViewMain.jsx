@@ -332,6 +332,8 @@ export default function ViewMain({ user, onLogout }) {
 
     return (
         <div className="vm-wrap">
+
+            {/* ── Header ── */}
             <header className="vm-header">
                 <div className="vm-header-left">
                     <div className="vm-logo"><Ruler size={20} color="#fff" /></div>
@@ -344,7 +346,9 @@ export default function ViewMain({ user, onLogout }) {
                 </div>
                 <div className="vm-header-right">
                     {selectedProject && (
-                        <div className="vm-project-chip"><Folder size={13} /><span>{selectedProject.name}</span></div>
+                        <div className="vm-project-chip">
+                            <Folder size={13} /><span>{selectedProject.name}</span>
+                        </div>
                     )}
                     <button className="vm-folder-btn" onClick={() => setShowProjectManager(true)}>
                         <Folder size={15} /><span>{selectedProject ? 'Đổi folder' : 'Folder'}</span>
@@ -353,25 +357,35 @@ export default function ViewMain({ user, onLogout }) {
                         <div className="vm-avatar">{(user?.name || 'U')[0].toUpperCase()}</div>
                         <span>{user?.name || 'User'}</span>
                     </div>
-                    <button className="vm-logout-btn" onClick={onLogout}><LogOut size={16} /></button>
+                    <button className="vm-logout-btn" onClick={onLogout} title="Đăng xuất">
+                        <LogOut size={16} />
+                    </button>
                 </div>
             </header>
 
+            {/* ── Step indicator ── */}
             {step !== 'upload' && (
                 <div className="vm-steps">
                     {STEPS.map((s, i) => (
                         <React.Fragment key={s.key}>
                             <div className={`vm-step ${i < stepIdx ? 'done' : ''} ${i === stepIdx ? 'active' : ''}`}>
-                                <div className="vm-step-dot">{i < stepIdx ? '✓' : i + 1}</div>
-                                <span className="vm-step-label">{s.label}</span>
+                                <div className="vm-step-content">
+                                    <div className="vm-step-dot">{i < stepIdx ? '✓' : i + 1}</div>
+                                    <span className="vm-step-label">{s.label}</span>
+                                </div>
                             </div>
-                            {i < STEPS.length - 1 && <div className="vm-step-line" />}
+                            {i < STEPS.length - 1 && (
+                                <div className={`vm-step-line ${i < stepIdx ? 'done' : ''}`} />
+                            )}
                         </React.Fragment>
                     ))}
                 </div>
             )}
 
+            {/* ── Main ── */}
             <main className="vm-main">
+
+                {/* Upload */}
                 {step === 'upload' && (
                     <div className="vm-upload-screen">
                         <div className="vm-upload-hero">
@@ -392,8 +406,11 @@ export default function ViewMain({ user, onLogout }) {
                     </div>
                 )}
 
+                {/* Calibrate / Scan / Adjust / Result */}
                 {image && step !== 'upload' && (
                     <div className="vm-section">
+
+                        {/* Guide */}
                         <div className="vm-guide">
                             <span className="vm-guide-icon">
                                 {step === 'calibrate' ? '📏' : step === 'scan' ? '🔍' : step === 'adjust' ? '✋' : '✅'}
@@ -414,6 +431,7 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         </div>
 
+                        {/* Canvas */}
                         <div className="vm-canvas-wrap">
                             <canvas
                                 ref={canvasRef}
@@ -438,13 +456,15 @@ export default function ViewMain({ user, onLogout }) {
                             )}
                         </div>
 
+                        {/* Calibrate controls */}
                         {step === 'calibrate' && (
                             <div className="vm-controls">
                                 <div className="vm-control-group">
                                     <label>Chiều dài thước</label>
                                     <div className="vm-slider-row">
                                         <input type="range" min="100" max={image.height}
-                                            value={rulerLength} onChange={e => setRulerLength(Number(e.target.value))} />
+                                            value={rulerLength}
+                                            onChange={e => setRulerLength(Number(e.target.value))} />
                                         <div className="vm-badges">
                                             <span className="vm-badge">{Math.round(rulerLength)} px</span>
                                             <span className="vm-badge accent">{(rulerLength / 30).toFixed(1)} px/cm</span>
@@ -456,9 +476,12 @@ export default function ViewMain({ user, onLogout }) {
                                     <div className="vm-angle-row">
                                         <button onClick={() => setRulerAngle(a => (a - 10 + 360) % 360)}>↺ −10°</button>
                                         <button onClick={() => setRulerAngle(a => (a - 1 + 360) % 360)}>−1°</button>
-                                        <input type="number" min="0" max="359" value={rulerAngle}
+                                        <input
+                                            type="number" min="0" max="359"
+                                            value={rulerAngle}
                                             onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setRulerAngle(((v % 360) + 360) % 360); }}
-                                            className="vm-angle-input" />
+                                            className="vm-angle-input"
+                                        />
                                         <span className="vm-angle-deg">°</span>
                                         <button onClick={() => setRulerAngle(a => (a + 1) % 360)}>+1°</button>
                                         <button onClick={() => setRulerAngle(a => (a + 10) % 360)}>↻ +10°</button>
@@ -469,6 +492,7 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         )}
 
+                        {/* Adjust result cards */}
                         {step === 'adjust' && (
                             <div className="vm-result-grid">
                                 <div className="vm-result-card accent">
@@ -490,6 +514,7 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         )}
 
+                        {/* Result cards */}
                         {step === 'result' && area !== null && (
                             <div className="vm-result-grid">
                                 <div className="vm-result-card accent">
@@ -517,6 +542,7 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         )}
 
+                        {/* Actions */}
                         <div className="vm-actions">
                             <button className="vm-btn ghost" onClick={reset}>
                                 <RotateCcw size={15} /> Làm lại
@@ -528,7 +554,9 @@ export default function ViewMain({ user, onLogout }) {
                             )}
                             {step === 'scan' && (
                                 <>
-                                    <button className="vm-btn ghost" onClick={() => setStep('calibrate')}>← Hiệu chuẩn lại</button>
+                                    <button className="vm-btn ghost" onClick={() => setStep('calibrate')}>
+                                        ← Hiệu chuẩn lại
+                                    </button>
                                     <button className="vm-btn primary" disabled={loading} onClick={scanAndCalc}>
                                         <Ruler size={15} /> Quét &amp; Tính
                                     </button>
@@ -550,44 +578,62 @@ export default function ViewMain({ user, onLogout }) {
                                 </button>
                             )}
                         </div>
+
                     </div>
                 )}
             </main>
 
+            {/* ── Save Modal ── */}
             {showSaveModal && (
                 <div className="vm-modal-bg" onClick={e => e.target === e.currentTarget && setShowSaveModal(false)}>
                     <div className="vm-modal">
-                        <button className="vm-modal-close" onClick={() => setShowSaveModal(false)}><X size={18} /></button>
+                        <button className="vm-modal-close" onClick={() => setShowSaveModal(false)}>
+                            <X size={18} />
+                        </button>
                         <h3>Lưu chi tiết</h3>
                         <p className="vm-modal-sub">
                             Diện tích: <strong>{area?.toFixed(2)} cm²</strong>
                             {selectedProject && <> · Folder: <strong>{selectedProject.name}</strong></>}
                         </p>
+
                         <div className="vm-field-group">
-                            <label className="vm-field-label">Tên chi tiết <span className="vm-field-required">*</span></label>
+                            <label className="vm-field-label">
+                                Tên chi tiết <span className="vm-field-required">*</span>
+                            </label>
                             <input
-                                className="vm-field-input" type="text" value={fileName}
+                                className="vm-field-input"
+                                type="text"
+                                value={fileName}
                                 onChange={e => setFileName(e.target.value)}
                                 placeholder="VD: Thân trước, Tay áo, Cổ áo..."
-                                maxLength={100} autoFocus
+                                maxLength={100}
+                                autoFocus
                                 onKeyDown={e => e.key === 'Enter' && !saving && fileName.trim() && saveResult()}
                             />
                         </div>
+
                         <div className="vm-field-group">
                             <label className="vm-field-label">Số lượng</label>
                             <div className="vm-qty-control">
                                 <button onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</button>
-                                <input type="number" min="1" max="9999" value={quantity}
-                                    onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} />
+                                <input
+                                    type="number" min="1" max="9999"
+                                    value={quantity}
+                                    onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                                />
                                 <button onClick={() => setQuantity(q => Math.min(9999, q + 1))}>+</button>
                             </div>
                         </div>
+
                         <div className="vm-modal-preview">
                             <div><span>Tổng</span><strong>{((area || 0) * quantity).toFixed(2)} cm²</strong></div>
                             <div><span>Quy đổi</span><strong>{(((area || 0) * quantity) / 10000).toFixed(4)} m²</strong></div>
                         </div>
+
                         <div className="vm-modal-actions">
-                            <button className="vm-btn ghost" onClick={() => setShowSaveModal(false)} disabled={saving}>Hủy</button>
+                            <button className="vm-btn ghost" onClick={() => setShowSaveModal(false)} disabled={saving}>
+                                Hủy
+                            </button>
                             <button className="vm-btn primary" onClick={saveResult} disabled={saving || !fileName.trim()}>
                                 <Save size={15} />{saving ? 'Đang lưu...' : 'Lưu kết quả'}
                             </button>
@@ -595,6 +641,7 @@ export default function ViewMain({ user, onLogout }) {
                     </div>
                 </div>
             )}
+
         </div>
     );
 }

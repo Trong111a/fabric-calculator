@@ -8,7 +8,6 @@ import {
 import { api } from '../../services/api';
 import './ProjectDetail.css';
 
-/* ─── Tính diện tích Shoelace ─── */
 function calcArea(pts, ppc) {
     if (!pts.length || !ppc) return 0;
     let s = 0;
@@ -20,8 +19,7 @@ function calcArea(pts, ppc) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   SCAN PANEL — dùng chung logic với ViewMain
-   upload → calibrate → scan → adjust (kéo polygon) → result
+   SCAN PANEL
 ══════════════════════════════════════════════════════════ */
 function ScanPanel({ project, cvReady, onSaved }) {
     const [image, setImage] = useState(null);
@@ -50,7 +48,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
     const uploadRef = useRef(null);
     const cameraRef = useRef(null);
 
-    /* ── Vẽ canvas ── */
     const drawCanvas = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas || !image) return;
@@ -153,7 +150,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
 
     useEffect(() => { drawCanvas(); }, [drawCanvas]);
 
-    /* ── Pointer helpers ── */
     const toCanvas = (clientX, clientY) => {
         const c = canvasRef.current; const r = c.getBoundingClientRect();
         return {
@@ -214,7 +210,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
         return 'default';
     };
 
-    /* ── Upload ── */
     const handleImageUpload = (e) => {
         const file = e.target.files?.[0]; if (!file) return;
         const reader = new FileReader();
@@ -236,7 +231,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
         reader.readAsDataURL(file); e.target.value = '';
     };
 
-    /* ── Quét OpenCV ── */
     const scanAndCalc = async () => {
         if (!rawImageData || !cvReady || !pixelsPerCm) { alert('⚠️ Chưa hiệu chuẩn hoặc OpenCV chưa sẵn sàng'); return; }
         setLoading(true);
@@ -281,7 +275,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
         } catch (err) { alert(`⚠️ ${err.message}`); } finally { setLoading(false); }
     };
 
-    /* ── Lưu ── */
     const openSaveModal = () => { setFileName(''); setQuantity(1); setShowSaveModal(true); };
 
     const saveResult = async () => {
@@ -318,7 +311,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
         <div className="pd-scan-wrap">
 
             {/* CV badge */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <span className={`pd-cv-badge ${cvReady ? 'ready' : ''}`}>
                     {cvReady ? '✓ OpenCV sẵn sàng' : '⏳ Đang tải OpenCV...'}
                 </span>
@@ -330,10 +323,14 @@ function ScanPanel({ project, cvReady, onSaved }) {
                     {STEPS.map((s, i) => (
                         <React.Fragment key={s.key}>
                             <div className={`pd-step ${i < stepIdx ? 'done' : ''} ${i === stepIdx ? 'active' : ''}`}>
-                                <div className="pd-step-dot">{i < stepIdx ? '✓' : i + 1}</div>
-                                <span className="pd-step-label">{s.label}</span>
+                                <div className="pd-step-content">
+                                    <div className="pd-step-dot">{i < stepIdx ? '✓' : i + 1}</div>
+                                    <span className="pd-step-label">{s.label}</span>
+                                </div>
                             </div>
-                            {i < STEPS.length - 1 && <div className="pd-step-line" />}
+                            {i < STEPS.length - 1 && (
+                                <div className={`pd-step-line ${i < stepIdx ? 'done' : ''}`} />
+                            )}
                         </React.Fragment>
                     ))}
                 </div>
@@ -407,7 +404,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                         )}
                     </div>
 
-                    {/* Controls: calibrate */}
+                    {/* Calibrate controls */}
                     {step === 'calibrate' && (
                         <div className="pd-controls">
                             <div className="pd-control-group">
@@ -439,7 +436,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                         </div>
                     )}
 
-                    {/* Stats: adjust */}
+                    {/* Adjust stats */}
                     {step === 'adjust' && (
                         <div className="pd-result-grid">
                             <div className="pd-result-card accent">
@@ -461,7 +458,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                         </div>
                     )}
 
-                    {/* Stats: result */}
+                    {/* Result stats */}
                     {step === 'result' && area !== null && (
                         <div className="pd-result-grid">
                             <div className="pd-result-card accent">
