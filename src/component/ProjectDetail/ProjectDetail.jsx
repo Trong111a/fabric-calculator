@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import {
     ArrowLeft, Folder, Layers, TrendingUp, Package,
     Trash2, X, ZoomIn, Calendar, Ruler, Hash,
-    Camera, Upload, RotateCcw, CheckCircle, Plus, Save
+    Camera, Upload, RotateCcw, CheckCircle, Plus, Save, Pipette
 } from 'lucide-react';
 import { api } from '../../services/api';
 import './ProjectDetail.css';
@@ -18,6 +18,22 @@ function calcArea(pts, ppc) {
     return Math.abs(s) / 2 / (ppc * ppc);
 }
 
+function rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    let h = 0;
+    const s = max === 0 ? 0 : d / max;
+    const v = max;
+    if (max !== min) {
+        switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+        }
+    }
+    return { h: Math.round(h * 180), s: Math.round(s * 255), v: Math.round(v * 255) };
+}
+
 /* ══════════════════════════════════════════════════════════
    SCAN PANEL
 ══════════════════════════════════════════════════════════ */
@@ -25,6 +41,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
     const [image, setImage] = useState(null);
     const [rawImageData, setRawImageData] = useState(null);
     const [step, setStep] = useState('upload');
+    // upload | calibrate | pick | scan | adjust | result
     const [loading, setLoading] = useState(false);
 
     const [rulerPos, setRulerPos] = useState({ x: 100, y: 100 });
@@ -39,6 +56,10 @@ function ScanPanel({ project, cvReady, onSaved }) {
     const [dragPointIdx, setDragPointIdx] = useState(-1);
     const [hoverPointIdx, setHoverPointIdx] = useState(-1);
 
+    // màu rập đã pick
+    const [pickedColor, setPickedColor] = useState(null); // { h, s, v }
+    const [pickedRgb, setPickedRgb] = useState(null);     // { r, g, b } để hiển thị
+
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [fileName, setFileName] = useState('');
     const [quantity, setQuantity] = useState(1);
@@ -48,6 +69,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
     const uploadRef = useRef(null);
     const cameraRef = useRef(null);
 
+    /* ── Draw Canvas ── */
     const drawCanvas = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas || !image) return;
@@ -58,6 +80,21 @@ function ScanPanel({ project, cvReady, onSaved }) {
         const W = image.width;
         const displayScale = canvas.width / (canvas.getBoundingClientRect().width || canvas.width);
 
+        /* Crosshair overlay cho bước pick */
+        if (step === 'pick') {
+            ctx.fillStyle = 'rgba(0,0,0,0.35)';
+            ctx.fillRect(0, 0, W, image.height);
+            const fs = Math.max(22, W / 22);
+            ctx.font = `bold ${fs}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'rgba(0,0,0,0.55)';
+            ctx.fillText('Chạm vào bề mặt rập để lấy màu', W / 2 + 3, image.height / 2 + 3);
+            ctx.fillStyle = '#fff';
+            ctx.fillText('Chạm vào bề mặt rập để lấy màu', W / 2, image.height / 2);
+        }
+
+        /* Thước */
         if (step === 'calibrate') {
             ctx.save();
             ctx.translate(rulerPos.x, rulerPos.y);
@@ -96,6 +133,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
             ctx.restore();
         }
 
+        /* Polygon */
         if (polygonPoints.length > 1 && (step === 'adjust' || step === 'result')) {
             ctx.beginPath();
             polygonPoints.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
@@ -109,7 +147,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
 
             const R = Math.max(8, Math.min(18, 14 * displayScale));
             const RH = R * 1.6;
-
             polygonPoints.forEach((p, i) => {
                 const isHover = i === hoverPointIdx; const isDrag = i === dragPointIdx;
                 if (isHover || isDrag) {
@@ -150,6 +187,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
 
     useEffect(() => { drawCanvas(); }, [drawCanvas]);
 
+    /* ── Pointer helpers ── */
     const toCanvas = (clientX, clientY) => {
         const c = canvasRef.current; const r = c.getBoundingClientRect();
         return {
@@ -170,7 +208,25 @@ function ScanPanel({ project, cvReady, onSaved }) {
         return -1;
     }, [polygonPoints]);
 
+    /* ── Pick màu rập ── */
+    const handleColorPick = (clientX, clientY) => {
+        if (step !== 'pick' || !rawImageData) return;
+        const { x, y } = toCanvas(clientX, clientY);
+        const px = Math.max(0, Math.min(Math.floor(x), rawImageData.width - 1));
+        const py = Math.max(0, Math.min(Math.floor(y), rawImageData.height - 1));
+        const idx = (py * rawImageData.width + px) * 4;
+        const r = rawImageData.data[idx];
+        const g = rawImageData.data[idx + 1];
+        const b = rawImageData.data[idx + 2];
+        const hsv = rgbToHsv(r, g, b);
+        setPickedColor(hsv);
+        setPickedRgb({ r, g, b });
+        setStep('scan');
+    };
+
+    /* ── Pointer down / move / up ── */
     const onPointerDown = (clientX, clientY) => {
+        if (step === 'pick') { handleColorPick(clientX, clientY); return; }
         const { x, y } = toCanvas(clientX, clientY);
         if (step === 'calibrate') {
             const rad = (-rulerAngle * Math.PI) / 180;
@@ -188,6 +244,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
     };
 
     const onPointerMove = (clientX, clientY) => {
+        if (step === 'pick') return;
         const { x, y } = toCanvas(clientX, clientY);
         if (step === 'calibrate' && isDraggingRuler) {
             setRulerPos({ x: x - rulerDragOffset.x, y: y - rulerDragOffset.y }); return;
@@ -205,11 +262,13 @@ function ScanPanel({ project, cvReady, onSaved }) {
     const onPointerUp = () => { setIsDraggingRuler(false); setDragPointIdx(-1); };
 
     const getCursor = () => {
+        if (step === 'pick') return 'crosshair';
         if (step === 'calibrate') return isDraggingRuler ? 'grabbing' : 'grab';
         if (step === 'adjust') return dragPointIdx >= 0 ? 'grabbing' : hoverPointIdx >= 0 ? 'grab' : 'default';
         return 'default';
     };
 
+    /* ── Upload ảnh ── */
     const handleImageUpload = (e) => {
         const file = e.target.files?.[0]; if (!file) return;
         const reader = new FileReader();
@@ -223,6 +282,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 setRawImageData(octx.getImageData(0, 0, img.width, img.height));
                 setStep('calibrate'); setPolygonPoints([]); setArea(null); setPixelsPerCm(null);
                 setDragPointIdx(-1); setHoverPointIdx(-1);
+                setPickedColor(null); setPickedRgb(null);
                 setRulerPos({ x: img.width * 0.74, y: img.height * 0.12 });
                 setRulerLength(img.height * 0.65); setRulerAngle(90);
             };
@@ -231,16 +291,33 @@ function ScanPanel({ project, cvReady, onSaved }) {
         reader.readAsDataURL(file); e.target.value = '';
     };
 
+    /* ── Quét OpenCV ── */
     const scanAndCalc = async () => {
-        if (!rawImageData || !cvReady || !pixelsPerCm) { alert('⚠️ Chưa hiệu chuẩn hoặc OpenCV chưa sẵn sàng'); return; }
+        if (!rawImageData || !cvReady || !pixelsPerCm) {
+            alert('⚠️ Chưa hiệu chuẩn hoặc OpenCV chưa sẵn sàng'); return;
+        }
         setLoading(true);
         try {
             const cv = window.cv;
             const src = cv.matFromImageData(rawImageData);
             const hsv = new cv.Mat();
-            cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB); cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
-            const lo = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [0, 0, 60, 0]);
-            const hi = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [180, 60, 255, 255]);
+            cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB);
+            cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
+
+            /* Range màu động nếu đã pick, fallback range cũ */
+            let loArr, hiArr;
+            if (pickedColor) {
+                const { h, s, v } = pickedColor;
+                const hR = 18, sR = 70, vR = 70;
+                loArr = [Math.max(0, h - hR), Math.max(0, s - sR), Math.max(0, v - vR), 0];
+                hiArr = [Math.min(180, h + hR), Math.min(255, s + sR), Math.min(255, v + vR), 255];
+            } else {
+                loArr = [0, 0, 60, 0];
+                hiArr = [180, 60, 255, 255];
+            }
+            const lo = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), loArr);
+            const hi = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), hiArr);
+
             const mask = new cv.Mat(); cv.inRange(hsv, lo, hi, mask);
             const k1 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
             const cl = new cv.Mat(); cv.morphologyEx(mask, cl, cv.MORPH_OPEN, k1, new cv.Point(-1, -1), 1);
@@ -248,6 +325,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
             const fi = new cv.Mat(); cv.morphologyEx(cl, fi, cv.MORPH_CLOSE, k2, new cv.Point(-1, -1), 1);
             const cs = new cv.MatVector(); const hr = new cv.Mat();
             cv.findContours(fi, cs, hr, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
             let best = null, mx = 0;
             const imgArea = src.cols * src.rows;
             for (let i = 0; i < cs.size(); i++) {
@@ -260,7 +338,8 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 const p = cv.arcLength(c, true); const sc = a * ((4 * Math.PI * a) / (p * p));
                 if (sc > mx) { mx = sc; best = c; }
             }
-            if (!best) throw new Error('Không tìm thấy rập!');
+            if (!best) throw new Error('Không tìm thấy rập! Thử chọn lại màu rập.');
+
             const pe = cv.arcLength(best, true); const ap = new cv.Mat();
             cv.approxPolyDP(best, ap, 0.002 * pe, true);
             let pts = [];
@@ -275,6 +354,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
         } catch (err) { alert(`⚠️ ${err.message}`); } finally { setLoading(false); }
     };
 
+    /* ── Save ── */
     const openSaveModal = () => { setFileName(''); setQuantity(1); setShowSaveModal(true); };
 
     const saveResult = async () => {
@@ -296,11 +376,13 @@ function ScanPanel({ project, cvReady, onSaved }) {
         setImage(null); setRawImageData(null); setStep('upload');
         setPolygonPoints([]); setArea(null); setPixelsPerCm(null);
         setDragPointIdx(-1); setHoverPointIdx(-1);
+        setPickedColor(null); setPickedRgb(null);
     };
 
     const STEPS = [
         { key: 'upload', label: 'Tải ảnh' },
         { key: 'calibrate', label: 'Hiệu chuẩn' },
+        { key: 'pick', label: 'Chọn màu' },
         { key: 'scan', label: 'Quét rập' },
         { key: 'adjust', label: 'Chỉnh sửa' },
         { key: 'result', label: 'Kết quả' },
@@ -362,18 +444,34 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 <>
                     <div className="pd-guide">
                         <span className="pd-guide-icon">
-                            {step === 'calibrate' ? '📏' : step === 'scan' ? '🔍' : step === 'adjust' ? '✋' : '✅'}
+                            {step === 'calibrate' ? '📏' : step === 'pick' ? '🎯' : step === 'scan' ? '🔍' : step === 'adjust' ? '✋' : '✅'}
                         </span>
                         <div>
                             <strong>
                                 {step === 'calibrate' && 'Hiệu chuẩn thước đo'}
+                                {step === 'pick' && 'Chọn màu rập'}
                                 {step === 'scan' && 'Quét & nhận diện rập'}
                                 {step === 'adjust' && 'Chỉnh polygon — kéo từng điểm để khớp viền rập'}
                                 {step === 'result' && 'Hoàn tất — đã lưu thành công'}
                             </strong>
                             <span>
                                 {step === 'calibrate' && 'Kéo thước vào vật chuẩn 30cm · chỉnh độ dài & góc bên dưới'}
-                                {step === 'scan' && `Tỷ lệ: ${pixelsPerCm?.toFixed(2)} px/cm · Folder: ${project.name}`}
+                                {step === 'pick' && 'Chạm / click vào bề mặt rập — hệ thống sẽ nhận màu và tìm biên'}
+                                {step === 'scan' && (
+                                    <>
+                                        Tỷ lệ: {pixelsPerCm?.toFixed(2)} px/cm · Folder: {project.name}
+                                        {pickedRgb && (
+                                            <span style={{ marginLeft: 10, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                                                · Màu rập:
+                                                <span style={{
+                                                    display: 'inline-block', width: 14, height: 14, borderRadius: 3,
+                                                    background: `rgb(${pickedRgb.r},${pickedRgb.g},${pickedRgb.b})`,
+                                                    border: '1px solid #ccc', verticalAlign: 'middle'
+                                                }} />
+                                            </span>
+                                        )}
+                                    </>
+                                )}
                                 {step === 'adjust' && 'Diện tích cập nhật realtime · Xác nhận để đặt tên & lưu'}
                                 {step === 'result' && `${area?.toFixed(2)} cm² · ${(area / 10000)?.toFixed(4)} m²`}
                             </span>
@@ -489,19 +587,30 @@ function ScanPanel({ project, cvReady, onSaved }) {
                     {/* Actions */}
                     <div className="pd-actions">
                         <button className="pd-btn ghost" onClick={reset}><RotateCcw size={15} /> Làm lại</button>
+
                         {step === 'calibrate' && (
-                            <button className="pd-btn primary" onClick={() => { setPixelsPerCm(rulerLength / 30); setStep('scan'); }}>
+                            <button className="pd-btn primary" onClick={() => { setPixelsPerCm(rulerLength / 30); setStep('pick'); }}>
                                 <CheckCircle size={15} /> Xác nhận · {(rulerLength / 30).toFixed(1)} px/cm
                             </button>
                         )}
+
+                        {step === 'pick' && (
+                            <button className="pd-btn ghost" onClick={() => setStep('calibrate')}>
+                                ← Hiệu chuẩn lại
+                            </button>
+                        )}
+
                         {step === 'scan' && (
                             <>
-                                <button className="pd-btn ghost" onClick={() => setStep('calibrate')}>← Hiệu chuẩn lại</button>
+                                <button className="pd-btn ghost" onClick={() => setStep('pick')}>
+                                    <Pipette size={14} /> Chọn lại màu
+                                </button>
                                 <button className="pd-btn primary" disabled={loading} onClick={scanAndCalc}>
                                     <Ruler size={15} /> Quét &amp; Tính
                                 </button>
                             </>
                         )}
+
                         {step === 'adjust' && (
                             <>
                                 <button className="pd-btn ghost" onClick={() => { setStep('scan'); setPolygonPoints([]); setArea(null); }}>
@@ -512,6 +621,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                                 </button>
                             </>
                         )}
+
                         {step === 'result' && (
                             <button className="pd-btn primary" onClick={reset}>
                                 <Upload size={15} /> Đo chi tiết khác

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
     Camera, Upload, RotateCcw, Ruler, CheckCircle,
-    Folder, LogOut, X, Save
+    Folder, LogOut, X, Save, Pipette
 } from 'lucide-react';
 import { api } from '../../services/api';
 import ProjectManager from '../ProjectManager/ProjectManager';
@@ -18,10 +18,27 @@ function calcArea(pts, ppc) {
     return Math.abs(s) / 2 / (ppc * ppc);
 }
 
+function rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    let h = 0;
+    const s = max === 0 ? 0 : d / max;
+    const v = max;
+    if (max !== min) {
+        switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+        }
+    }
+    return { h: Math.round(h * 180), s: Math.round(s * 255), v: Math.round(v * 255) };
+}
+
 export default function ViewMain({ user, onLogout }) {
     const [image, setImage] = useState(null);
     const [rawImageData, setRawImageData] = useState(null);
     const [step, setStep] = useState('upload');
+    // upload | calibrate | pick | scan | adjust | result
     const [loading, setLoading] = useState(false);
     const [cvReady, setCvReady] = useState(false);
 
@@ -36,6 +53,10 @@ export default function ViewMain({ user, onLogout }) {
     const [area, setArea] = useState(null);
     const [dragPointIdx, setDragPointIdx] = useState(-1);
     const [hoverPointIdx, setHoverPointIdx] = useState(-1);
+
+    // màu rập đã pick
+    const [pickedColor, setPickedColor] = useState(null); // { h, s, v }
+    const [pickedRgb, setPickedRgb] = useState(null); // { r, g, b } để hiển thị
 
     const [selectedProject, setSelectedProject] = useState(null);
     const [showProjectManager, setShowProjectManager] = useState(false);
@@ -63,6 +84,9 @@ export default function ViewMain({ user, onLogout }) {
         } else load();
     }, []);
 
+    /* ══════════════════════════════════════════
+       VẼ CANVAS
+    ══════════════════════════════════════════ */
     const drawCanvas = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas || !image) return;
@@ -73,6 +97,22 @@ export default function ViewMain({ user, onLogout }) {
         const W = image.width;
         const displayScale = canvas.width / (canvas.getBoundingClientRect().width || canvas.width);
 
+        /* ── Crosshair overlay cho bước pick ── */
+        if (step === 'pick') {
+            ctx.fillStyle = 'rgba(0,0,0,0.35)';
+            ctx.fillRect(0, 0, W, image.height);
+            // hướng dẫn chữ
+            const fs = Math.max(22, W / 22);
+            ctx.font = `bold ${fs}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'rgba(0,0,0,0.55)';
+            ctx.fillText('Chạm vào bề mặt rập để lấy màu', W / 2 + 3, image.height / 2 + 3);
+            ctx.fillStyle = '#fff';
+            ctx.fillText('Chạm vào bề mặt rập để lấy màu', W / 2, image.height / 2);
+        }
+
+        /* ── Thước ── */
         if (step === 'calibrate') {
             ctx.save();
             ctx.translate(rulerPos.x, rulerPos.y);
@@ -111,6 +151,7 @@ export default function ViewMain({ user, onLogout }) {
             ctx.restore();
         }
 
+        /* ── Polygon ── */
         if (polygonPoints.length > 1 && (step === 'adjust' || step === 'result')) {
             ctx.beginPath();
             polygonPoints.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
@@ -124,7 +165,6 @@ export default function ViewMain({ user, onLogout }) {
 
             const R = Math.max(8, Math.min(18, 14 * displayScale));
             const RH = R * 1.6;
-
             polygonPoints.forEach((p, i) => {
                 const isHover = i === hoverPointIdx; const isDrag = i === dragPointIdx;
                 if (isHover || isDrag) {
@@ -165,6 +205,9 @@ export default function ViewMain({ user, onLogout }) {
 
     useEffect(() => { drawCanvas(); }, [drawCanvas]);
 
+    /* ══════════════════════════════════════════
+       POINTER HELPERS
+    ══════════════════════════════════════════ */
     const toCanvas = (clientX, clientY) => {
         const c = canvasRef.current; const r = c.getBoundingClientRect();
         return {
@@ -185,7 +228,29 @@ export default function ViewMain({ user, onLogout }) {
         return -1;
     }, [polygonPoints]);
 
+    /* ══════════════════════════════════════════
+       PICK MÀU RẬP
+    ══════════════════════════════════════════ */
+    const handleColorPick = (clientX, clientY) => {
+        if (step !== 'pick' || !rawImageData) return;
+        const { x, y } = toCanvas(clientX, clientY);
+        const px = Math.max(0, Math.min(Math.floor(x), rawImageData.width - 1));
+        const py = Math.max(0, Math.min(Math.floor(y), rawImageData.height - 1));
+        const idx = (py * rawImageData.width + px) * 4;
+        const r = rawImageData.data[idx];
+        const g = rawImageData.data[idx + 1];
+        const b = rawImageData.data[idx + 2];
+        const hsv = rgbToHsv(r, g, b);
+        setPickedColor(hsv);
+        setPickedRgb({ r, g, b });
+        setStep('scan');
+    };
+
+    /* ══════════════════════════════════════════
+       POINTER DOWN / MOVE / UP
+    ══════════════════════════════════════════ */
     const onPointerDown = (clientX, clientY) => {
+        if (step === 'pick') { handleColorPick(clientX, clientY); return; }
         const { x, y } = toCanvas(clientX, clientY);
         if (step === 'calibrate') {
             const rad = (-rulerAngle * Math.PI) / 180;
@@ -203,6 +268,7 @@ export default function ViewMain({ user, onLogout }) {
     };
 
     const onPointerMove = (clientX, clientY) => {
+        if (step === 'pick') return;
         const { x, y } = toCanvas(clientX, clientY);
         if (step === 'calibrate' && isDraggingRuler) {
             setRulerPos({ x: x - rulerDragOffset.x, y: y - rulerDragOffset.y }); return;
@@ -220,11 +286,15 @@ export default function ViewMain({ user, onLogout }) {
     const onPointerUp = () => { setIsDraggingRuler(false); setDragPointIdx(-1); };
 
     const getCursor = () => {
+        if (step === 'pick') return 'crosshair';
         if (step === 'calibrate') return isDraggingRuler ? 'grabbing' : 'grab';
         if (step === 'adjust') return dragPointIdx >= 0 ? 'grabbing' : hoverPointIdx >= 0 ? 'grab' : 'default';
         return 'default';
     };
 
+    /* ══════════════════════════════════════════
+       UPLOAD ẢNH
+    ══════════════════════════════════════════ */
     const handleImageUpload = (e) => {
         const file = e.target.files?.[0]; if (!file) return;
         const reader = new FileReader();
@@ -238,6 +308,7 @@ export default function ViewMain({ user, onLogout }) {
                 setRawImageData(octx.getImageData(0, 0, img.width, img.height));
                 setStep('calibrate'); setPolygonPoints([]); setArea(null); setPixelsPerCm(null);
                 setDragPointIdx(-1); setHoverPointIdx(-1);
+                setPickedColor(null); setPickedRgb(null);
                 setRulerPos({ x: img.width * 0.74, y: img.height * 0.12 });
                 setRulerLength(img.height * 0.65); setRulerAngle(90);
             };
@@ -246,16 +317,35 @@ export default function ViewMain({ user, onLogout }) {
         reader.readAsDataURL(file); e.target.value = '';
     };
 
+    /* ══════════════════════════════════════════
+       QUÉT OPENCV
+    ══════════════════════════════════════════ */
     const scanAndCalc = async () => {
-        if (!rawImageData || !cvReady || !pixelsPerCm) { alert('⚠️ Chưa hiệu chuẩn hoặc OpenCV chưa sẵn sàng'); return; }
+        if (!rawImageData || !cvReady || !pixelsPerCm) {
+            alert('⚠️ Chưa hiệu chuẩn hoặc OpenCV chưa sẵn sàng'); return;
+        }
         setLoading(true);
         try {
             const cv = window.cv;
             const src = cv.matFromImageData(rawImageData);
             const hsv = new cv.Mat();
-            cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB); cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
-            const lo = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [0, 0, 60, 0]);
-            const hi = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [180, 60, 255, 255]);
+            cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB);
+            cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
+
+            /* Range màu động nếu đã pick, fallback range cũ */
+            let loArr, hiArr;
+            if (pickedColor) {
+                const { h, s, v } = pickedColor;
+                const hR = 18, sR = 70, vR = 70;
+                loArr = [Math.max(0, h - hR), Math.max(0, s - sR), Math.max(0, v - vR), 0];
+                hiArr = [Math.min(180, h + hR), Math.min(255, s + sR), Math.min(255, v + vR), 255];
+            } else {
+                loArr = [0, 0, 60, 0];
+                hiArr = [180, 60, 255, 255];
+            }
+            const lo = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), loArr);
+            const hi = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), hiArr);
+
             const mask = new cv.Mat(); cv.inRange(hsv, lo, hi, mask);
             const k1 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
             const cl = new cv.Mat(); cv.morphologyEx(mask, cl, cv.MORPH_OPEN, k1, new cv.Point(-1, -1), 1);
@@ -263,6 +353,7 @@ export default function ViewMain({ user, onLogout }) {
             const fi = new cv.Mat(); cv.morphologyEx(cl, fi, cv.MORPH_CLOSE, k2, new cv.Point(-1, -1), 1);
             const cs = new cv.MatVector(); const hr = new cv.Mat();
             cv.findContours(fi, cs, hr, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
             let best = null, mx = 0;
             const imgArea = src.cols * src.rows;
             for (let i = 0; i < cs.size(); i++) {
@@ -275,7 +366,8 @@ export default function ViewMain({ user, onLogout }) {
                 const p = cv.arcLength(c, true); const sc = a * ((4 * Math.PI * a) / (p * p));
                 if (sc > mx) { mx = sc; best = c; }
             }
-            if (!best) throw new Error('Không tìm thấy rập!');
+            if (!best) throw new Error('Không tìm thấy rập! Thử chọn lại màu rập.');
+
             const pe = cv.arcLength(best, true); const ap = new cv.Mat();
             cv.approxPolyDP(best, ap, 0.002 * pe, true);
             let pts = [];
@@ -290,6 +382,9 @@ export default function ViewMain({ user, onLogout }) {
         } catch (err) { alert(`⚠️ ${err.message}`); } finally { setLoading(false); }
     };
 
+    /* ══════════════════════════════════════════
+       LƯU
+    ══════════════════════════════════════════ */
     const openSaveModal = () => { setFileName(''); setQuantity(1); setShowSaveModal(true); };
 
     const saveResult = async () => {
@@ -310,11 +405,16 @@ export default function ViewMain({ user, onLogout }) {
         setImage(null); setRawImageData(null); setStep('upload');
         setPolygonPoints([]); setArea(null); setPixelsPerCm(null);
         setDragPointIdx(-1); setHoverPointIdx(-1);
+        setPickedColor(null); setPickedRgb(null);
     };
 
+    /* ══════════════════════════════════════════
+       STEPS CONFIG
+    ══════════════════════════════════════════ */
     const STEPS = [
         { key: 'upload', label: 'Tải ảnh' },
         { key: 'calibrate', label: 'Hiệu chuẩn' },
+        { key: 'pick', label: 'Chọn màu' },
         { key: 'scan', label: 'Quét rập' },
         { key: 'adjust', label: 'Chỉnh sửa' },
         { key: 'result', label: 'Kết quả' },
@@ -333,7 +433,7 @@ export default function ViewMain({ user, onLogout }) {
     return (
         <div className="vm-wrap">
 
-            {/* ── Header ── */}
+            {/* HEADER */}
             <header className="vm-header">
                 <div className="vm-header-left">
                     <div className="vm-logo"><Ruler size={20} color="#fff" /></div>
@@ -346,9 +446,7 @@ export default function ViewMain({ user, onLogout }) {
                 </div>
                 <div className="vm-header-right">
                     {selectedProject && (
-                        <div className="vm-project-chip">
-                            <Folder size={13} /><span>{selectedProject.name}</span>
-                        </div>
+                        <div className="vm-project-chip"><Folder size={13} /><span>{selectedProject.name}</span></div>
                     )}
                     <button className="vm-folder-btn" onClick={() => setShowProjectManager(true)}>
                         <Folder size={15} /><span>{selectedProject ? 'Đổi folder' : 'Folder'}</span>
@@ -363,16 +461,14 @@ export default function ViewMain({ user, onLogout }) {
                 </div>
             </header>
 
-            {/* ── Step indicator ── */}
+            {/* STEP BAR */}
             {step !== 'upload' && (
                 <div className="vm-steps">
                     {STEPS.map((s, i) => (
                         <React.Fragment key={s.key}>
                             <div className={`vm-step ${i < stepIdx ? 'done' : ''} ${i === stepIdx ? 'active' : ''}`}>
-                                <div className="vm-step-content">
-                                    <div className="vm-step-dot">{i < stepIdx ? '✓' : i + 1}</div>
-                                    <span className="vm-step-label">{s.label}</span>
-                                </div>
+                                <div className="vm-step-dot">{i < stepIdx ? '✓' : i + 1}</div>
+                                <span className="vm-step-label">{s.label}</span>
                             </div>
                             {i < STEPS.length - 1 && (
                                 <div className={`vm-step-line ${i < stepIdx ? 'done' : ''}`} />
@@ -382,10 +478,9 @@ export default function ViewMain({ user, onLogout }) {
                 </div>
             )}
 
-            {/* ── Main ── */}
             <main className="vm-main">
 
-                {/* Upload */}
+                {/* UPLOAD */}
                 {step === 'upload' && (
                     <div className="vm-upload-screen">
                         <div className="vm-upload-hero">
@@ -406,25 +501,41 @@ export default function ViewMain({ user, onLogout }) {
                     </div>
                 )}
 
-                {/* Calibrate / Scan / Adjust / Result */}
+                {/* CANVAS AREA */}
                 {image && step !== 'upload' && (
                     <div className="vm-section">
 
                         {/* Guide */}
                         <div className="vm-guide">
                             <span className="vm-guide-icon">
-                                {step === 'calibrate' ? '📏' : step === 'scan' ? '🔍' : step === 'adjust' ? '✋' : '✅'}
+                                {step === 'calibrate' ? '📏' : step === 'pick' ? '🎯' : step === 'scan' ? '🔍' : step === 'adjust' ? '✋' : '✅'}
                             </span>
                             <div>
                                 <strong>
                                     {step === 'calibrate' && 'Hiệu chuẩn thước đo'}
+                                    {step === 'pick' && 'Chọn màu rập'}
                                     {step === 'scan' && 'Quét & nhận diện rập'}
                                     {step === 'adjust' && 'Chỉnh polygon — kéo từng điểm để khớp viền rập'}
                                     {step === 'result' && 'Hoàn tất — đã lưu thành công'}
                                 </strong>
                                 <span>
                                     {step === 'calibrate' && 'Kéo thước vào vật chuẩn 30cm · chỉnh độ dài & góc bên dưới'}
-                                    {step === 'scan' && `Tỷ lệ: ${pixelsPerCm?.toFixed(2)} px/cm${selectedProject ? ` · Folder: ${selectedProject.name}` : ''}`}
+                                    {step === 'pick' && 'Chạm / click vào bề mặt rập — hệ thống sẽ nhận màu và tìm biên'}
+                                    {step === 'scan' && (
+                                        <>
+                                            Tỷ lệ: {pixelsPerCm?.toFixed(2)} px/cm
+                                            {pickedRgb && (
+                                                <span style={{ marginLeft: 10, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                                                    · Màu rập:
+                                                    <span style={{
+                                                        display: 'inline-block', width: 14, height: 14, borderRadius: 3,
+                                                        background: `rgb(${pickedRgb.r},${pickedRgb.g},${pickedRgb.b})`,
+                                                        border: '1px solid #ccc', verticalAlign: 'middle'
+                                                    }} />
+                                                </span>
+                                            )}
+                                        </>
+                                    )}
                                     {step === 'adjust' && 'Diện tích cập nhật realtime · Xác nhận để đặt tên & lưu'}
                                     {step === 'result' && `${area?.toFixed(2)} cm² · ${(area / 10000)?.toFixed(4)} m²`}
                                 </span>
@@ -456,15 +567,14 @@ export default function ViewMain({ user, onLogout }) {
                             )}
                         </div>
 
-                        {/* Calibrate controls */}
+                        {/* Controls: calibrate */}
                         {step === 'calibrate' && (
                             <div className="vm-controls">
                                 <div className="vm-control-group">
                                     <label>Chiều dài thước</label>
                                     <div className="vm-slider-row">
                                         <input type="range" min="100" max={image.height}
-                                            value={rulerLength}
-                                            onChange={e => setRulerLength(Number(e.target.value))} />
+                                            value={rulerLength} onChange={e => setRulerLength(Number(e.target.value))} />
                                         <div className="vm-badges">
                                             <span className="vm-badge">{Math.round(rulerLength)} px</span>
                                             <span className="vm-badge accent">{(rulerLength / 30).toFixed(1)} px/cm</span>
@@ -476,12 +586,9 @@ export default function ViewMain({ user, onLogout }) {
                                     <div className="vm-angle-row">
                                         <button onClick={() => setRulerAngle(a => (a - 10 + 360) % 360)}>↺ −10°</button>
                                         <button onClick={() => setRulerAngle(a => (a - 1 + 360) % 360)}>−1°</button>
-                                        <input
-                                            type="number" min="0" max="359"
-                                            value={rulerAngle}
+                                        <input type="number" min="0" max="359" value={rulerAngle}
                                             onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setRulerAngle(((v % 360) + 360) % 360); }}
-                                            className="vm-angle-input"
-                                        />
+                                            className="vm-angle-input" />
                                         <span className="vm-angle-deg">°</span>
                                         <button onClick={() => setRulerAngle(a => (a + 1) % 360)}>+1°</button>
                                         <button onClick={() => setRulerAngle(a => (a + 10) % 360)}>↻ +10°</button>
@@ -492,7 +599,7 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         )}
 
-                        {/* Adjust result cards */}
+                        {/* Stats: adjust */}
                         {step === 'adjust' && (
                             <div className="vm-result-grid">
                                 <div className="vm-result-card accent">
@@ -514,7 +621,7 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         )}
 
-                        {/* Result cards */}
+                        {/* Stats: result */}
                         {step === 'result' && area !== null && (
                             <div className="vm-result-grid">
                                 <div className="vm-result-card accent">
@@ -542,26 +649,35 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         )}
 
-                        {/* Actions */}
+                        {/* ACTIONS */}
                         <div className="vm-actions">
                             <button className="vm-btn ghost" onClick={reset}>
                                 <RotateCcw size={15} /> Làm lại
                             </button>
+
                             {step === 'calibrate' && (
-                                <button className="vm-btn primary" onClick={() => { setPixelsPerCm(rulerLength / 30); setStep('scan'); }}>
+                                <button className="vm-btn primary" onClick={() => { setPixelsPerCm(rulerLength / 30); setStep('pick'); }}>
                                     <CheckCircle size={15} /> Xác nhận · {(rulerLength / 30).toFixed(1)} px/cm
                                 </button>
                             )}
+
+                            {step === 'pick' && (
+                                <button className="vm-btn ghost" onClick={() => setStep('calibrate')}>
+                                    ← Hiệu chuẩn lại
+                                </button>
+                            )}
+
                             {step === 'scan' && (
                                 <>
-                                    <button className="vm-btn ghost" onClick={() => setStep('calibrate')}>
-                                        ← Hiệu chuẩn lại
+                                    <button className="vm-btn ghost" onClick={() => setStep('pick')}>
+                                        <Pipette size={14} /> Chọn lại màu
                                     </button>
                                     <button className="vm-btn primary" disabled={loading} onClick={scanAndCalc}>
                                         <Ruler size={15} /> Quét &amp; Tính
                                     </button>
                                 </>
                             )}
+
                             {step === 'adjust' && (
                                 <>
                                     <button className="vm-btn ghost" onClick={() => { setStep('scan'); setPolygonPoints([]); setArea(null); }}>
@@ -572,6 +688,7 @@ export default function ViewMain({ user, onLogout }) {
                                     </button>
                                 </>
                             )}
+
                             {step === 'result' && (
                                 <button className="vm-btn primary" onClick={reset}>
                                     <Upload size={15} /> Đo rập khác
@@ -583,57 +700,41 @@ export default function ViewMain({ user, onLogout }) {
                 )}
             </main>
 
-            {/* ── Save Modal ── */}
+            {/* SAVE MODAL */}
             {showSaveModal && (
                 <div className="vm-modal-bg" onClick={e => e.target === e.currentTarget && setShowSaveModal(false)}>
                     <div className="vm-modal">
-                        <button className="vm-modal-close" onClick={() => setShowSaveModal(false)}>
-                            <X size={18} />
-                        </button>
+                        <button className="vm-modal-close" onClick={() => setShowSaveModal(false)}><X size={18} /></button>
                         <h3>Lưu chi tiết</h3>
                         <p className="vm-modal-sub">
                             Diện tích: <strong>{area?.toFixed(2)} cm²</strong>
                             {selectedProject && <> · Folder: <strong>{selectedProject.name}</strong></>}
                         </p>
-
                         <div className="vm-field-group">
-                            <label className="vm-field-label">
-                                Tên chi tiết <span className="vm-field-required">*</span>
-                            </label>
+                            <label className="vm-field-label">Tên chi tiết <span className="vm-field-required">*</span></label>
                             <input
-                                className="vm-field-input"
-                                type="text"
-                                value={fileName}
+                                className="vm-field-input" type="text" value={fileName}
                                 onChange={e => setFileName(e.target.value)}
                                 placeholder="VD: Thân trước, Tay áo, Cổ áo..."
-                                maxLength={100}
-                                autoFocus
+                                maxLength={100} autoFocus
                                 onKeyDown={e => e.key === 'Enter' && !saving && fileName.trim() && saveResult()}
                             />
                         </div>
-
                         <div className="vm-field-group">
                             <label className="vm-field-label">Số lượng</label>
                             <div className="vm-qty-control">
                                 <button onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</button>
-                                <input
-                                    type="number" min="1" max="9999"
-                                    value={quantity}
-                                    onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                                />
+                                <input type="number" min="1" max="9999" value={quantity}
+                                    onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} />
                                 <button onClick={() => setQuantity(q => Math.min(9999, q + 1))}>+</button>
                             </div>
                         </div>
-
                         <div className="vm-modal-preview">
                             <div><span>Tổng</span><strong>{((area || 0) * quantity).toFixed(2)} cm²</strong></div>
                             <div><span>Quy đổi</span><strong>{(((area || 0) * quantity) / 10000).toFixed(4)} m²</strong></div>
                         </div>
-
                         <div className="vm-modal-actions">
-                            <button className="vm-btn ghost" onClick={() => setShowSaveModal(false)} disabled={saving}>
-                                Hủy
-                            </button>
+                            <button className="vm-btn ghost" onClick={() => setShowSaveModal(false)} disabled={saving}>Hủy</button>
                             <button className="vm-btn primary" onClick={saveResult} disabled={saving || !fileName.trim()}>
                                 <Save size={15} />{saving ? 'Đang lưu...' : 'Lưu kết quả'}
                             </button>
@@ -641,7 +742,6 @@ export default function ViewMain({ user, onLogout }) {
                     </div>
                 </div>
             )}
-
         </div>
     );
 }
