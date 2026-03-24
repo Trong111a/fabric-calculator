@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
-/* ─── Root ───────────────────────────────────────────────────────── */
 .pd-wrap {
     min-height: 100vh;
     background: #f4f6fb;
@@ -9,7 +8,6 @@
     flex-direction: column;
 }
 
-/* ─── Header ─────────────────────────────────────────────────────── */
 .pd-header {
     display: flex;
     align-items: center;
@@ -60,7 +58,6 @@
     margin: 2px 0 0; font-size: 12px; color: #9ca3af;
 }
 
-/* ─── Tabs ───────────────────────────────────────────────────────── */
 .pd-tabs {
     display: flex;
     background: #fff;
@@ -87,7 +84,7 @@
     border-bottom-color: #6366f1;
 }
 
-/* ─── Stats bar ──────────────────────────────────────────────────── */
+
 .pd-stats-bar {
     display: flex; flex-wrap: wrap; gap: 16px;
     padding: 20px 28px;
@@ -117,7 +114,7 @@
     text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;
 }
 
-/* ─── Grid ───────────────────────────────────────────────────────── */
+
 .pd-main { padding: 0 28px 40px; }
 
 .pd-grid {
@@ -197,7 +194,6 @@
 }
 .pd-area-unit { font-size: 12px; color: #9ca3af; font-weight: 500; }
 
-/* ─── Loading / Empty ────────────────────────────────────────────── */
 .pd-loading {
     display: flex; align-items: center; justify-content: center;
     gap: 10px; padding: 60px 0; color: #9ca3af; font-size: 14px;
@@ -234,7 +230,6 @@
 }
 .pd-empty-action:hover { transform: translateY(-1px); }
 
-/* ─── Scan tab ───────────────────────────────────────────────────── */
 .pd-scan-wrap {
     padding: 20px 28px 40px;
     max-width: 900px;
@@ -277,7 +272,6 @@
 .pd-upload-btn.primary:hover { background: #4f46e5; }
 .pd-upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ─── Guide ──────────────────────────────────────────────────────── */
 .pd-guide {
     display: flex; align-items: flex-start; gap: 12px;
     padding: 14px 18px;
@@ -290,7 +284,6 @@
 .pd-guide span   { font-size: 13px; color: #6b7280; }
 .pd-guide b      { color: #6366f1; }
 
-/* ─── CV badge ───────────────────────────────────────────────────── */
 .pd-cv-badge {
     display: inline-block; font-size: 11px;
     color: #f59e0b; background: #fef3c7;
@@ -298,7 +291,6 @@
 }
 .pd-cv-badge.ready { color: #059669; background: #d1fae5; }
 
-/* ─── Canvas ─────────────────────────────────────────────────────── */
 .pd-canvas-wrap {
     position: relative; background: #1e1e2e;
     border-radius: 12px; overflow: hidden;
@@ -324,7 +316,6 @@
     animation: pd-spin 0.8s linear infinite;
 }
 
-/* ─── Controls ───────────────────────────────────────────────────── */
 .pd-controls {
     display: flex; flex-direction: column; gap: 16px;
     padding: 18px 20px;
@@ -375,7 +366,6 @@
 }
 .pd-angle-deg { font-size: 13px; color: #9ca3af; margin-left: -4px; }
 
-/* ─── Actions / Buttons ──────────────────────────────────────────── */
 .pd-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 
 .pd-btn {
@@ -404,7 +394,6 @@
 }
 .pd-btn.success:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(16,185,129,0.4); }
 
-/* ─── Result grid ────────────────────────────────────────────────── */
 .pd-result-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -431,7 +420,7 @@
     font-family: 'DM Sans', sans-serif; font-weight: 500;
 }
 
-/* ─── Area badge on canvas ───────────────────────────────────────── */
+
 .pd-area-badge {
     position: absolute; top: 12px; right: 12px;
     background: rgba(99,102,241,0.9); color: #fff;
@@ -441,7 +430,6 @@
     backdrop-filter: blur(4px); pointer-events: none;
 }
 
-/* ─── Step bar ───────────────────────────────────────────────────── */
 .pd-step-bar {
     display: flex;
     align-items: center;
@@ -500,7 +488,6 @@
 }
 .pd-step-line.done { background: #10b981; }
 
-/* ─── Modal ──────────────────────────────────────────────────────── */
 .pd-modal-bg {
     position: fixed; inset: 0;
     background: rgba(15,14,23,0.72);
@@ -559,7 +546,6 @@
     padding-top: 12px; border-top: 1px solid #f0f2f8;
 }
 
-/* ─── Qty modal ──────────────────────────────────────────────────── */
 .pd-qty-modal {
     position: relative;
     background: #fff; border-radius: 16px;
@@ -600,7 +586,6 @@
 .pd-qty-preview strong { font-size: 15px; font-weight: 700; color: #6366f1; font-family: 'DM Mono', monospace; }
 .pd-qty-actions { display: flex; gap: 10px; justify-content: center; }
 
-/* ─── Field group ────────────────────────────────────────────────── */
 .pd-field-group {
     display: flex; flex-direction: column; gap: 6px;
     margin-bottom: 16px; text-align: left;
@@ -617,7 +602,7 @@
 .pd-field-input:focus      { border-color: #6366f1; background: #fff; }
 .pd-field-input::placeholder { color: #c4c9d9; }
 
-/* ─── Close btn qty modal ────────────────────────────────────────── */
+
 .pd-modal-x {
     position: absolute; top: 14px; right: 14px;
     width: 32px; height: 32px; border-radius: 8px;
@@ -628,7 +613,6 @@
 }
 .pd-modal-x:hover { background: #fee2e2; color: #ef4444; border-color: #fca5a5; }
 
-/* ─── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .pd-header   { padding: 14px 16px; }
     .pd-tabs     { padding: 0 16px; }

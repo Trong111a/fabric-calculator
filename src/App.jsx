@@ -23,7 +23,6 @@ export default function App() {
   const logout = () => { setUser(null); setPage('login'); };
 
   const nav = (p) => {
-    // Khi điều hướng ra khỏi reset-password, xóa URL params
     if (page === 'reset-password') {
       window.history.pushState({}, '', '/');
     }

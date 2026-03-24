@@ -6,7 +6,7 @@ import './ForgotPass.css';
 
 function ForgotPass({ onNavigate }) {
     const [email, setEmail] = useState('');
-    const [status, setStatus] = useState('idle'); // idle | loading | success | error
+    const [status, setStatus] = useState('idle');
     const [errorMsg, setErrorMsg] = useState('');
 
     const handleSend = async () => {

@@ -6,7 +6,6 @@ const path = require('path');
 
 const router = express.Router();
 
-// GET /api/measurements
 router.get('/', auth, async (req, res) => {
     try {
         const result = await query(
@@ -21,7 +20,6 @@ router.get('/', auth, async (req, res) => {
     }
 });
 
-// POST /api/measurements
 router.post('/', auth, async (req, res) => {
     try {
         const {
@@ -39,7 +37,6 @@ router.post('/', auth, async (req, res) => {
         let imageUrl = null;
         let thumbnailUrl = null;
 
-        // Save base64 image
         if (image_data) {
             const base64Data = image_data.replace(/^data:image\/\w+;base64,/, '');
             const buffer = Buffer.from(base64Data, 'base64');
@@ -72,7 +69,6 @@ router.post('/', auth, async (req, res) => {
         );
 
         const measurement = result.rows[0];
-        // Nếu có project_id, thêm vào project
         if (project_id) {
             await query(
                 `INSERT INTO project_measurements (project_id, measurement_id) 
@@ -87,7 +83,6 @@ router.post('/', auth, async (req, res) => {
     }
 });
 
-// DELETE /api/measurements/:id
 router.delete('/:id', auth, async (req, res) => {
     try {
         await query(

@@ -34,14 +34,10 @@ function rgbToHsv(r, g, b) {
     return { h: Math.round(h * 180), s: Math.round(s * 255), v: Math.round(v * 255) };
 }
 
-/* ══════════════════════════════════════════════════════════
-   SCAN PANEL
-══════════════════════════════════════════════════════════ */
 function ScanPanel({ project, cvReady, onSaved }) {
     const [image, setImage] = useState(null);
     const [rawImageData, setRawImageData] = useState(null);
     const [step, setStep] = useState('upload');
-    // upload | calibrate | pick | scan | adjust | result
     const [loading, setLoading] = useState(false);
 
     const [rulerPos, setRulerPos] = useState({ x: 100, y: 100 });
@@ -56,9 +52,8 @@ function ScanPanel({ project, cvReady, onSaved }) {
     const [dragPointIdx, setDragPointIdx] = useState(-1);
     const [hoverPointIdx, setHoverPointIdx] = useState(-1);
 
-    // màu rập đã pick
-    const [pickedColor, setPickedColor] = useState(null); // { h, s, v }
-    const [pickedRgb, setPickedRgb] = useState(null);     // { r, g, b } để hiển thị
+    const [pickedColor, setPickedColor] = useState(null); 
+    const [pickedRgb, setPickedRgb] = useState(null);    
 
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [fileName, setFileName] = useState('');
@@ -69,7 +64,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
     const uploadRef = useRef(null);
     const cameraRef = useRef(null);
 
-    /* ── Draw Canvas ── */
     const drawCanvas = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas || !image) return;
@@ -80,7 +74,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
         const W = image.width;
         const displayScale = canvas.width / (canvas.getBoundingClientRect().width || canvas.width);
 
-        /* Crosshair overlay cho bước pick */
         if (step === 'pick') {
             ctx.fillStyle = 'rgba(0,0,0,0.35)';
             ctx.fillRect(0, 0, W, image.height);
@@ -94,7 +87,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
             ctx.fillText('Chạm vào bề mặt rập để lấy màu', W / 2, image.height / 2);
         }
 
-        /* Thước */
         if (step === 'calibrate') {
             ctx.save();
             ctx.translate(rulerPos.x, rulerPos.y);
@@ -133,7 +125,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
             ctx.restore();
         }
 
-        /* Polygon */
         if (polygonPoints.length > 1 && (step === 'adjust' || step === 'result')) {
             ctx.beginPath();
             polygonPoints.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
@@ -187,7 +178,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
 
     useEffect(() => { drawCanvas(); }, [drawCanvas]);
 
-    /* ── Pointer helpers ── */
     const toCanvas = (clientX, clientY) => {
         const c = canvasRef.current; const r = c.getBoundingClientRect();
         return {
@@ -208,7 +198,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
         return -1;
     }, [polygonPoints]);
 
-    /* ── Pick màu rập ── */
     const handleColorPick = (clientX, clientY) => {
         if (step !== 'pick' || !rawImageData) return;
         const { x, y } = toCanvas(clientX, clientY);
@@ -224,7 +213,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
         setStep('scan');
     };
 
-    /* ── Pointer down / move / up ── */
     const onPointerDown = (clientX, clientY) => {
         if (step === 'pick') { handleColorPick(clientX, clientY); return; }
         const { x, y } = toCanvas(clientX, clientY);
@@ -268,7 +256,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
         return 'default';
     };
 
-    /* ── Upload ảnh ── */
     const handleImageUpload = (e) => {
         const file = e.target.files?.[0]; if (!file) return;
         const reader = new FileReader();
@@ -291,7 +278,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
         reader.readAsDataURL(file); e.target.value = '';
     };
 
-    /* ── Quét OpenCV ── */
     const scanAndCalc = async () => {
         if (!rawImageData || !cvReady || !pixelsPerCm) {
             alert('⚠️ Chưa hiệu chuẩn hoặc OpenCV chưa sẵn sàng'); return;
@@ -304,7 +290,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
             cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB);
             cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
 
-            /* Range màu động nếu đã pick, fallback range cũ */
             let loArr, hiArr;
             if (pickedColor) {
                 const { h, s, v } = pickedColor;
@@ -354,7 +339,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
         } catch (err) { alert(`⚠️ ${err.message}`); } finally { setLoading(false); }
     };
 
-    /* ── Save ── */
     const openSaveModal = () => { setFileName(''); setQuantity(1); setShowSaveModal(true); };
 
     const saveResult = async () => {
@@ -392,14 +376,12 @@ function ScanPanel({ project, cvReady, onSaved }) {
     return (
         <div className="pd-scan-wrap">
 
-            {/* CV badge */}
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <span className={`pd-cv-badge ${cvReady ? 'ready' : ''}`}>
                     {cvReady ? '✓ OpenCV sẵn sàng' : '⏳ Đang tải OpenCV...'}
                 </span>
             </div>
 
-            {/* Step bar */}
             {step !== 'upload' && (
                 <div className="pd-step-bar">
                     {STEPS.map((s, i) => (
@@ -418,7 +400,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 </div>
             )}
 
-            {/* Upload */}
             {step === 'upload' && (
                 <div className="pd-upload-screen">
                     <div className="pd-upload-hero">
@@ -439,7 +420,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 </div>
             )}
 
-            {/* Canvas section */}
             {image && step !== 'upload' && (
                 <>
                     <div className="pd-guide">
@@ -502,7 +482,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
                         )}
                     </div>
 
-                    {/* Calibrate controls */}
                     {step === 'calibrate' && (
                         <div className="pd-controls">
                             <div className="pd-control-group">
@@ -534,7 +513,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
                         </div>
                     )}
 
-                    {/* Adjust stats */}
                     {step === 'adjust' && (
                         <div className="pd-result-grid">
                             <div className="pd-result-card accent">
@@ -556,7 +534,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
                         </div>
                     )}
 
-                    {/* Result stats */}
                     {step === 'result' && area !== null && (
                         <div className="pd-result-grid">
                             <div className="pd-result-card accent">
@@ -584,7 +561,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
                         </div>
                     )}
 
-                    {/* Actions */}
                     <div className="pd-actions">
                         <button className="pd-btn ghost" onClick={reset}><RotateCcw size={15} /> Làm lại</button>
 
@@ -631,7 +607,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 </>
             )}
 
-            {/* Save modal */}
             {showSaveModal && (
                 <div className="pd-modal-bg" onClick={e => e.target === e.currentTarget && setShowSaveModal(false)}>
                     <div className="pd-qty-modal">
@@ -676,9 +651,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
     );
 }
 
-/* ══════════════════════════════════════════════════════════
-   PROJECT DETAIL — MAIN COMPONENT
-══════════════════════════════════════════════════════════ */
+
 export default function ProjectDetail({ project, onBack }) {
     const [tab, setTab] = useState('list');
     const [measurements, setMeasurements] = useState([]);
@@ -733,7 +706,6 @@ export default function ProjectDetail({ project, onBack }) {
     return (
         <div className="pd-wrap">
 
-            {/* Header */}
             <header className="pd-header">
                 <button className="pd-back-btn" onClick={onBack}>
                     <ArrowLeft size={18} /><span>Quay lại</span>
@@ -750,7 +722,6 @@ export default function ProjectDetail({ project, onBack }) {
                 <div style={{ width: 110, flexShrink: 0 }} />
             </header>
 
-            {/* Tabs */}
             <div className="pd-tabs">
                 <button className={`pd-tab${tab === 'list' ? ' active' : ''}`} onClick={() => setTab('list')}>
                     <Layers size={15} /> Danh sách ({measurements.length})
@@ -760,7 +731,6 @@ export default function ProjectDetail({ project, onBack }) {
                 </button>
             </div>
 
-            {/* Tab: List */}
             {tab === 'list' && (
                 <>
                     <div className="pd-stats-bar">
@@ -836,7 +806,6 @@ export default function ProjectDetail({ project, onBack }) {
                 </>
             )}
 
-            {/* Tab: Scan */}
             {tab === 'scan' && (
                 <ScanPanel
                     project={project}
@@ -845,7 +814,6 @@ export default function ProjectDetail({ project, onBack }) {
                 />
             )}
 
-            {/* Detail Modal */}
             {selected && (
                 <div className="pd-modal-bg" onClick={() => setSelected(null)}>
                     <div className="pd-modal" onClick={e => e.stopPropagation()}>

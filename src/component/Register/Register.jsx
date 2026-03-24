@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { User, Mail, Lock, ArrowLeft } from 'lucide-react';
 import './Register.css';
-import { api } from '../../services/api';  // ← Import API
+import { api } from '../../services/api'; 
 
 function Register({ onNavigate }) {
     const [form, setForm] = useState({
@@ -13,14 +13,13 @@ function Register({ onNavigate }) {
     });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
-    const [loading, setLoading] = useState(false);  // ← Thêm loading
+    const [loading, setLoading] = useState(false);  
 
     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
-    const handleRegister = async () => {  // ← Thêm async
+    const handleRegister = async () => {  
         setError('');
 
-        // Validate
         if (!form.name || !form.email || !form.password) {
             return setError('Vui lòng điền đầy đủ!');
         }
@@ -34,7 +33,7 @@ function Register({ onNavigate }) {
         setLoading(true);
 
         try {
-            await api.register(form.name, form.email, form.password);  // ← Gọi API
+            await api.register(form.name, form.email, form.password); 
             setSuccess(true);
             setTimeout(() => onNavigate('login'), 1500);
         } catch (err) {

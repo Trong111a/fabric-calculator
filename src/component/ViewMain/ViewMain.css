@@ -10,7 +10,6 @@
     flex-direction: column;
 }
 
-/* ── Header ──────────────────────────────────────────────────── */
 .vm-header {
     display: flex;
     align-items: center;
@@ -129,7 +128,6 @@
 }
 .vm-logout-btn:hover { background: #fee2e2; color: #ef4444; border-color: #fca5a5; }
 
-/* ── Step indicator ──────────────────────────────────────────── */
 .vm-steps {
     display: flex;
     align-items: center;
@@ -197,14 +195,12 @@
 }
 .vm-step-line.done { background: #10b981; }
 
-/* ── Main ────────────────────────────────────────────────────── */
 .vm-main {
     flex: 1;
     padding: 24px;
     overflow-y: auto;
 }
 
-/* ── Upload screen ───────────────────────────────────────────── */
 .vm-upload-screen {
     max-width: 520px;
     margin: 40px auto;
@@ -265,7 +261,6 @@
 .vm-upload-btn.primary:hover { background: #4f46e5; border-color: #4f46e5; }
 .vm-upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ── Section ─────────────────────────────────────────────────── */
 .vm-section {
     max-width: 900px;
     margin: 0 auto;
@@ -274,7 +269,6 @@
     gap: 16px;
 }
 
-/* ── Guide box ───────────────────────────────────────────────── */
 .vm-guide {
     display: flex;
     align-items: flex-start;
@@ -291,7 +285,6 @@
 .vm-guide span   { font-size: 13px; color: #6b7280; }
 .vm-guide b      { color: #6366f1; }
 
-/* ── Canvas ──────────────────────────────────────────────────── */
 .vm-canvas-wrap {
     position: relative;
     background: #1e1e2e;
@@ -326,7 +319,7 @@
 }
 @keyframes vm-spin { to { transform: rotate(360deg); } }
 
-/* ── Controls ────────────────────────────────────────────────── */
+
 .vm-controls {
     display: flex;
     flex-direction: column;
@@ -397,7 +390,7 @@
     font-size: 13px; color: #9ca3af; margin-left: -4px;
 }
 
-/* ── Actions ─────────────────────────────────────────────────── */
+
 .vm-actions {
     display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
 }
@@ -435,7 +428,6 @@
 }
 .vm-btn.success:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(16,185,129,0.4); }
 
-/* ── Result grid ─────────────────────────────────────────────── */
 .vm-result-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -477,7 +469,6 @@
     font-weight: 500;
 }
 
-/* ── Area badge on canvas ────────────────────────────────────── */
 .vm-area-badge {
     position: absolute;
     top: 12px; right: 12px;
@@ -491,7 +482,6 @@
     pointer-events: none;
 }
 
-/* ── Modal ───────────────────────────────────────────────────── */
 .vm-modal-bg {
     position: fixed; inset: 0;
     background: rgba(15,14,23,0.5);
@@ -548,7 +538,6 @@
 
 .vm-modal-actions { display: flex; gap: 10px; justify-content: center; }
 
-/* ── Field group (modal inputs) ──────────────────────────────── */
 .vm-field-group {
     display: flex; flex-direction: column; gap: 6px;
     margin-bottom: 16px; text-align: left;
@@ -566,10 +555,8 @@
 .vm-field-input:focus      { border-color: #6366f1; background: #fff; }
 .vm-field-input::placeholder { color: #c4c9d9; }
 
-/* ── Misc ────────────────────────────────────────────────────── */
 .vm-hidden { display: none; }
 
-/* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .vm-main { padding: 16px; }
     .vm-result-grid { grid-template-columns: repeat(2, 1fr); }

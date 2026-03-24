@@ -22,7 +22,6 @@ const initDatabase = async () => {
             )
         `);
 
-        // Thêm cột reset_token nếu bảng đã tồn tại
         await pool.query(`
             ALTER TABLE users
             ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255),
@@ -47,8 +46,6 @@ const initDatabase = async () => {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-
-        // Thêm cột quantity nếu bảng đã tồn tại
         await pool.query(`
             ALTER TABLE measurements
             ADD COLUMN IF NOT EXISTS quantity INTEGER DEFAULT 1
@@ -73,7 +70,6 @@ const initDatabase = async () => {
             )
         `);
 
-        // Seed admin
         const bcrypt = require('bcryptjs');
         const hashedPassword = await bcrypt.hash('admin123', 10);
         await pool.query(`
@@ -89,7 +85,6 @@ const initDatabase = async () => {
     }
 };
 
-// Chạy trực tiếp nếu gọi: node initDB.js
 if (require.main === module) {
     initDatabase()
         .then(() => process.exit(0))

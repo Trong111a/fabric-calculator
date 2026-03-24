@@ -4,7 +4,6 @@ const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get all projects with stats
 router.get('/', auth, async (req, res) => {
     try {
         const result = await query(
@@ -26,7 +25,6 @@ router.get('/', auth, async (req, res) => {
     }
 });
 
-// Create project
 router.post('/', auth, async (req, res) => {
     try {
         const { name, description } = req.body;
@@ -42,7 +40,6 @@ router.post('/', auth, async (req, res) => {
     }
 });
 
-// Get project detail with all measurements
 router.get('/:id', auth, async (req, res) => {
     try {
         const projectResult = await query(
@@ -79,7 +76,6 @@ router.get('/:id', auth, async (req, res) => {
     }
 });
 
-// Add measurement to project
 router.post('/:id/measurements', auth, async (req, res) => {
     try {
         const { measurement_id } = req.body;
@@ -97,7 +93,6 @@ router.post('/:id/measurements', auth, async (req, res) => {
     }
 });
 
-// Delete project
 router.delete('/:id', auth, async (req, res) => {
     try {
         await query(

@@ -10,7 +10,6 @@ const prefixImageUrls = (data) => {
             result.image_url = `${BASE_URL}${result.image_url}`;
         if (result.thumbnail_url && result.thumbnail_url.startsWith('/'))
             result.thumbnail_url = `${BASE_URL}${result.thumbnail_url}`;
-        // Xử lý nested (vd: project.measurements[])
         if (result.measurements) result.measurements = result.measurements.map(prefixImageUrls);
         return result;
     }
@@ -45,10 +44,9 @@ class ApiService {
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Lỗi server');
-        return prefixImageUrls(data); // ← áp dụng prefix tự động
+        return prefixImageUrls(data); 
     }
 
-    // Auth
     login = (email, password) => this.request('/auth/login', {
         method: 'POST', body: { email, password }
     });
@@ -59,7 +57,6 @@ class ApiService {
 
     getMe = () => this.request('/auth/me');
 
-    // Measurements
     getMeasurements = () => this.request('/measurements');
 
     createMeasurement = (data) => this.request('/measurements', {
@@ -70,7 +67,6 @@ class ApiService {
         method: 'DELETE'
     });
 
-    // Projects
     getProjects = () => this.request('/projects');
 
     createProject = (data) => this.request('/projects', { method: 'POST', body: data });
@@ -83,7 +79,6 @@ class ApiService {
 
     deleteProject = (id) => this.request(`/projects/${id}`, { method: 'DELETE' });
 
-    // Forgot / Reset password
     forgotPassword = (email) => this.request('/auth/forgot-password', {
         method: 'POST',
         body: { email }

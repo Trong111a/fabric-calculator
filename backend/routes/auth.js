@@ -10,7 +10,6 @@ const router = express.Router();
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// POST /api/auth/register
 router.post('/register', async (req, res) => {
     try {
         const { email, password, name } = req.body;
@@ -34,7 +33,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// POST /api/auth/login
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -60,12 +58,10 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// GET /api/auth/me
 router.get('/me', auth, (req, res) => {
     res.json({ user: req.user });
 });
 
-// ── POST /api/auth/forgot-password ─────────────────────────────
 router.post('/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
@@ -76,14 +72,13 @@ router.post('/forgot-password', async (req, res) => {
             [email.toLowerCase()]
         );
 
-        // Luôn trả success để tránh lộ thông tin user
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Email chưa được đăng ký' });
         }
 
         const user = result.rows[0];
         const resetToken = crypto.randomBytes(32).toString('hex');
-        const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 giờ
+        const resetExpires = new Date(Date.now() + 60 * 60 * 1000);
 
         await query(
             'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3',
@@ -200,7 +195,6 @@ router.post('/forgot-password', async (req, res) => {
     }
 });
 
-// ── POST /api/auth/reset-password ──────────────────────────────
 router.post('/reset-password', async (req, res) => {
     try {
         const { token, newPassword } = req.body;

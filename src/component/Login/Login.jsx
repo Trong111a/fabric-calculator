@@ -2,22 +2,22 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Mail, Lock } from 'lucide-react';
 import './Login.css';
-import { api } from '../../services/api';  // ← Import API
+import { api } from '../../services/api';  
 
 function Login({ onLoginSuccess, onNavigate }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);  // ← Thêm loading
+    const [loading, setLoading] = useState(false);  
 
-    const handleLogin = async () => {  // ← Thêm async
+    const handleLogin = async () => {  
         setError('');
         setLoading(true);
 
         try {
-            const data = await api.login(email, password);  // ← Gọi API
-            api.setToken(data.token);  // ← Lưu token
-            onLoginSuccess(data.user);  // ← Trả user từ API
+            const data = await api.login(email, password);  
+            api.setToken(data.token); 
+            onLoginSuccess(data.user);  
         } catch (err) {
             setError(err.message || 'Đăng nhập thất bại');
         } finally {
@@ -66,12 +66,6 @@ function Login({ onLoginSuccess, onNavigate }) {
                     <button onClick={() => onNavigate('forgot')}>Quên mật khẩu?</button>
                     <span>Chưa có tài khoản? <b onClick={() => onNavigate('register')}>Đăng ký</b></span>
                 </div>
-
-                {/* <div className="demo">
-                    <p>Demo:</p>
-                    <p>test@example.com / 123456</p>
-                    <p>admin@example.com / admin123</p>
-                </div> */}
             </div>
         </div>
     );

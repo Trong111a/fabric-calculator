@@ -11,13 +11,11 @@ const projectRoutes = require('./routes/projects');
 
 const app = express();
 
-// ── Auto init DB ──────────────────────────────────────────────
 const { initDatabase } = require('./init-db');
 initDatabase()
     .then(() => console.log('✅ Database initialized'))
     .catch(err => console.error('❌ DB init error:', err.message));
 
-// Middleware
 app.use(helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
@@ -28,23 +26,19 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
 
-// Static files
 app.use('/uploads', (req, res, next) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     next();
 }, express.static(path.join(__dirname, 'uploads')));
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/measurements', measurementRoutes);
 app.use('/api/projects', projectRoutes);
 
-// Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', time: new Date().toISOString() });
 });
 
-// Error handler
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: err.message });

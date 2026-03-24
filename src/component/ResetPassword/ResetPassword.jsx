@@ -10,10 +10,9 @@ function ResetPassword({ onNavigate }) {
     const [confirm, setConfirm] = useState('');
     const [showPw, setShowPw] = useState(false);
     const [showCf, setShowCf] = useState(false);
-    const [status, setStatus] = useState('idle'); // idle | loading | success | error
+    const [status, setStatus] = useState('idle'); 
     const [errorMsg, setErrorMsg] = useState('');
 
-    // Lấy token từ URL ?token=xxx
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const t = params.get('token');
@@ -99,7 +98,6 @@ function ResetPassword({ onNavigate }) {
                             </button>
                         </div>
 
-                        {/* Strength indicator */}
                         {password && (
                             <div className="rp-strength">
                                 {[1, 2, 3, 4].map(i => (

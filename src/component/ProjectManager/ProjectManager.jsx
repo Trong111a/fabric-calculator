@@ -11,7 +11,7 @@ function ProjectManager({ onBack }) {
     const [newProjectName, setNewProjectName] = useState('');
     const [loading, setLoading] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
-    const [openedProject, setOpenedProject] = useState(null); // ← MỚI
+    const [openedProject, setOpenedProject] = useState(null); 
 
     useEffect(() => { loadProjects(); }, []);
 
@@ -52,7 +52,6 @@ function ProjectManager({ onBack }) {
         }
     };
 
-    // ── Nếu đang xem nội dung project ─────────────────────────────
     if (openedProject) {
         return (
             <ProjectDetail
@@ -76,7 +75,6 @@ function ProjectManager({ onBack }) {
         <div className="pm-wrap">
             <div className="pm-bg-mesh" />
 
-            {/* ── Header ─────────────────────────────────────────── */}
             <header className="pm-header">
                 <button className="pm-back-btn" onClick={onBack}>
                     <ArrowLeft size={18} />
@@ -99,7 +97,6 @@ function ProjectManager({ onBack }) {
                 </button>
             </header>
 
-            {/* ── Stats bar ──────────────────────────────────────── */}
             <div className="pm-stats-bar">
                 {stats.map((stat, i) => (
                     <div key={i} className="pm-stat-item">
@@ -112,7 +109,6 @@ function ProjectManager({ onBack }) {
                 ))}
             </div>
 
-            {/* ── Create form ────────────────────────────────────── */}
             {showCreate && (
                 <div className="pm-create-form-wrap">
                     <div className="pm-create-form">
@@ -148,7 +144,6 @@ function ProjectManager({ onBack }) {
                 </div>
             )}
 
-            {/* ── Grid ───────────────────────────────────────────── */}
             <main className="pm-main">
                 {projects.length === 0 ? (
                     <div className="pm-empty">
@@ -172,7 +167,7 @@ function ProjectManager({ onBack }) {
                                     className={`pm-card${deletingId === project.id ? ' is-deleting' : ''}`}
                                     onClick={() => {
                                         if (deletingId === project.id) return;
-                                        setOpenedProject(project); // ← MỞ DETAIL
+                                        setOpenedProject(project); 
                                     }}
                                 >
                                     <div

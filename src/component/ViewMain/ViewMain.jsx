@@ -38,7 +38,6 @@ export default function ViewMain({ user, onLogout }) {
     const [image, setImage] = useState(null);
     const [rawImageData, setRawImageData] = useState(null);
     const [step, setStep] = useState('upload');
-    // upload | calibrate | pick | scan | adjust | result
     const [loading, setLoading] = useState(false);
     const [cvReady, setCvReady] = useState(false);
 
@@ -84,9 +83,6 @@ export default function ViewMain({ user, onLogout }) {
         } else load();
     }, []);
 
-    /* ══════════════════════════════════════════
-       VẼ CANVAS
-    ══════════════════════════════════════════ */
     const drawCanvas = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas || !image) return;
@@ -97,11 +93,9 @@ export default function ViewMain({ user, onLogout }) {
         const W = image.width;
         const displayScale = canvas.width / (canvas.getBoundingClientRect().width || canvas.width);
 
-        /* ── Crosshair overlay cho bước pick ── */
         if (step === 'pick') {
             ctx.fillStyle = 'rgba(0,0,0,0.35)';
             ctx.fillRect(0, 0, W, image.height);
-            // hướng dẫn chữ
             const fs = Math.max(22, W / 22);
             ctx.font = `bold ${fs}px Arial`;
             ctx.textAlign = 'center';
@@ -112,7 +106,6 @@ export default function ViewMain({ user, onLogout }) {
             ctx.fillText('Chạm vào bề mặt rập để lấy màu', W / 2, image.height / 2);
         }
 
-        /* ── Thước ── */
         if (step === 'calibrate') {
             ctx.save();
             ctx.translate(rulerPos.x, rulerPos.y);
@@ -151,7 +144,6 @@ export default function ViewMain({ user, onLogout }) {
             ctx.restore();
         }
 
-        /* ── Polygon ── */
         if (polygonPoints.length > 1 && (step === 'adjust' || step === 'result')) {
             ctx.beginPath();
             polygonPoints.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
@@ -205,9 +197,7 @@ export default function ViewMain({ user, onLogout }) {
 
     useEffect(() => { drawCanvas(); }, [drawCanvas]);
 
-    /* ══════════════════════════════════════════
-       POINTER HELPERS
-    ══════════════════════════════════════════ */
+
     const toCanvas = (clientX, clientY) => {
         const c = canvasRef.current; const r = c.getBoundingClientRect();
         return {
@@ -228,9 +218,7 @@ export default function ViewMain({ user, onLogout }) {
         return -1;
     }, [polygonPoints]);
 
-    /* ══════════════════════════════════════════
-       PICK MÀU RẬP
-    ══════════════════════════════════════════ */
+
     const handleColorPick = (clientX, clientY) => {
         if (step !== 'pick' || !rawImageData) return;
         const { x, y } = toCanvas(clientX, clientY);
@@ -246,9 +234,7 @@ export default function ViewMain({ user, onLogout }) {
         setStep('scan');
     };
 
-    /* ══════════════════════════════════════════
-       POINTER DOWN / MOVE / UP
-    ══════════════════════════════════════════ */
+
     const onPointerDown = (clientX, clientY) => {
         if (step === 'pick') { handleColorPick(clientX, clientY); return; }
         const { x, y } = toCanvas(clientX, clientY);
@@ -292,9 +278,7 @@ export default function ViewMain({ user, onLogout }) {
         return 'default';
     };
 
-    /* ══════════════════════════════════════════
-       UPLOAD ẢNH
-    ══════════════════════════════════════════ */
+
     const handleImageUpload = (e) => {
         const file = e.target.files?.[0]; if (!file) return;
         const reader = new FileReader();
@@ -317,9 +301,7 @@ export default function ViewMain({ user, onLogout }) {
         reader.readAsDataURL(file); e.target.value = '';
     };
 
-    /* ══════════════════════════════════════════
-       QUÉT OPENCV
-    ══════════════════════════════════════════ */
+
     const scanAndCalc = async () => {
         if (!rawImageData || !cvReady || !pixelsPerCm) {
             alert('⚠️ Chưa hiệu chuẩn hoặc OpenCV chưa sẵn sàng'); return;
@@ -332,7 +314,6 @@ export default function ViewMain({ user, onLogout }) {
             cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB);
             cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
 
-            /* Range màu động nếu đã pick, fallback range cũ */
             let loArr, hiArr;
             if (pickedColor) {
                 const { h, s, v } = pickedColor;
@@ -382,9 +363,7 @@ export default function ViewMain({ user, onLogout }) {
         } catch (err) { alert(`⚠️ ${err.message}`); } finally { setLoading(false); }
     };
 
-    /* ══════════════════════════════════════════
-       LƯU
-    ══════════════════════════════════════════ */
+
     const openSaveModal = () => { setFileName(''); setQuantity(1); setShowSaveModal(true); };
 
     const saveResult = async () => {
@@ -408,9 +387,7 @@ export default function ViewMain({ user, onLogout }) {
         setPickedColor(null); setPickedRgb(null);
     };
 
-    /* ══════════════════════════════════════════
-       STEPS CONFIG
-    ══════════════════════════════════════════ */
+
     const STEPS = [
         { key: 'upload', label: 'Tải ảnh' },
         { key: 'calibrate', label: 'Hiệu chuẩn' },
@@ -433,12 +410,11 @@ export default function ViewMain({ user, onLogout }) {
     return (
         <div className="vm-wrap">
 
-            {/* HEADER */}
             <header className="vm-header">
                 <div className="vm-header-left">
                     <div className="vm-logo"><Ruler size={20} color="#fff" /></div>
                     <div>
-                        <h1 className="vm-title">Tính Diện Tích Rập</h1>
+                        <h1 className="vm-title">PATEC</h1>
                         <span className={`vm-cv-badge ${cvReady ? 'ready' : ''}`}>
                             {cvReady ? '✓ Sẵn sàng' : '⏳ Đang tải OpenCV...'}
                         </span>
@@ -461,7 +437,6 @@ export default function ViewMain({ user, onLogout }) {
                 </div>
             </header>
 
-            {/* STEP BAR */}
             {step !== 'upload' && (
                 <div className="vm-steps">
                     {STEPS.map((s, i) => (
@@ -480,7 +455,6 @@ export default function ViewMain({ user, onLogout }) {
 
             <main className="vm-main">
 
-                {/* UPLOAD */}
                 {step === 'upload' && (
                     <div className="vm-upload-screen">
                         <div className="vm-upload-hero">
@@ -501,11 +475,9 @@ export default function ViewMain({ user, onLogout }) {
                     </div>
                 )}
 
-                {/* CANVAS AREA */}
                 {image && step !== 'upload' && (
                     <div className="vm-section">
 
-                        {/* Guide */}
                         <div className="vm-guide">
                             <span className="vm-guide-icon">
                                 {step === 'calibrate' ? '📏' : step === 'pick' ? '🎯' : step === 'scan' ? '🔍' : step === 'adjust' ? '✋' : '✅'}
@@ -542,7 +514,6 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         </div>
 
-                        {/* Canvas */}
                         <div className="vm-canvas-wrap">
                             <canvas
                                 ref={canvasRef}
@@ -567,7 +538,6 @@ export default function ViewMain({ user, onLogout }) {
                             )}
                         </div>
 
-                        {/* Controls: calibrate */}
                         {step === 'calibrate' && (
                             <div className="vm-controls">
                                 <div className="vm-control-group">
@@ -599,7 +569,6 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         )}
 
-                        {/* Stats: adjust */}
                         {step === 'adjust' && (
                             <div className="vm-result-grid">
                                 <div className="vm-result-card accent">
@@ -621,7 +590,6 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         )}
 
-                        {/* Stats: result */}
                         {step === 'result' && area !== null && (
                             <div className="vm-result-grid">
                                 <div className="vm-result-card accent">
@@ -649,7 +617,6 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         )}
 
-                        {/* ACTIONS */}
                         <div className="vm-actions">
                             <button className="vm-btn ghost" onClick={reset}>
                                 <RotateCcw size={15} /> Làm lại
@@ -700,7 +667,6 @@ export default function ViewMain({ user, onLogout }) {
                 )}
             </main>
 
-            {/* SAVE MODAL */}
             {showSaveModal && (
                 <div className="vm-modal-bg" onClick={e => e.target === e.currentTarget && setShowSaveModal(false)}>
                     <div className="vm-modal">

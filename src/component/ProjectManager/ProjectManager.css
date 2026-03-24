@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
-/* ─── Root ─────────────────────────────────────────────────────── */
 .pm-wrap {
     min-height: 100vh;
     background: #f4f6fb;
@@ -8,7 +7,6 @@
     position: relative;
 }
 
-/* ─── Header ────────────────────────────────────────────────────── */
 .pm-header {
     display: flex;
     align-items: center;
@@ -98,7 +96,6 @@
     box-shadow: 0 5px 16px rgba(99,102,241,0.4);
 }
 
-/* ─── Stats bar ─────────────────────────────────────────────────── */
 .pm-stats-bar {
     display: flex;
     flex-wrap: wrap;
@@ -149,7 +146,6 @@
     margin-top: 2px;
 }
 
-/* ─── Create form ───────────────────────────────────────────────── */
 .pm-create-form-wrap {
     padding: 0 28px 20px;
 }
@@ -255,7 +251,6 @@
     cursor: not-allowed;
 }
 
-/* ─── Main / Grid ───────────────────────────────────────────────── */
 .pm-main {
     padding: 0 28px 40px;
 }
@@ -266,7 +261,6 @@
     gap: 16px;
 }
 
-/* ─── Project card ──────────────────────────────────────────────── */
 .pm-card {
     position: relative;
     background: #fff;
@@ -364,7 +358,6 @@
     font-weight: 500;
 }
 
-/* ─── Delete button ─────────────────────────────────────────────── */
 .pm-delete-btn {
     position: absolute;
     top: 12px;
@@ -388,8 +381,6 @@
 .pm-delete-btn:hover {
     background: #fca5a5;
 }
-
-/* ─── Empty state ───────────────────────────────────────────────── */
 .pm-empty {
     display: flex;
     flex-direction: column;
@@ -446,7 +437,6 @@
     box-shadow: 0 5px 16px rgba(99,102,241,0.4);
 }
 
-/* ─── Responsive ────────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .pm-header { padding: 14px 16px; }
     .pm-stats-bar { padding: 16px; gap: 10px; }
