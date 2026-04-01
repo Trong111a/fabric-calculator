@@ -53,9 +53,8 @@ export default function ViewMain({ user, onLogout }) {
     const [dragPointIdx, setDragPointIdx] = useState(-1);
     const [hoverPointIdx, setHoverPointIdx] = useState(-1);
 
-    // màu rập đã pick
-    const [pickedColor, setPickedColor] = useState(null); // { h, s, v }
-    const [pickedRgb, setPickedRgb] = useState(null); // { r, g, b } để hiển thị
+    const [pickedColor, setPickedColor] = useState(null); 
+    const [pickedRgb, setPickedRgb] = useState(null); 
 
     const [selectedProject, setSelectedProject] = useState(null);
     const [showProjectManager, setShowProjectManager] = useState(false);
