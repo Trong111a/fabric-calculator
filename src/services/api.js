@@ -44,7 +44,7 @@ class ApiService {
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Lỗi server');
-        return prefixImageUrls(data); 
+        return prefixImageUrls(data);
     }
 
     login = (email, password) => this.request('/auth/login', {
@@ -87,6 +87,11 @@ class ApiService {
     resetPassword = (token, newPassword) => this.request('/auth/reset-password', {
         method: 'POST',
         body: { token, newPassword }
+    });
+
+    updateMeasurement = (id, data) => this.request(`/measurements/${id}`, {
+        method: 'PUT',
+        body: data
     });
 }
 

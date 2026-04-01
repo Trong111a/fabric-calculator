@@ -24,10 +24,9 @@ function calcArea(pts, ppc) {
 ══════════════════════════════════════════════════════════ */
 function ManualDrawPanel({ project, cvReady, onSaved }) {
     const [image, setImage] = useState(null);
-    const [step, setStep] = useState('upload'); // upload | draw | confirm
+    const [step, setStep] = useState('upload'); // upload | calibrate | draw | result
     const [points, setPoints] = useState([]);
     const [pixelsPerCm, setPixelsPerCm] = useState(null);
-    const [rulerPx, setRulerPx] = useState(300);
     const [area, setArea] = useState(null);
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [fileName, setFileName] = useState('');
@@ -36,7 +35,28 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
     const [hoverIdx, setHoverIdx] = useState(-1);
     const [dragIdx, setDragIdx] = useState(-1);
 
+    // Ruler state (giống ScanPanel)
+    const [rulerPos, setRulerPos] = useState({ x: 100, y: 100 });
+    const [rulerLength, setRulerLength] = useState(300);
+    const [rulerAngle, setRulerAngle] = useState(90);
+    const [isDraggingRuler, setIsDraggingRuler] = useState(false);
+    const [rulerDragOffset, setRulerDragOffset] = useState({ x: 0, y: 0 });
+
+    // Zoom state
+    const [zoom, setZoom] = useState(1);
+    const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+    const [isPanning, setIsPanning] = useState(false);
+    const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+
+    // Edit after save
+    const [editingMeasurement, setEditingMeasurement] = useState(null);
+    const [editName, setEditName] = useState('');
+    const [editQuantity, setEditQuantity] = useState(1);
+    const [editSaving, setEditSaving] = useState(false);
+    const [savedMeasurements, setSavedMeasurements] = useState([]);
+
     const canvasRef = useRef(null);
+    const containerRef = useRef(null);
     const uploadRef = useRef(null);
     const cameraRef = useRef(null);
 
@@ -48,11 +68,49 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
         canvas.height = image.height;
         ctx.drawImage(image, 0, 0);
         const W = image.width;
-        const scale = canvas.width / (canvas.getBoundingClientRect().width || canvas.width);
-        const R = Math.max(10, Math.min(20, 15 * scale));
+        const displayScale = canvas.width / (canvas.getBoundingClientRect().width || canvas.width);
 
-        if (points.length > 0) {
-            // Vẽ đường nối
+        // Vẽ thước (giống ScanPanel)
+        if (step === 'calibrate') {
+            ctx.save();
+            ctx.translate(rulerPos.x, rulerPos.y);
+            ctx.rotate((rulerAngle * Math.PI) / 180);
+            const rw = Math.max(28, W / 28);
+            ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 12;
+            ctx.shadowOffsetX = 3; ctx.shadowOffsetY = 3;
+            ctx.fillStyle = 'rgba(255,255,255,0.97)';
+            ctx.fillRect(-rw / 2, 0, rw, rulerLength);
+            ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+            ctx.strokeStyle = '#6366f1'; ctx.lineWidth = Math.max(2, W / 300);
+            ctx.strokeRect(-rw / 2, 0, rw, rulerLength);
+            const ppc = rulerLength / 30; const fs = Math.max(10, W / 80);
+            for (let i = 0; i <= 30; i++) {
+                const y = i * ppc; const major = i % 5 === 0;
+                ctx.strokeStyle = major ? '#4f46e5' : '#bbb';
+                ctx.lineWidth = major ? Math.max(1.5, W / 500) : 1;
+                ctx.beginPath();
+                ctx.moveTo(major ? -rw / 2 : -rw / 4, y);
+                ctx.lineTo(major ? rw / 2 : rw / 4, y);
+                ctx.stroke();
+                if (major && i > 0) {
+                    ctx.fillStyle = '#1e1b4b'; ctx.font = `bold ${fs}px Arial`;
+                    ctx.textAlign = 'center'; ctx.fillText(i, 0, y - fs * 0.3);
+                }
+            }
+            const hr = Math.max(8, Math.min(16, 12 * displayScale));
+            ctx.fillStyle = '#6366f1';
+            ctx.shadowColor = 'rgba(99,102,241,0.55)'; ctx.shadowBlur = 16;
+            ctx.beginPath(); ctx.arc(0, 0, hr, 0, Math.PI * 2); ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = Math.max(2.5, W / 380); ctx.stroke();
+            ctx.fillStyle = '#fff'; ctx.font = `bold ${hr * 0.85}px Arial`;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('≡', 0, 0); ctx.textBaseline = 'alphabetic';
+            ctx.restore();
+        }
+
+        // Vẽ polygon
+        if (points.length > 0 && (step === 'draw' || step === 'result')) {
             ctx.beginPath();
             points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
             if (points.length > 2) ctx.closePath();
@@ -63,7 +121,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
             ctx.setLineDash([]);
             ctx.stroke();
 
-            // Vẽ điểm
+            const R = Math.max(8, Math.min(18, 14 * displayScale));
             points.forEach((p, i) => {
                 const isH = i === hoverIdx;
                 const isD = i === dragIdx;
@@ -79,12 +137,12 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                 ctx.textBaseline = 'alphabetic';
             });
 
-            // Label diện tích giữa polygon
             if (area && points.length > 2) {
                 const cx = points.reduce((s, p) => s + p.x, 0) / points.length;
                 const cy = points.reduce((s, p) => s + p.y, 0) / points.length;
                 const fs = Math.max(18, W / 28);
-                const txt = `${area.toFixed(2)} cm²`;
+                // Hiển thị m² giữa polygon
+                const txt = `${(area / 10000).toFixed(4)} m²`;
                 ctx.font = `bold ${fs}px Arial`;
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 const tw = ctx.measureText(txt).width;
@@ -97,19 +155,22 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                 ctx.textBaseline = 'alphabetic';
             }
         }
-    }, [image, points, hoverIdx, dragIdx, area]);
+    }, [image, step, points, hoverIdx, dragIdx, area, rulerPos, rulerLength, rulerAngle]);
 
     useEffect(() => { draw(); }, [draw]);
 
-    const toCanvas = (clientX, clientY) => {
+    const toCanvas = useCallback((clientX, clientY) => {
         const c = canvasRef.current; const r = c.getBoundingClientRect();
-        return { x: (clientX - r.left) * (c.width / r.width), y: (clientY - r.top) * (c.height / r.height) };
-    };
+        return {
+            x: (clientX - r.left) * (c.width / r.width),
+            y: (clientY - r.top) * (c.height / r.height)
+        };
+    }, []);
 
     const hitTest = useCallback((cx, cy) => {
         const canvas = canvasRef.current;
         const scale = canvas ? canvas.width / (canvas.getBoundingClientRect().width || canvas.width) : 1;
-        const R = Math.max(10, Math.min(20, 15 * scale)) + 12;
+        const R = Math.max(8, Math.min(18, 14 * scale)) + 12;
         for (let i = points.length - 1; i >= 0; i--) {
             const dx = cx - points[i].x, dy = cy - points[i].y;
             if (Math.sqrt(dx * dx + dy * dy) <= R) return i;
@@ -117,27 +178,72 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
         return -1;
     }, [points]);
 
-    const handleCanvasDown = (cx, cy) => {
-        const { x, y } = toCanvas(cx, cy);
-        const idx = hitTest(x, y);
-        if (idx >= 0) { setDragIdx(idx); return; }
-        // Thêm điểm mới
-        const newPts = [...points, { x, y }];
-        setPoints(newPts);
-        if (newPts.length >= 3 && pixelsPerCm) setArea(calcArea(newPts, pixelsPerCm));
-    };
+    // Zoom bằng wheel
+    const handleWheel = useCallback((e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        setZoom(z => Math.min(5, Math.max(0.5, z * delta)));
+    }, []);
 
-    const handleCanvasMove = (cx, cy) => {
-        const { x, y } = toCanvas(cx, cy);
-        setHoverIdx(hitTest(x, y));
-        if (dragIdx >= 0) {
-            const newPts = points.map((p, i) => i === dragIdx ? { x, y } : p);
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+        container.addEventListener('wheel', handleWheel, { passive: false });
+        return () => container.removeEventListener('wheel', handleWheel);
+    }, [handleWheel]);
+
+    const handleCanvasDown = (clientX, clientY) => {
+        const { x, y } = toCanvas(clientX, clientY);
+
+        if (step === 'calibrate') {
+            const rad = (-rulerAngle * Math.PI) / 180;
+            const dx = x - rulerPos.x, dy = y - rulerPos.y;
+            const lx = dx * Math.cos(rad) - dy * Math.sin(rad);
+            const ly = dx * Math.sin(rad) + dy * Math.cos(rad);
+            if (Math.abs(lx) < 30 && ly >= -20 && ly <= rulerLength + 20) {
+                setIsDraggingRuler(true);
+                setRulerDragOffset({ x: dx, y: dy });
+            }
+            return;
+        }
+
+        if (step === 'draw') {
+            const idx = hitTest(x, y);
+            if (idx >= 0) { setDragIdx(idx); return; }
+            const newPts = [...points, { x, y }];
             setPoints(newPts);
             if (newPts.length >= 3 && pixelsPerCm) setArea(calcArea(newPts, pixelsPerCm));
         }
     };
 
-    const handleCanvasUp = () => setDragIdx(-1);
+    const handleCanvasMove = (clientX, clientY) => {
+        const { x, y } = toCanvas(clientX, clientY);
+
+        if (step === 'calibrate' && isDraggingRuler) {
+            setRulerPos({ x: x - rulerDragOffset.x, y: y - rulerDragOffset.y });
+            return;
+        }
+
+        if (step === 'draw') {
+            setHoverIdx(dragIdx >= 0 ? dragIdx : hitTest(x, y));
+            if (dragIdx >= 0) {
+                const newPts = points.map((p, i) => i === dragIdx ? { x, y } : p);
+                setPoints(newPts);
+                if (newPts.length >= 3 && pixelsPerCm) setArea(calcArea(newPts, pixelsPerCm));
+            }
+        }
+    };
+
+    const handleCanvasUp = () => {
+        setIsDraggingRuler(false);
+        setDragIdx(-1);
+    };
+
+    const getCursor = () => {
+        if (step === 'calibrate') return isDraggingRuler ? 'grabbing' : 'grab';
+        if (step === 'draw') return dragIdx >= 0 ? 'grabbing' : hoverIdx >= 0 ? 'grab' : 'crosshair';
+        return 'default';
+    };
 
     const removeLastPoint = () => {
         const newPts = points.slice(0, -1);
@@ -150,19 +256,29 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
         const reader = new FileReader();
         reader.onload = (ev) => {
             const img = new Image();
-            img.onload = () => { setImage(img); setStep('ruler'); setPoints([]); setArea(null); };
+            img.onload = () => {
+                setImage(img);
+                setStep('calibrate');
+                setPoints([]); setArea(null); setPixelsPerCm(null);
+                setZoom(1); setPanOffset({ x: 0, y: 0 });
+                setRulerPos({ x: img.width * 0.74, y: img.height * 0.12 });
+                setRulerLength(img.height * 0.65);
+                setRulerAngle(90);
+            };
             img.src = ev.target.result;
         };
         reader.readAsDataURL(file); e.target.value = '';
     };
 
-    const confirmRuler = () => {
-        setPixelsPerCm(rulerPx / 30);
+    const confirmCalibrate = () => {
+        setPixelsPerCm(rulerLength / 30);
         setStep('draw');
     };
 
     const reset = () => {
-        setImage(null); setStep('upload'); setPoints([]); setArea(null); setPixelsPerCm(null);
+        setImage(null); setStep('upload'); setPoints([]); setArea(null);
+        setPixelsPerCm(null); setZoom(1); setPanOffset({ x: 0, y: 0 });
+        setDragIdx(-1); setHoverIdx(-1);
     };
 
     const saveResult = async () => {
@@ -170,18 +286,44 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
         if (!area) { alert('Chưa có diện tích'); return; }
         setSaving(true);
         try {
-            await api.createMeasurement({
+            const saved = await api.createMeasurement({
                 name: fileName.trim(), area_cm2: area, pixels_per_cm: pixelsPerCm,
                 polygon_points: points, image_width: image.width, image_height: image.height,
                 image_data: canvasRef.current.toDataURL('image/jpeg', 0.75),
                 quantity, project_id: project.id,
             });
-            setShowSaveModal(false); setStep('result'); onSaved?.();
+            setSavedMeasurements(prev => [...prev, { ...saved, name: fileName.trim(), quantity, area_cm2: area }]);
+            setShowSaveModal(false);
+            setStep('result');
+            onSaved?.();
         } catch (e) { alert('Lỗi lưu: ' + e.message); } finally { setSaving(false); }
     };
 
-    const STEPS = ['Tải ảnh', 'Nhập tỷ lệ', 'Vẽ polygon', 'Kết quả'];
-    const stepIdx = { upload: 0, ruler: 1, draw: 2, result: 3 }[step] ?? 0;
+    const openEdit = (m) => {
+        setEditingMeasurement(m);
+        setEditName(m.name);
+        setEditQuantity(m.quantity || 1);
+    };
+
+    const saveEdit = async () => {
+        if (!editName.trim()) { alert('Vui lòng nhập tên'); return; }
+        setEditSaving(true);
+        try {
+            await api.updateMeasurement(editingMeasurement.id, {
+                name: editName.trim(),
+                quantity: editQuantity,
+            });
+            setSavedMeasurements(prev => prev.map(m =>
+                m.id === editingMeasurement.id
+                    ? { ...m, name: editName.trim(), quantity: editQuantity }
+                    : m
+            ));
+            setEditingMeasurement(null);
+        } catch (e) { alert('Lỗi cập nhật: ' + e.message); } finally { setEditSaving(false); }
+    };
+
+    const STEPS = ['Tải ảnh', 'Hiệu chuẩn', 'Vẽ polygon', 'Kết quả'];
+    const stepIdx = { upload: 0, calibrate: 1, draw: 2, result: 3 }[step] ?? 0;
 
     return (
         <div className="pd-scan-wrap">
@@ -214,7 +356,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                     <div className="pd-upload-hero">
                         <div className="pd-upload-hero-icon"><Pencil size={48} color="#6366f1" /></div>
                         <h2>Vẽ polygon thủ công</h2>
-                        <p>Tải ảnh rồi <strong>chạm/click từng điểm</strong> trên viền rập để tính diện tích</p>
+                        <p>Tải ảnh, hiệu chuẩn thước đo rồi <strong>chạm/click từng điểm</strong> trên viền rập để tính diện tích</p>
                     </div>
                     <input ref={uploadRef} type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
                     <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImageUpload} style={{ display: 'none' }} />
@@ -229,96 +371,123 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                 </div>
             )}
 
-            {/* Nhập tỷ lệ */}
-            {step === 'ruler' && (
+            {/* Canvas + controls */}
+            {image && step !== 'upload' && (
                 <>
                     <div className="pd-guide">
-                        <span className="pd-guide-icon">📐</span>
-                        <div>
-                            <strong>Nhập tỷ lệ thước đo</strong>
-                            <span>Đo độ dài 30cm trên ảnh tính bằng pixel, hoặc nhập giá trị pixel/cm</span>
-                        </div>
-                    </div>
-                    <div className="pd-controls">
-                        <div className="pd-control-group">
-                            <label>Số pixel tương đương 30cm trên ảnh</label>
-                            <div className="pd-slider-row">
-                                <input type="range" min="50" max={image?.width || 2000}
-                                    value={rulerPx} onChange={e => setRulerPx(Number(e.target.value))} />
-                                <div className="pd-badges">
-                                    <span className="pd-badge">{rulerPx} px = 30cm</span>
-                                    <span className="pd-badge accent">{(rulerPx / 30).toFixed(2)} px/cm</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="pd-control-group">
-                            <label>Hoặc nhập trực tiếp px/cm</label>
-                            <input
-                                type="number" min="1" step="0.1"
-                                value={(rulerPx / 30).toFixed(2)}
-                                onChange={e => setRulerPx(parseFloat(e.target.value) * 30 || rulerPx)}
-                                className="pd-field-input" style={{ maxWidth: 160 }}
-                            />
-                        </div>
-                    </div>
-                    <div className="pd-actions">
-                        <button className="pd-btn ghost" onClick={reset}><RotateCcw size={15} /> Làm lại</button>
-                        <button className="pd-btn primary" onClick={confirmRuler}>
-                            <CheckCircle size={15} /> Xác nhận · {(rulerPx / 30).toFixed(2)} px/cm
-                        </button>
-                    </div>
-                </>
-            )}
-
-            {/* Draw */}
-            {(step === 'draw' || step === 'result') && image && (
-                <>
-                    <div className="pd-guide">
-                        <span className="pd-guide-icon">{step === 'draw' ? '✋' : '✅'}</span>
+                        <span className="pd-guide-icon">
+                            {step === 'calibrate' ? '📏' : step === 'draw' ? '✋' : '✅'}
+                        </span>
                         <div>
                             <strong>
-                                {step === 'draw'
-                                    ? `Chạm/click để đặt điểm · ${points.length} điểm${points.length >= 3 ? ` · ${area?.toFixed(2)} cm²` : ''}`
-                                    : 'Hoàn tất'}
+                                {step === 'calibrate' && 'Hiệu chuẩn thước đo'}
+                                {step === 'draw' && `Chạm/click để đặt điểm · ${points.length} điểm${points.length >= 3 ? ` · ${(area / 10000).toFixed(4)} m²` : ''}`}
+                                {step === 'result' && 'Hoàn tất — đã lưu thành công'}
                             </strong>
                             <span>
-                                {step === 'draw'
-                                    ? 'Kéo điểm để chỉnh · Cần ≥ 3 điểm · Tỷ lệ: ' + pixelsPerCm?.toFixed(2) + ' px/cm'
-                                    : `${area?.toFixed(2)} cm² · ${(area / 10000)?.toFixed(4)} m²`}
+                                {step === 'calibrate' && 'Kéo thước vào vật chuẩn 30cm · chỉnh độ dài & góc bên dưới'}
+                                {step === 'draw' && `Kéo điểm để chỉnh · Cần ≥ 3 điểm · Tỷ lệ: ${pixelsPerCm?.toFixed(2)} px/cm · Cuộn để zoom`}
+                                {step === 'result' && `${area?.toFixed(2)} cm² · ${(area / 10000).toFixed(4)} m²`}
                             </span>
                         </div>
                     </div>
 
-                    <div className="pd-canvas-wrap">
-                        <canvas
-                            ref={canvasRef}
-                            style={{
-                                cursor: dragIdx >= 0 ? 'grabbing' : hoverIdx >= 0 ? 'grab' : 'crosshair',
-                                touchAction: 'none'
-                            }}
-                            onMouseDown={e => handleCanvasDown(e.clientX, e.clientY)}
-                            onMouseMove={e => handleCanvasMove(e.clientX, e.clientY)}
-                            onMouseUp={handleCanvasUp}
-                            onMouseLeave={() => { handleCanvasUp(); setHoverIdx(-1); }}
-                            onTouchStart={e => { e.preventDefault(); const t = e.touches[0]; handleCanvasDown(t.clientX, t.clientY); }}
-                            onTouchMove={e => { e.preventDefault(); const t = e.touches[0]; handleCanvasMove(t.clientX, t.clientY); }}
-                            onTouchEnd={e => { e.preventDefault(); handleCanvasUp(); }}
-                        />
+                    {/* Zoom controls */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 13, color: '#6b7280', fontWeight: 500 }}>Zoom:</span>
+                        <button className="pd-btn ghost" style={{ padding: '5px 12px', fontSize: 13 }}
+                            onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}>−</button>
+                        <span className="pd-badge accent" style={{ minWidth: 50, textAlign: 'center' }}>
+                            {Math.round(zoom * 100)}%
+                        </span>
+                        <button className="pd-btn ghost" style={{ padding: '5px 12px', fontSize: 13 }}
+                            onClick={() => setZoom(z => Math.min(5, z + 0.25))}>+</button>
+                        <button className="pd-btn ghost" style={{ padding: '5px 12px', fontSize: 13 }}
+                            onClick={() => { setZoom(1); setPanOffset({ x: 0, y: 0 }); }}>Reset</button>
+                        <span style={{ fontSize: 12, color: '#9ca3af', marginLeft: 4 }}>· Cuộn chuột hoặc pinch để zoom</span>
+                    </div>
+
+                    {/* Canvas container với zoom/pan */}
+                    <div
+                        ref={containerRef}
+                        className="pd-canvas-wrap"
+                        style={{ overflow: 'hidden', cursor: getCursor() }}
+                    >
+                        <div style={{
+                            transform: `scale(${zoom}) translate(${panOffset.x / zoom}px, ${panOffset.y / zoom}px)`,
+                            transformOrigin: 'center center',
+                            transition: isDraggingRuler || dragIdx >= 0 ? 'none' : 'transform 0.1s ease',
+                            width: '100%',
+                        }}>
+                            <canvas
+                                ref={canvasRef}
+                                style={{ maxWidth: '100%', height: 'auto', display: 'block', touchAction: 'none' }}
+                                onMouseDown={e => handleCanvasDown(e.clientX, e.clientY)}
+                                onMouseMove={e => handleCanvasMove(e.clientX, e.clientY)}
+                                onMouseUp={handleCanvasUp}
+                                onMouseLeave={() => { handleCanvasUp(); setHoverIdx(-1); }}
+                                onTouchStart={e => { e.preventDefault(); const t = e.touches[0]; handleCanvasDown(t.clientX, t.clientY); }}
+                                onTouchMove={e => { e.preventDefault(); const t = e.touches[0]; handleCanvasMove(t.clientX, t.clientY); }}
+                                onTouchEnd={e => { e.preventDefault(); handleCanvasUp(); }}
+                            />
+                        </div>
                         {step === 'draw' && area !== null && (
                             <div className="pd-area-badge">
-                                {area.toFixed(2)} cm² · {(area / 10000).toFixed(4)} m²
+                                {(area / 10000).toFixed(4)} m²
                             </div>
                         )}
                     </div>
 
-                    {step === 'draw' && (
+                    {/* Calibrate controls (giống ScanPanel) */}
+                    {step === 'calibrate' && (
+                        <div className="pd-controls">
+                            <div className="pd-control-group">
+                                <label>Chiều dài thước</label>
+                                <div className="pd-slider-row">
+                                    <input type="range" min="100" max={image.height}
+                                        value={rulerLength} onChange={e => setRulerLength(Number(e.target.value))} />
+                                    <div className="pd-badges">
+                                        <span className="pd-badge">{Math.round(rulerLength)} px = 30cm</span>
+                                        <span className="pd-badge accent">{(rulerLength / 30).toFixed(2)} px/cm</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="pd-control-group">
+                                <label>Hoặc nhập trực tiếp px/cm</label>
+                                <input
+                                    type="number" min="1" step="0.1"
+                                    value={(rulerLength / 30).toFixed(2)}
+                                    onChange={e => setRulerLength(parseFloat(e.target.value) * 30 || rulerLength)}
+                                    className="pd-field-input" style={{ maxWidth: 160 }}
+                                />
+                            </div>
+                            <div className="pd-control-group">
+                                <label>Góc xoay</label>
+                                <div className="pd-angle-row">
+                                    <button onClick={() => setRulerAngle(a => (a - 10 + 360) % 360)}>↺ −10°</button>
+                                    <button onClick={() => setRulerAngle(a => (a - 1 + 360) % 360)}>−1°</button>
+                                    <input type="number" min="0" max="359" value={rulerAngle}
+                                        onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setRulerAngle(((v % 360) + 360) % 360); }}
+                                        className="pd-angle-input" />
+                                    <span className="pd-angle-deg">°</span>
+                                    <button onClick={() => setRulerAngle(a => (a + 1) % 360)}>+1°</button>
+                                    <button onClick={() => setRulerAngle(a => (a + 10) % 360)}>↻ +10°</button>
+                                    <button onClick={() => setRulerAngle(90)}>90°</button>
+                                    <button onClick={() => setRulerAngle(0)}>0°</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Result grid */}
+                    {(step === 'draw' || step === 'result') && (
                         <div className="pd-result-grid">
                             <div className="pd-result-card accent">
-                                <span>Diện tích</span>
+                                <span>{step === 'result' ? 'Diện tích 1 chi tiết' : 'Diện tích'}</span>
                                 <strong>{area?.toFixed(2) ?? '—'}<em>cm²</em></strong>
                             </div>
-                            <div className="pd-result-card">
-                                <span>Quy đổi</span>
+                            <div className="pd-result-card accent">
+                                <span>Diện tích (m²)</span>
                                 <strong>{area ? (area / 10000).toFixed(4) : '—'}<em>m²</em></strong>
                             </div>
                             <div className="pd-result-card">
@@ -329,28 +498,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                                 <span>Số điểm</span>
                                 <strong>{points.length}<em>điểm</em></strong>
                             </div>
-                        </div>
-                    )}
-
-                    {step === 'result' && area !== null && (
-                        <div className="pd-result-grid">
-                            <div className="pd-result-card accent">
-                                <span>Diện tích 1 chi tiết</span>
-                                <strong>{area.toFixed(2)}<em>cm²</em></strong>
-                            </div>
-                            <div className="pd-result-card">
-                                <span>Quy đổi</span>
-                                <strong>{(area / 10000).toFixed(4)}<em>m²</em></strong>
-                            </div>
-                            <div className="pd-result-card">
-                                <span>Tỷ lệ</span>
-                                <strong>{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong>
-                            </div>
-                            <div className="pd-result-card">
-                                <span>Số điểm</span>
-                                <strong>{points.length}<em>điểm</em></strong>
-                            </div>
-                            {quantity > 1 && (
+                            {step === 'result' && quantity > 1 && (
                                 <div className="pd-result-card accent">
                                     <span>Tổng ({quantity} chi tiết)</span>
                                     <strong>{(area * quantity / 10000).toFixed(4)}<em>m²</em></strong>
@@ -359,20 +507,79 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                         </div>
                     )}
 
+                    {/* Saved list (step result) */}
+                    {step === 'result' && savedMeasurements.length > 0 && (
+                        <div className="pd-csv-preview">
+                            <div className="pd-csv-header">
+                                <h3>Chi tiết đã lưu trong phiên này</h3>
+                                <span className="pd-badge accent">{savedMeasurements.length} chi tiết</span>
+                            </div>
+                            <div className="pd-csv-table-wrap">
+                                <table className="pd-csv-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tên chi tiết</th>
+                                            <th>Diện tích</th>
+                                            <th>Số lượng</th>
+                                            <th>Tổng (m²)</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {savedMeasurements.map((m, i) => (
+                                            <tr key={m.id || i}>
+                                                <td>{m.name}</td>
+                                                <td>{Number(m.area_cm2).toFixed(2)} cm²</td>
+                                                <td>{m.quantity || 1}</td>
+                                                <td>{(Number(m.area_cm2) * (m.quantity || 1) / 10000).toFixed(4)} m²</td>
+                                                <td>
+                                                    <button
+                                                        className="pd-btn ghost"
+                                                        style={{ padding: '4px 10px', fontSize: 12 }}
+                                                        onClick={() => openEdit(m)}
+                                                    >
+                                                        <Pencil size={12} /> Sửa
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="pd-actions">
                         <button className="pd-btn ghost" onClick={reset}><RotateCcw size={15} /> Làm lại</button>
+                        {step === 'calibrate' && (
+                            <button className="pd-btn primary" onClick={confirmCalibrate}>
+                                <CheckCircle size={15} /> Xác nhận · {(rulerLength / 30).toFixed(2)} px/cm
+                            </button>
+                        )}
                         {step === 'draw' && points.length > 0 && (
                             <button className="pd-btn ghost" onClick={removeLastPoint}>← Xóa điểm cuối</button>
                         )}
                         {step === 'draw' && points.length >= 3 && area && (
                             <button className="pd-btn success" onClick={() => { setFileName(''); setQuantity(1); setShowSaveModal(true); }}>
-                                <CheckCircle size={15} /> Xác nhận · {area.toFixed(1)} cm²
+                                <CheckCircle size={15} /> Xác nhận · {(area / 10000).toFixed(4)} m²
                             </button>
                         )}
                         {step === 'result' && (
-                            <button className="pd-btn primary" onClick={reset}>
-                                <Upload size={15} /> Vẽ chi tiết khác
-                            </button>
+                            <>
+                                <button className="pd-btn primary" onClick={() => {
+                                    setPoints([]); setArea(null);
+                                    setStep('calibrate');
+                                    setZoom(1); setPanOffset({ x: 0, y: 0 });
+                                    setRulerPos({ x: image.width * 0.74, y: image.height * 0.12 });
+                                    setRulerLength(image.height * 0.65);
+                                    setRulerAngle(90);
+                                }}>
+                                    <Pencil size={15} /> Vẽ chi tiết khác (cùng ảnh)
+                                </button>
+                                <button className="pd-btn ghost" onClick={reset}>
+                                    <Upload size={15} /> Ảnh mới
+                                </button>
+                            </>
                         )}
                     </div>
                 </>
@@ -385,7 +592,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                         <button className="pd-modal-x" onClick={() => setShowSaveModal(false)}><X size={18} /></button>
                         <h3>Lưu chi tiết</h3>
                         <p className="pd-qty-sub">
-                            Diện tích: <strong>{area?.toFixed(2)} cm²</strong> · Folder: <strong>{project.name}</strong>
+                            Diện tích: <strong>{(area / 10000).toFixed(4)} m²</strong> · Folder: <strong>{project.name}</strong>
                         </p>
                         <div className="pd-field-group">
                             <label className="pd-field-label">Tên chi tiết <span style={{ color: '#ef4444' }}>*</span></label>
@@ -405,8 +612,8 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                             </div>
                         </div>
                         <div className="pd-qty-preview">
-                            <div><span>Tổng</span><strong>{((area || 0) * quantity).toFixed(2)} cm²</strong></div>
-                            <div><span>Quy đổi</span><strong>{(((area || 0) * quantity) / 10000).toFixed(4)} m²</strong></div>
+                            <div><span>Diện tích 1 chi tiết</span><strong>{area?.toFixed(2)} cm²</strong></div>
+                            <div><span>Tổng ({quantity} chi tiết)</span><strong>{((area || 0) * quantity / 10000).toFixed(4)} m²</strong></div>
                         </div>
                         <div className="pd-qty-actions">
                             <button className="pd-btn ghost" onClick={() => setShowSaveModal(false)} disabled={saving}>Hủy</button>
@@ -417,10 +624,51 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                     </div>
                 </div>
             )}
+
+            {/* Edit modal */}
+            {editingMeasurement && (
+                <div className="pd-modal-bg" onClick={e => e.target === e.currentTarget && setEditingMeasurement(null)}>
+                    <div className="pd-qty-modal">
+                        <button className="pd-modal-x" onClick={() => setEditingMeasurement(null)}><X size={18} /></button>
+                        <h3>Chỉnh sửa chi tiết</h3>
+                        <p className="pd-qty-sub">
+                            Diện tích: <strong>{Number(editingMeasurement.area_cm2).toFixed(2)} cm²</strong>
+                        </p>
+                        <div className="pd-field-group">
+                            <label className="pd-field-label">Tên chi tiết <span style={{ color: '#ef4444' }}>*</span></label>
+                            <input className="pd-field-input" type="text" value={editName}
+                                onChange={e => setEditName(e.target.value)}
+                                placeholder="Tên chi tiết..."
+                                maxLength={100} autoFocus
+                                onKeyDown={e => e.key === 'Enter' && !editSaving && editName.trim() && saveEdit()} />
+                        </div>
+                        <div className="pd-field-group">
+                            <label className="pd-field-label">Số lượng</label>
+                            <div className="pd-qty-control">
+                                <button onClick={() => setEditQuantity(q => Math.max(1, q - 1))}>−</button>
+                                <input type="number" min="1" max="9999" value={editQuantity}
+                                    onChange={e => setEditQuantity(Math.max(1, parseInt(e.target.value) || 1))} />
+                                <button onClick={() => setEditQuantity(q => Math.min(9999, q + 1))}>+</button>
+                            </div>
+                        </div>
+                        <div className="pd-qty-preview">
+                            <div><span>Diện tích 1 chi tiết</span><strong>{Number(editingMeasurement.area_cm2).toFixed(2)} cm²</strong></div>
+                            <div><span>Tổng ({editQuantity} chi tiết)</span>
+                                <strong>{(Number(editingMeasurement.area_cm2) * editQuantity / 10000).toFixed(4)} m²</strong>
+                            </div>
+                        </div>
+                        <div className="pd-qty-actions">
+                            <button className="pd-btn ghost" onClick={() => setEditingMeasurement(null)} disabled={editSaving}>Hủy</button>
+                            <button className="pd-btn primary" onClick={saveEdit} disabled={editSaving || !editName.trim()}>
+                                <Save size={15} />{editSaving ? 'Đang lưu...' : 'Cập nhật'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
-
 /* ══════════════════════════════════════════════════════════
    SCAN PANEL — auto scan với OpenCV
 ══════════════════════════════════════════════════════════ */
