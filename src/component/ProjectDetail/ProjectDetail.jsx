@@ -1247,7 +1247,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                     <div className="pd-qty-modal">
                         <button className="pd-modal-x" onClick={() => setShowSaveModal(false)}><X size={18} /></button>
                         <h3>Lưu chi tiết</h3>
-                        <p className="pd-qty-sub">Diện tích: <strong>{area?.toFixed(2)} cm²</strong> · Folder: <strong>{project.name}</strong></p>
+                        <p className="pd-qty-sub">Diện tích: <strong>{(area / 10000)?.toFixed(4)} m²</strong> · Folder: <strong>{project.name}</strong></p>
                         <div className="pd-field-group">
                             <label className="pd-field-label">Tên chi tiết <span style={{ color: '#ef4444' }}>*</span></label>
                             <input className="pd-field-input" type="text" value={fileName}

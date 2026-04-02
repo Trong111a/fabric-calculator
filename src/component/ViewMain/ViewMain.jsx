@@ -673,7 +673,7 @@ export default function ViewMain({ user, onLogout }) {
                         <button className="vm-modal-close" onClick={() => setShowSaveModal(false)}><X size={18} /></button>
                         <h3>Lưu chi tiết</h3>
                         <p className="vm-modal-sub">
-                            Diện tích: <strong>{area?.toFixed(2)} cm²</strong>
+                            Diện tích: <strong>{(area/10000)?.toFixed(4)} m²</strong>
                             {selectedProject && <> · Folder: <strong>{selectedProject.name}</strong></>}
                         </p>
                         <div className="vm-field-group">
