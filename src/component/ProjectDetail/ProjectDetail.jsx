@@ -1184,19 +1184,19 @@ function ScanPanel({ project, cvReady, onSaved }) {
 
                     {step === 'adjust' && (
                         <div className="pd-result-grid">
-                            <div className="pd-result-card accent"><span>Diện tích</span><strong>{(area/10000)?.toFixed(4)}<em>m²</em></strong></div>
+                            <div className="pd-result-card accent"><span>Diện tích</span><strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong></div>
                             {/* <div className="pd-result-card"><span>Quy đổi</span><strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong></div> */}
                             <div className="pd-result-card"><span>Tỷ lệ</span><strong>{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong></div>
-                            <div className="pd-result-card"><span>Số đỉnh</span><strong>{polygonPoints.length}<em>đỉnh</em></strong></div>
+                            {/* <div className="pd-result-card"><span>Số đỉnh</span><strong>{polygonPoints.length}<em>đỉnh</em></strong></div> */}
                         </div>
                     )}
 
                     {step === 'result' && area !== null && (
                         <div className="pd-result-grid">
-                            <div className="pd-result-card accent"><span>Diện tích 1 chi tiết</span><strong>{(area/10000)?.toFixed(4)}<em>m²</em></strong></div>
+                            <div className="pd-result-card accent"><span>Diện tích 1 chi tiết</span><strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong></div>
                             {/* <div className="pd-result-card"><span>Quy đổi</span><strong>{(area / 10000).toFixed(4)}<em>m²</em></strong></div> */}
                             <div className="pd-result-card"><span>Tỷ lệ</span><strong>{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong></div>
-                            <div className="pd-result-card"><span>Số đỉnh</span><strong>{polygonPoints.length}<em>đỉnh</em></strong></div>
+                            {/* <div className="pd-result-card"><span>Số đỉnh</span><strong>{polygonPoints.length}<em>đỉnh</em></strong></div> */}
                             {quantity > 1 && (
                                 <div className="pd-result-card accent">
                                     <span>Tổng ({quantity} chi tiết)</span>
@@ -1593,7 +1593,7 @@ export default function ProjectDetail({ project, onBack }) {
                             <div className="pd-modal-footer">
                                 <Calendar size={13} />
                                 Đo lúc: {fmt(selected.created_at)}
-                                {parsePolygon(selected.polygon_points) > 0 && <span> · {parsePolygon(selected.polygon_points)} đỉnh</span>}
+                                {/* {parsePolygon(selected.polygon_points) > 0 && <span> · {parsePolygon(selected.polygon_points)} đỉnh</span>} */}
                             </div>
                         </div>
                     </div>
