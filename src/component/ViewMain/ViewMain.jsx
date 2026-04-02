@@ -53,8 +53,8 @@ export default function ViewMain({ user, onLogout }) {
     const [dragPointIdx, setDragPointIdx] = useState(-1);
     const [hoverPointIdx, setHoverPointIdx] = useState(-1);
 
-    const [pickedColor, setPickedColor] = useState(null); 
-    const [pickedRgb, setPickedRgb] = useState(null); 
+    const [pickedColor, setPickedColor] = useState(null);
+    const [pickedRgb, setPickedRgb] = useState(null);
 
     const [selectedProject, setSelectedProject] = useState(null);
     const [showProjectManager, setShowProjectManager] = useState(false);
@@ -573,7 +573,7 @@ export default function ViewMain({ user, onLogout }) {
                             <div className="vm-result-grid">
                                 <div className="vm-result-card accent">
                                     <span>Diện tích</span>
-                                    <strong>{(area/10000)?.toFixed(4)}<em>m²</em></strong>
+                                    <strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong>
                                 </div>
                                 {/* <div className="vm-result-card">
                                     <span>Quy đổi</span>
@@ -651,7 +651,7 @@ export default function ViewMain({ user, onLogout }) {
                                         ← Quét lại
                                     </button>
                                     <button className="vm-btn success" onClick={openSaveModal}>
-                                        <CheckCircle size={15} /> Xác nhận · {(area/10000)?.toFixed(4)} m²
+                                        <CheckCircle size={15} /> Xác nhận · {(area / 10000)?.toFixed(4)} m²
                                     </button>
                                 </>
                             )}
@@ -696,8 +696,8 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         </div>
                         <div className="vm-modal-preview">
-                            <div><span>Tổng</span><strong>{((area || 0) * quantity).toFixed(2)} cm²</strong></div>
-                            <div><span>Quy đổi</span><strong>{(((area || 0) * quantity) / 10000).toFixed(4)} m²</strong></div>
+                            {/* <div><span>Tổng</span><strong>{((area || 0) * quantity).toFixed(2)} cm²</strong></div> */}
+                            <div><span>Tổng</span><strong>{(((area || 0) * quantity) / 10000).toFixed(4)} m²</strong></div>
                         </div>
                         <div className="vm-modal-actions">
                             <button className="vm-btn ghost" onClick={() => setShowSaveModal(false)} disabled={saving}>Hủy</button>
