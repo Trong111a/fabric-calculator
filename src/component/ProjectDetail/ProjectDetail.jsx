@@ -877,49 +877,168 @@ function ScanPanel({ project, cvReady, onSaved }) {
     };
 
     const scanAndCalc = async () => {
-        if (!rawImageData || !cvReady || !pixelsPerCm) { alert('⚠️ Chưa hiệu chuẩn hoặc OpenCV chưa sẵn sàng'); return; }
+        if (!rawImageData || !cvReady || !pixelsPerCm) {
+            alert('⚠️ Chưa hiệu chuẩn hoặc OpenCV chưa sẵn sàng');
+            return;
+        }
         setLoading(true);
         try {
             const cv = window.cv;
             const src = cv.matFromImageData(rawImageData);
-            const hsv = new cv.Mat();
-            cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB); cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
-            const lo = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [0, 0, 60, 0]);
-            const hi = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [180, 60, 255, 255]);
-            const mask = new cv.Mat(); cv.inRange(hsv, lo, hi, mask);
-            const k1 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
-            const cl = new cv.Mat(); cv.morphologyEx(mask, cl, cv.MORPH_OPEN, k1, new cv.Point(-1, -1), 1);
-            const k2 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
-            const fi = new cv.Mat(); cv.morphologyEx(cl, fi, cv.MORPH_CLOSE, k2, new cv.Point(-1, -1), 1);
-            const cs = new cv.MatVector(); const hr = new cv.Mat();
-            cv.findContours(fi, cs, hr, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-            let best = null, mx = 0;
             const imgArea = src.cols * src.rows;
-            for (let i = 0; i < cs.size(); i++) {
-                const c = cs.get(i); const a = cv.contourArea(c); const pct = (a / imgArea) * 100;
-                if (pct < 2 || pct > 90) continue;
-                const rb = cv.boundingRect(c);
-                const ar = Math.max(rb.width, rb.height) / Math.min(rb.width, rb.height);
-                if (ar > 20) continue;
-                if (rb.x <= 10 || rb.y <= 10 || rb.x + rb.width >= src.cols - 10 || rb.y + rb.height >= src.rows - 10) continue;
-                const p = cv.arcLength(c, true); const sc = a * ((4 * Math.PI * a) / (p * p));
-                if (sc > mx) { mx = sc; best = c; }
-            }
-            if (!best) throw new Error('Không tìm thấy rập!');
-            const pe = cv.arcLength(best, true); const ap = new cv.Mat();
-            cv.approxPolyDP(best, ap, 0.002 * pe, true);
-            let pts = [];
-            for (let i = 0; i < ap.rows; i++) pts.push({ x: ap.data32S[i * 2], y: ap.data32S[i * 2 + 1] });
-            if (pts.length < 4) {
-                const hu = new cv.Mat(); cv.convexHull(best, hu, false, true); pts = [];
-                for (let i = 0; i < hu.data32S.length; i += 2) pts.push({ x: hu.data32S[i], y: hu.data32S[i + 1] });
-                hu.delete();
-            }
-            setPolygonPoints(pts); setArea(calcArea(pts, pixelsPerCm)); setStep('adjust');
-            [src, hsv, lo, hi, mask, k1, cl, k2, fi, cs, hr, ap].forEach(m => m?.delete?.());
-        } catch (err) { alert(`⚠️ ${err.message}`); } finally { setLoading(false); }
-    };
+            const imgW = src.cols;
+            const imgH = src.rows;
 
+            // ── Hàm chấm điểm contour ──
+            const scoreContour = (cnt) => {
+                const area = cv.contourArea(cnt);
+                const pct = (area / imgArea) * 100;
+                if (pct < 1.5 || pct > 92) return -1;
+                const rb = cv.boundingRect(cnt);
+                if (rb.x <= 5 || rb.y <= 5 ||
+                    rb.x + rb.width >= imgW - 5 ||
+                    rb.y + rb.height >= imgH - 5) return -1;
+                const ar = Math.max(rb.width, rb.height) / Math.min(rb.width, rb.height);
+                if (ar > 25) return -1;
+                const peri = cv.arcLength(cnt, true);
+                const compactness = (4 * Math.PI * area) / (peri * peri);
+                return area * compactness;
+            };
+
+            const getBestContour = (contours) => {
+                let best = null, mx = 0;
+                for (let i = 0; i < contours.size(); i++) {
+                    const c = contours.get(i);
+                    const sc = scoreContour(c);
+                    if (sc > mx) { mx = sc; best = c; }
+                }
+                return best;
+            };
+
+            let bestCnt = null;
+
+            // ── Phương pháp 1: HSV color range (nhiều range hơn) ──
+            const hsv = new cv.Mat();
+            cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB);
+            cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
+
+            const colorRanges = [
+                // Xám / trắng (vải phổ biến)
+                { lo: [0, 0, 40], hi: [180, 80, 255] },
+                // Beige / nâu nhạt
+                { lo: [10, 10, 100], hi: [30, 120, 255] },
+                // Xanh nhạt
+                { lo: [90, 10, 80], hi: [130, 120, 255] },
+                // Trắng đục
+                { lo: [0, 0, 180], hi: [180, 40, 255] },
+            ];
+
+            for (const range of colorRanges) {
+                const lo = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [...range.lo, 0]);
+                const hi = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [...range.hi, 255]);
+                const mask = new cv.Mat();
+                cv.inRange(hsv, lo, hi, mask);
+
+                const k1 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
+                const cl = new cv.Mat();
+                cv.morphologyEx(mask, cl, cv.MORPH_OPEN, k1, new cv.Point(-1, -1), 2);
+                const k2 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(7, 7));
+                const fi = new cv.Mat();
+                cv.morphologyEx(cl, fi, cv.MORPH_CLOSE, k2, new cv.Point(-1, -1), 3);
+
+                const cs = new cv.MatVector(); const hr = new cv.Mat();
+                cv.findContours(fi, cs, hr, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+                const candidate = getBestContour(cs);
+
+                [lo, hi, mask, k1, cl, k2, fi, cs, hr].forEach(m => m?.delete?.());
+
+                if (candidate && scoreContour(candidate) > 0) {
+                    bestCnt = candidate;
+                    break;
+                }
+            }
+            hsv.delete();
+
+            // ── Phương pháp 2: Canny edge fallback ──
+            if (!bestCnt) {
+                const gray = new cv.Mat();
+                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+
+                // Blur nhẹ để giảm noise
+                const blurred = new cv.Mat();
+                cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
+
+                // Canny với 2 ngưỡng
+                const edges = new cv.Mat();
+                cv.Canny(blurred, edges, 30, 100);
+
+                // Dilate để nối đứt
+                const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
+                const dilated = new cv.Mat();
+                cv.dilate(edges, dilated, kernel, new cv.Point(-1, -1), 3);
+
+                const cs = new cv.MatVector(); const hr = new cv.Mat();
+                cv.findContours(dilated, cs, hr, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+                bestCnt = getBestContour(cs);
+
+                [gray, blurred, edges, kernel, dilated, cs, hr].forEach(m => m?.delete?.());
+            }
+
+            // ── Phương pháp 3: Grayscale threshold fallback ──
+            if (!bestCnt) {
+                const gray = new cv.Mat();
+                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+
+                const binary = new cv.Mat();
+                // Otsu threshold tự động tìm ngưỡng tốt nhất
+                cv.threshold(gray, binary, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
+
+                const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
+                const cleaned = new cv.Mat();
+                cv.morphologyEx(binary, cleaned, cv.MORPH_CLOSE, kernel, new cv.Point(-1, -1), 3);
+
+                const cs = new cv.MatVector(); const hr = new cv.Mat();
+                cv.findContours(cleaned, cs, hr, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+                bestCnt = getBestContour(cs);
+
+                [gray, binary, kernel, cleaned, cs, hr].forEach(m => m?.delete?.());
+            }
+
+            src.delete();
+
+            if (!bestCnt) {
+                throw new Error('Không tìm thấy rập! Thử dùng "Vẽ thủ công" hoặc đặt rập trên nền tương phản hơn.');
+            }
+
+            // ── Lấy polygon từ contour tốt nhất ──
+            const peri = cv.arcLength(bestCnt, true);
+            const approx = new cv.Mat();
+            cv.approxPolyDP(bestCnt, approx, 0.002 * peri, true);
+            let pts = [];
+            for (let i = 0; i < approx.rows; i++) {
+                pts.push({ x: approx.data32S[i * 2], y: approx.data32S[i * 2 + 1] });
+            }
+            if (pts.length < 4) {
+                const hull = new cv.Mat();
+                cv.convexHull(bestCnt, hull, false, true);
+                pts = [];
+                for (let i = 0; i < hull.data32S.length; i += 2) {
+                    pts.push({ x: hull.data32S[i], y: hull.data32S[i + 1] });
+                }
+                hull.delete();
+            }
+            approx.delete();
+
+            setPolygonPoints(pts);
+            setArea(calcArea(pts, pixelsPerCm));
+            setStep('adjust');
+
+        } catch (err) {
+            alert(`⚠️ ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
     const openSaveModal = () => { setFileName(''); setQuantity(1); setShowSaveModal(true); };
 
     const saveResult = async () => {

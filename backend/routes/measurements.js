@@ -98,18 +98,20 @@ router.delete('/:id', auth, async (req, res) => {
 router.put('/:id', auth, async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, quantity, area_cm2 } = req.body;
+        const { name, quantity } = req.body;  // bỏ area_cm2, không cho sửa diện tích
 
         const result = await query(
             `UPDATE measurements 
-             SET name = $1, quantity = $2, area_cm2 = $3
-             WHERE id = $4 AND user_id = $5
+             SET name = COALESCE($1, name), 
+                 quantity = COALESCE($2, quantity),
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $3 AND user_id = $4
              RETURNING *`,
-            [name, quantity, area_cm2, id, req.user.id]
+            [name, quantity, id, req.user.id]
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Không tìm thấy bản ghi hoặc bạn không có quyền' });
+            return res.status(404).json({ error: 'Không tìm thấy hoặc không có quyền' });
         }
 
         res.json(result.rows[0]);
