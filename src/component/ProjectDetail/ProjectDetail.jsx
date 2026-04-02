@@ -1266,8 +1266,8 @@ function ScanPanel({ project, cvReady, onSaved }) {
                             </div>
                         </div>
                         <div className="pd-qty-preview">
-                            <div><span>Tổng</span><strong>{((area || 0) * quantity).toFixed(2)} cm²</strong></div>
-                            <div><span>Quy đổi</span><strong>{(((area || 0) * quantity) / 10000).toFixed(4)} m²</strong></div>
+                            <div><span>Tổng</span><strong>{((area || 0) * quantity) / 10000?.toFixed(4)} m²</strong></div>
+                            {/* <div><span>Quy đổi</span><strong>{(((area || 0) * quantity) / 10000).toFixed(4)} m²</strong></div> */}
                         </div>
                         <div className="pd-qty-actions">
                             <button className="pd-btn ghost" onClick={() => setShowSaveModal(false)} disabled={saving}>Hủy</button>
