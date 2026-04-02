@@ -631,7 +631,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                             </div>
                         </div>
                         <div className="pd-qty-preview">
-                            <div><span>Diện tích 1 chi tiết</span><strong>{area?.toFixed(2)} cm²</strong></div>
+                            <div><span>Diện tích 1 chi tiết</span><strong>{(area / 10000)?.toFixed(4)} m²</strong></div>
                             <div><span>Tổng ({quantity} chi tiết)</span><strong>{((area || 0) * quantity / 10000).toFixed(4)} m²</strong></div>
                         </div>
                         <div className="pd-qty-actions">
@@ -671,7 +671,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                             </div>
                         </div>
                         <div className="pd-qty-preview">
-                            <div><span>Diện tích 1 chi tiết</span><strong>{Number(editingMeasurement.area_cm2).toFixed(2)} cm²</strong></div>
+                            <div><span>Diện tích 1 chi tiết</span><strong>{(Number(editingMeasurement.area_cm2) / 10000).toFixed(4)} m²</strong></div>
                             <div><span>Tổng ({editQuantity} chi tiết)</span>
                                 <strong>{(Number(editingMeasurement.area_cm2) * editQuantity / 10000).toFixed(4)} m²</strong>
                             </div>
@@ -1184,8 +1184,8 @@ function ScanPanel({ project, cvReady, onSaved }) {
 
                     {step === 'adjust' && (
                         <div className="pd-result-grid">
-                            <div className="pd-result-card accent"><span>Diện tích</span><strong>{area?.toFixed(2)}<em>cm²</em></strong></div>
-                            <div className="pd-result-card"><span>Quy đổi</span><strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong></div>
+                            <div className="pd-result-card accent"><span>Diện tích</span><strong>{(area/10000)?.toFixed(4)}<em>m²</em></strong></div>
+                            {/* <div className="pd-result-card"><span>Quy đổi</span><strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong></div> */}
                             <div className="pd-result-card"><span>Tỷ lệ</span><strong>{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong></div>
                             <div className="pd-result-card"><span>Số đỉnh</span><strong>{polygonPoints.length}<em>đỉnh</em></strong></div>
                         </div>
@@ -1193,8 +1193,8 @@ function ScanPanel({ project, cvReady, onSaved }) {
 
                     {step === 'result' && area !== null && (
                         <div className="pd-result-grid">
-                            <div className="pd-result-card accent"><span>Diện tích 1 chi tiết</span><strong>{area.toFixed(2)}<em>cm²</em></strong></div>
-                            <div className="pd-result-card"><span>Quy đổi</span><strong>{(area / 10000).toFixed(4)}<em>m²</em></strong></div>
+                            <div className="pd-result-card accent"><span>Diện tích 1 chi tiết</span><strong>{(area/10000)?.toFixed(4)}<em>m²</em></strong></div>
+                            {/* <div className="pd-result-card"><span>Quy đổi</span><strong>{(area / 10000).toFixed(4)}<em>m²</em></strong></div> */}
                             <div className="pd-result-card"><span>Tỷ lệ</span><strong>{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong></div>
                             <div className="pd-result-card"><span>Số đỉnh</span><strong>{polygonPoints.length}<em>đỉnh</em></strong></div>
                             {quantity > 1 && (
@@ -1569,7 +1569,7 @@ export default function ProjectDetail({ project, onBack }) {
                             <div className="pd-modal-grid">
                                 <div className="pd-modal-card accent">
                                     <div className="pd-modal-card-label">Diện tích 1 chi tiết</div>
-                                    <div className="pd-modal-card-value">{Number(selected.area_cm2).toFixed(2)}<em>cm²</em></div>
+                                    <div className="pd-modal-card-value">{(Number(selected.area_cm2) / 10000)?.toFixed(4)}<em>m²</em></div>
                                 </div>
                                 <div className="pd-modal-card">
                                     <div className="pd-modal-card-label">Số lượng</div>
@@ -1609,7 +1609,7 @@ export default function ProjectDetail({ project, onBack }) {
                             const areaCm2 = Number(m?.area_cm2 || 0);
                             return (
                                 <>
-                                    <p className="pd-qty-sub">Diện tích 1 chi tiết: <strong>{areaCm2.toFixed(2)} cm²</strong></p>
+                                    <p className="pd-qty-sub">Diện tích 1 chi tiết: <strong>{(areaCm2 / 10000)?.toFixed(4)} m²</strong></p>
                                     <div className="pd-field-group">
                                         <label className="pd-field-label">Tên chi tiết <span style={{ color: '#ef4444' }}>*</span></label>
                                         <input className="pd-field-input" type="text" value={editName}
@@ -1628,7 +1628,7 @@ export default function ProjectDetail({ project, onBack }) {
                                         </div>
                                     </div>
                                     <div className="pd-qty-preview">
-                                        <div><span>Diện tích 1 chi tiết</span><strong>{areaCm2.toFixed(2)} cm²</strong></div>
+                                        <div><span>Diện tích 1 chi tiết</span><strong>{(areaCm2 / 10000)?.toFixed(4)} m²</strong></div>
                                         <div><span>Tổng ({editQuantity} chi tiết)</span>
                                             <strong>{(areaCm2 * editQuantity / 10000).toFixed(4)} m²</strong></div>
                                     </div>
