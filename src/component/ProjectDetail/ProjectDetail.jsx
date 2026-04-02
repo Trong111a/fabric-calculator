@@ -500,7 +500,10 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                         <div className="pd-result-grid">
                             <div className="pd-result-card accent">
                                 <span>{step === 'result' ? 'Diện tích 1 chi tiết' : 'Diện tích'}</span>
-                                <strong>{area?.toFixed(2) ?? '—'}<em>cm²</em></strong>
+                                <strong>
+                                    {area ? (area / 10000).toFixed(4) : '—'}
+                                    <em>m²</em>
+                                </strong>
                             </div>
                             <div className="pd-result-card accent">
                                 <span>Diện tích (m²)</span>
@@ -818,7 +821,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 const fs = Math.max(20, W / 25);
                 ctx.font = `bold ${fs}px Arial`;
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                const txt = `${area.toFixed(2)} cm²`;
+                const txt = `${(area / 10000).toFixed(4)} m²`;
                 const tw = ctx.measureText(txt).width; const pad = fs * 0.55;
                 ctx.fillStyle = 'rgba(79,70,229,0.88)';
                 ctx.beginPath();
@@ -1144,7 +1147,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                             <div className="pd-overlay"><div className="pd-overlay-spinner" /><span>Đang phân tích ảnh...</span></div>
                         )}
                         {step === 'adjust' && area !== null && (
-                            <div className="pd-area-badge">{area.toFixed(2)} cm² · {(area / 10000).toFixed(4)} m²</div>
+                            <div className="pd-area-badge">{(area / 10000).toFixed(4)} m²</div>
                         )}
                     </div>
 
