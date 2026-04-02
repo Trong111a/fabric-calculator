@@ -532,7 +532,8 @@ export default function ViewMain({ user, onLogout }) {
                             )}
                             {step === 'adjust' && area !== null && (
                                 <div className="vm-area-badge">
-                                    {area.toFixed(2)} cm² &nbsp;·&nbsp; {(area / 10000).toFixed(4)} m²
+                                    {/* {area.toFixed(2)} cm² &nbsp;·&nbsp;  */}
+                                    {(area / 10000).toFixed(4)} m²
                                 </div>
                             )}
                         </div>
@@ -572,20 +573,20 @@ export default function ViewMain({ user, onLogout }) {
                             <div className="vm-result-grid">
                                 <div className="vm-result-card accent">
                                     <span>Diện tích</span>
-                                    <strong>{area?.toFixed(2)}<em>cm²</em></strong>
+                                    <strong>{(area/10000)?.toFixed(4)}<em>m²</em></strong>
                                 </div>
-                                <div className="vm-result-card">
+                                {/* <div className="vm-result-card">
                                     <span>Quy đổi</span>
                                     <strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong>
-                                </div>
+                                </div> */}
                                 <div className="vm-result-card">
                                     <span>Tỷ lệ</span>
                                     <strong>{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong>
                                 </div>
-                                <div className="vm-result-card">
+                                {/* <div className="vm-result-card">
                                     <span>Số đỉnh</span>
                                     <strong>{polygonPoints.length}<em>đỉnh</em></strong>
-                                </div>
+                                </div> */}
                             </div>
                         )}
 
@@ -650,7 +651,7 @@ export default function ViewMain({ user, onLogout }) {
                                         ← Quét lại
                                     </button>
                                     <button className="vm-btn success" onClick={openSaveModal}>
-                                        <CheckCircle size={15} /> Xác nhận · {area?.toFixed(1)} cm²
+                                        <CheckCircle size={15} /> Xác nhận · {(area/10000)?.toFixed(4)} m²
                                     </button>
                                 </>
                             )}
