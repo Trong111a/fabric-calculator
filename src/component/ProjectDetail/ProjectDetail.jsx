@@ -1230,10 +1230,10 @@ function ScanPanel({ project, cvReady, onSaved }) {
                             <>
                                 <button className="pd-btn ghost" onClick={() => { setStep('scan'); setPolygonPoints([]); setArea(null); }}>← Quét lại</button>
                                 <button className="pd-btn success" onClick={openSaveModal}>
-                                    <CheckCircle size={15} /> Xác nhận · {area?.toFixed(1)} cm²
+                                    <CheckCircle size={15} /> Xác nhận · {(area / 10000)?.toFixed(4)} m²
                                 </button>
                             </>
-                        )}
+                        )
                         {step === 'result' && (
                             <button className="pd-btn primary" onClick={reset}><Upload size={15} /> Đo chi tiết khác</button>
                         )}
