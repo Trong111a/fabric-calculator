@@ -19,6 +19,22 @@ function calcArea(pts, ppc) {
     return Math.abs(s) / 2 / (ppc * ppc);
 }
 
+function rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    let h = 0;
+    const s = max === 0 ? 0 : d / max;
+    const v = max;
+    if (max !== min) {
+        switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+        }
+    }
+    return { h: Math.round(h * 180), s: Math.round(s * 255), v: Math.round(v * 255) };
+}
+
 /* ══════════════════════════════════════════════════════════
    MANUAL DRAW PANEL — chạm/click để đặt điểm, tính diện tích
 ══════════════════════════════════════════════════════════ */
@@ -690,6 +706,9 @@ function ScanPanel({ project, cvReady, onSaved }) {
     const [dragPointIdx, setDragPointIdx] = useState(-1);
     const [hoverPointIdx, setHoverPointIdx] = useState(-1);
 
+    const [pickedColor, setPickedColor] = useState(null);
+    const [pickedRgb, setPickedRgb] = useState(null);
+
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [fileName, setFileName] = useState('');
     const [quantity, setQuantity] = useState(1);
@@ -708,6 +727,20 @@ function ScanPanel({ project, cvReady, onSaved }) {
         ctx.drawImage(image, 0, 0);
         const W = image.width;
         const displayScale = canvas.width / (canvas.getBoundingClientRect().width || canvas.width);
+
+        // Overlay pick mode
+        if (step === 'pick') {
+            ctx.fillStyle = 'rgba(0,0,0,0.35)';
+            ctx.fillRect(0, 0, W, image.height);
+            const fs = Math.max(22, W / 22);
+            ctx.font = `bold ${fs}px Arial`;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'rgba(0,0,0,0.55)';
+            ctx.fillText('Chạm vào bề mặt rập để lấy màu', W / 2 + 3, image.height / 2 + 3);
+            ctx.fillStyle = '#fff';
+            ctx.fillText('Chạm vào bề mặt rập để lấy màu', W / 2, image.height / 2);
+            ctx.textBaseline = 'alphabetic';
+        }
 
         if (step === 'calibrate') {
             ctx.save();
@@ -817,7 +850,23 @@ function ScanPanel({ project, cvReady, onSaved }) {
         return -1;
     }, [polygonPoints]);
 
+    const handleColorPick = (clientX, clientY) => {
+        if (step !== 'pick' || !rawImageData) return;
+        const { x, y } = toCanvas(clientX, clientY);
+        const px = Math.max(0, Math.min(Math.floor(x), rawImageData.width - 1));
+        const py = Math.max(0, Math.min(Math.floor(y), rawImageData.height - 1));
+        const idx = (py * rawImageData.width + px) * 4;
+        const r = rawImageData.data[idx];
+        const g = rawImageData.data[idx + 1];
+        const b = rawImageData.data[idx + 2];
+        const hsv = rgbToHsv(r, g, b);
+        setPickedColor(hsv);
+        setPickedRgb({ r, g, b });
+        setStep('scan');
+    };
+
     const onPointerDown = (clientX, clientY) => {
+        if (step === 'pick') { handleColorPick(clientX, clientY); return; }
         const { x, y } = toCanvas(clientX, clientY);
         if (step === 'calibrate') {
             const rad = (-rulerAngle * Math.PI) / 180;
@@ -834,6 +883,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
     };
 
     const onPointerMove = (clientX, clientY) => {
+        if (step === 'pick') return;
         const { x, y } = toCanvas(clientX, clientY);
         if (step === 'calibrate' && isDraggingRuler) {
             setRulerPos({ x: x - rulerDragOffset.x, y: y - rulerDragOffset.y }); return;
@@ -850,6 +900,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
     const onPointerUp = () => { setIsDraggingRuler(false); setDragPointIdx(-1); };
 
     const getCursor = () => {
+        if (step === 'pick') return 'crosshair';
         if (step === 'calibrate') return isDraggingRuler ? 'grabbing' : 'grab';
         if (step === 'adjust') return dragPointIdx >= 0 ? 'grabbing' : hoverPointIdx >= 0 ? 'grab' : 'default';
         return 'default';
@@ -868,6 +919,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 setRawImageData(octx.getImageData(0, 0, img.width, img.height));
                 setStep('calibrate'); setPolygonPoints([]); setArea(null); setPixelsPerCm(null);
                 setDragPointIdx(-1); setHoverPointIdx(-1);
+                setPickedColor(null); setPickedRgb(null);
                 setRulerPos({ x: img.width * 0.74, y: img.height * 0.12 });
                 setRulerLength(img.height * 0.65); setRulerAngle(90);
             };
@@ -878,167 +930,88 @@ function ScanPanel({ project, cvReady, onSaved }) {
 
     const scanAndCalc = async () => {
         if (!rawImageData || !cvReady || !pixelsPerCm) {
-            alert('⚠️ Chưa hiệu chuẩn hoặc OpenCV chưa sẵn sàng');
-            return;
+            alert('⚠️ Chưa hiệu chuẩn hoặc OpenCV chưa sẵn sàng'); return;
         }
         setLoading(true);
         try {
             const cv = window.cv;
             const src = cv.matFromImageData(rawImageData);
-            const imgArea = src.cols * src.rows;
-            const imgW = src.cols;
-            const imgH = src.rows;
-
-            // ── Hàm chấm điểm contour ──
-            const scoreContour = (cnt) => {
-                const area = cv.contourArea(cnt);
-                const pct = (area / imgArea) * 100;
-                if (pct < 1.5 || pct > 92) return -1;
-                const rb = cv.boundingRect(cnt);
-                if (rb.x <= 5 || rb.y <= 5 ||
-                    rb.x + rb.width >= imgW - 5 ||
-                    rb.y + rb.height >= imgH - 5) return -1;
-                const ar = Math.max(rb.width, rb.height) / Math.min(rb.width, rb.height);
-                if (ar > 25) return -1;
-                const peri = cv.arcLength(cnt, true);
-                const compactness = (4 * Math.PI * area) / (peri * peri);
-                return area * compactness;
-            };
-
-            const getBestContour = (contours) => {
-                let best = null, mx = 0;
-                for (let i = 0; i < contours.size(); i++) {
-                    const c = contours.get(i);
-                    const sc = scoreContour(c);
-                    if (sc > mx) { mx = sc; best = c; }
-                }
-                return best;
-            };
-
-            let bestCnt = null;
-
-            // ── Phương pháp 1: HSV color range (nhiều range hơn) ──
             const hsv = new cv.Mat();
             cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB);
             cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
 
-            const colorRanges = [
-                // Xám / trắng (vải phổ biến)
-                { lo: [0, 0, 40], hi: [180, 80, 255] },
-                // Beige / nâu nhạt
-                { lo: [10, 10, 100], hi: [30, 120, 255] },
-                // Xanh nhạt
-                { lo: [90, 10, 80], hi: [130, 120, 255] },
-                // Trắng đục
-                { lo: [0, 0, 180], hi: [180, 40, 255] },
-            ];
+            let loArr, hiArr;
+            if (pickedColor) {
+                const { h, s, v } = pickedColor;
+                const hR = 18, sR = 70, vR = 70;
+                loArr = [Math.max(0, h - hR), Math.max(0, s - sR), Math.max(0, v - vR), 0];
+                hiArr = [Math.min(180, h + hR), Math.min(255, s + sR), Math.min(255, v + vR), 255];
+            } else {
+                loArr = [0, 0, 60, 0];
+                hiArr = [180, 60, 255, 255];
+            }
 
-            for (const range of colorRanges) {
-                const lo = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [...range.lo, 0]);
-                const hi = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [...range.hi, 255]);
-                const mask = new cv.Mat();
-                cv.inRange(hsv, lo, hi, mask);
+            const lo = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), loArr);
+            const hi = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), hiArr);
+            const mask = new cv.Mat(); cv.inRange(hsv, lo, hi, mask);
+            const k1 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
+            const cl = new cv.Mat(); cv.morphologyEx(mask, cl, cv.MORPH_OPEN, k1, new cv.Point(-1, -1), 1);
+            const k2 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
+            const fi = new cv.Mat(); cv.morphologyEx(cl, fi, cv.MORPH_CLOSE, k2, new cv.Point(-1, -1), 1);
+            const cs = new cv.MatVector(); const hr = new cv.Mat();
+            cv.findContours(fi, cs, hr, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
 
-                const k1 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
-                const cl = new cv.Mat();
-                cv.morphologyEx(mask, cl, cv.MORPH_OPEN, k1, new cv.Point(-1, -1), 2);
-                const k2 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(7, 7));
-                const fi = new cv.Mat();
-                cv.morphologyEx(cl, fi, cv.MORPH_CLOSE, k2, new cv.Point(-1, -1), 3);
+            let best = null, mx = 0;
+            const imgArea = src.cols * src.rows;
+            for (let i = 0; i < cs.size(); i++) {
+                const c = cs.get(i); const a = cv.contourArea(c); const pct = (a / imgArea) * 100;
+                if (pct < 2 || pct > 90) continue;
+                const rb = cv.boundingRect(c);
+                const ar = Math.max(rb.width, rb.height) / Math.min(rb.width, rb.height);
+                if (ar > 20) continue;
+                if (rb.x <= 10 || rb.y <= 10 || rb.x + rb.width >= src.cols - 10 || rb.y + rb.height >= src.rows - 10) continue;
+                const p = cv.arcLength(c, true); const sc = a * ((4 * Math.PI * a) / (p * p));
+                if (sc > mx) { mx = sc; best = c; }
+            }
 
-                const cs = new cv.MatVector(); const hr = new cv.Mat();
-                cv.findContours(fi, cs, hr, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-                const candidate = getBestContour(cs);
-
-                [lo, hi, mask, k1, cl, k2, fi, cs, hr].forEach(m => m?.delete?.());
-
-                if (candidate && scoreContour(candidate) > 0) {
-                    bestCnt = candidate;
-                    break;
+            // Fallback: Canny
+            if (!best) {
+                const gray = new cv.Mat();
+                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+                const blurred = new cv.Mat(); cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
+                const edges = new cv.Mat(); cv.Canny(blurred, edges, 30, 100);
+                const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
+                const dilated = new cv.Mat(); cv.dilate(edges, dilated, kernel, new cv.Point(-1, -1), 3);
+                const cs2 = new cv.MatVector(); const hr2 = new cv.Mat();
+                cv.findContours(dilated, cs2, hr2, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+                let mx2 = 0;
+                for (let i = 0; i < cs2.size(); i++) {
+                    const c = cs2.get(i); const a = cv.contourArea(c); const pct = (a / imgArea) * 100;
+                    if (pct < 2 || pct > 90) continue;
+                    const rb = cv.boundingRect(c);
+                    if (rb.x <= 5 || rb.y <= 5 || rb.x + rb.width >= src.cols - 5 || rb.y + rb.height >= src.rows - 5) continue;
+                    const p = cv.arcLength(c, true); const sc = a * ((4 * Math.PI * a) / (p * p));
+                    if (sc > mx2) { mx2 = sc; best = c; }
                 }
-            }
-            hsv.delete();
-
-            // ── Phương pháp 2: Canny edge fallback ──
-            if (!bestCnt) {
-                const gray = new cv.Mat();
-                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-
-                // Blur nhẹ để giảm noise
-                const blurred = new cv.Mat();
-                cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
-
-                // Canny với 2 ngưỡng
-                const edges = new cv.Mat();
-                cv.Canny(blurred, edges, 30, 100);
-
-                // Dilate để nối đứt
-                const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
-                const dilated = new cv.Mat();
-                cv.dilate(edges, dilated, kernel, new cv.Point(-1, -1), 3);
-
-                const cs = new cv.MatVector(); const hr = new cv.Mat();
-                cv.findContours(dilated, cs, hr, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-                bestCnt = getBestContour(cs);
-
-                [gray, blurred, edges, kernel, dilated, cs, hr].forEach(m => m?.delete?.());
+                [gray, blurred, edges, kernel, dilated, cs2, hr2].forEach(m => m?.delete?.());
             }
 
-            // ── Phương pháp 3: Grayscale threshold fallback ──
-            if (!bestCnt) {
-                const gray = new cv.Mat();
-                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+            if (!best) throw new Error('Không tìm thấy rập! Hãy chọn lại màu rập hoặc dùng "Vẽ thủ công".');
 
-                const binary = new cv.Mat();
-                // Otsu threshold tự động tìm ngưỡng tốt nhất
-                cv.threshold(gray, binary, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
-
-                const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
-                const cleaned = new cv.Mat();
-                cv.morphologyEx(binary, cleaned, cv.MORPH_CLOSE, kernel, new cv.Point(-1, -1), 3);
-
-                const cs = new cv.MatVector(); const hr = new cv.Mat();
-                cv.findContours(cleaned, cs, hr, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-                bestCnt = getBestContour(cs);
-
-                [gray, binary, kernel, cleaned, cs, hr].forEach(m => m?.delete?.());
-            }
-
-            src.delete();
-
-            if (!bestCnt) {
-                throw new Error('Không tìm thấy rập! Thử dùng "Vẽ thủ công" hoặc đặt rập trên nền tương phản hơn.');
-            }
-
-            // ── Lấy polygon từ contour tốt nhất ──
-            const peri = cv.arcLength(bestCnt, true);
-            const approx = new cv.Mat();
-            cv.approxPolyDP(bestCnt, approx, 0.002 * peri, true);
+            const pe = cv.arcLength(best, true); const ap = new cv.Mat();
+            cv.approxPolyDP(best, ap, 0.002 * pe, true);
             let pts = [];
-            for (let i = 0; i < approx.rows; i++) {
-                pts.push({ x: approx.data32S[i * 2], y: approx.data32S[i * 2 + 1] });
-            }
+            for (let i = 0; i < ap.rows; i++) pts.push({ x: ap.data32S[i * 2], y: ap.data32S[i * 2 + 1] });
             if (pts.length < 4) {
-                const hull = new cv.Mat();
-                cv.convexHull(bestCnt, hull, false, true);
-                pts = [];
-                for (let i = 0; i < hull.data32S.length; i += 2) {
-                    pts.push({ x: hull.data32S[i], y: hull.data32S[i + 1] });
-                }
-                hull.delete();
+                const hu = new cv.Mat(); cv.convexHull(best, hu, false, true); pts = [];
+                for (let i = 0; i < hu.data32S.length; i += 2) pts.push({ x: hu.data32S[i], y: hu.data32S[i + 1] });
+                hu.delete();
             }
-            approx.delete();
-
-            setPolygonPoints(pts);
-            setArea(calcArea(pts, pixelsPerCm));
-            setStep('adjust');
-
-        } catch (err) {
-            alert(`⚠️ ${err.message}`);
-        } finally {
-            setLoading(false);
-        }
+            setPolygonPoints(pts); setArea(calcArea(pts, pixelsPerCm)); setStep('adjust');
+            [src, hsv, lo, hi, mask, k1, cl, k2, fi, cs, hr, ap].forEach(m => m?.delete?.());
+        } catch (err) { alert(`⚠️ ${err.message}`); } finally { setLoading(false); }
     };
+
     const openSaveModal = () => { setFileName(''); setQuantity(1); setShowSaveModal(true); };
 
     const saveResult = async () => {
@@ -1059,11 +1032,13 @@ function ScanPanel({ project, cvReady, onSaved }) {
         setImage(null); setRawImageData(null); setStep('upload');
         setPolygonPoints([]); setArea(null); setPixelsPerCm(null);
         setDragPointIdx(-1); setHoverPointIdx(-1);
+        setPickedColor(null); setPickedRgb(null);
     };
 
     const STEPS = [
         { key: 'upload', label: 'Tải ảnh' },
         { key: 'calibrate', label: 'Hiệu chuẩn' },
+        { key: 'pick', label: 'Chọn màu' },
         { key: 'scan', label: 'Quét rập' },
         { key: 'adjust', label: 'Chỉnh sửa' },
         { key: 'result', label: 'Kết quả' },
@@ -1120,18 +1095,34 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 <>
                     <div className="pd-guide">
                         <span className="pd-guide-icon">
-                            {step === 'calibrate' ? '📏' : step === 'scan' ? '🔍' : step === 'adjust' ? '✋' : '✅'}
+                            {step === 'calibrate' ? '📏' : step === 'pick' ? '🎯' : step === 'scan' ? '🔍' : step === 'adjust' ? '✋' : '✅'}
                         </span>
                         <div>
                             <strong>
                                 {step === 'calibrate' && 'Hiệu chuẩn thước đo'}
+                                {step === 'pick' && 'Chọn màu rập'}
                                 {step === 'scan' && 'Quét & nhận diện rập'}
                                 {step === 'adjust' && 'Chỉnh polygon — kéo từng điểm để khớp viền rập'}
                                 {step === 'result' && 'Hoàn tất — đã lưu thành công'}
                             </strong>
                             <span>
                                 {step === 'calibrate' && 'Kéo thước vào vật chuẩn 30cm · chỉnh độ dài & góc bên dưới'}
-                                {step === 'scan' && `Tỷ lệ: ${pixelsPerCm?.toFixed(2)} px/cm · Folder: ${project.name}`}
+                                {step === 'pick' && 'Chạm / click vào bề mặt rập — hệ thống sẽ nhận màu và tìm biên'}
+                                {step === 'scan' && (
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                        Tỷ lệ: {pixelsPerCm?.toFixed(2)} px/cm · Folder: {project.name}
+                                        {pickedRgb && (
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                                · Màu rập:
+                                                <span style={{
+                                                    display: 'inline-block', width: 14, height: 14, borderRadius: 3,
+                                                    background: `rgb(${pickedRgb.r},${pickedRgb.g},${pickedRgb.b})`,
+                                                    border: '1px solid #ccc', verticalAlign: 'middle'
+                                                }} />
+                                            </span>
+                                        )}
+                                    </span>
+                                )}
                                 {step === 'adjust' && 'Diện tích cập nhật realtime · Xác nhận để đặt tên & lưu'}
                                 {step === 'result' && `${area?.toFixed(2)} cm² · ${(area / 10000)?.toFixed(4)} m²`}
                             </span>
@@ -1215,13 +1206,18 @@ function ScanPanel({ project, cvReady, onSaved }) {
                     <div className="pd-actions">
                         <button className="pd-btn ghost" onClick={reset}><RotateCcw size={15} /> Làm lại</button>
                         {step === 'calibrate' && (
-                            <button className="pd-btn primary" onClick={() => { setPixelsPerCm(rulerLength / 30); setStep('scan'); }}>
+                            <button className="pd-btn primary" onClick={() => { setPixelsPerCm(rulerLength / 30); setStep('pick'); }}>
                                 <CheckCircle size={15} /> Xác nhận · {(rulerLength / 30).toFixed(1)} px/cm
                             </button>
                         )}
+                        {step === 'pick' && (
+                            <button className="pd-btn ghost" onClick={() => setStep('calibrate')}>← Hiệu chuẩn lại</button>
+                        )}
                         {step === 'scan' && (
                             <>
-                                <button className="pd-btn ghost" onClick={() => setStep('calibrate')}>← Hiệu chuẩn lại</button>
+                                <button className="pd-btn ghost" onClick={() => setStep('pick')}>
+                                    🎯 Chọn lại màu
+                                </button>
                                 <button className="pd-btn primary" disabled={loading} onClick={scanAndCalc}>
                                     <Ruler size={15} /> Quét &amp; Tính
                                 </button>
@@ -1281,7 +1277,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
         </div>
     );
 }
-
 /* ══════════════════════════════════════════════════════════
    DOWNLOAD CSV
 ══════════════════════════════════════════════════════════ */
@@ -1397,6 +1392,11 @@ export default function ProjectDetail({ project, onBack }) {
     const [deletingId, setDeletingId] = useState(null);
     const [cvReady, setCvReady] = useState(false);
 
+    const [editingId, setEditingId] = useState(null);
+    const [editName, setEditName] = useState('');
+    const [editQuantity, setEditQuantity] = useState(1);
+    const [editSaving, setEditSaving] = useState(false);
+
     useEffect(() => {
         const check = () => { if (window.cv && window.cv.Mat) setCvReady(true); else setTimeout(check, 100); };
         if (!document.getElementById('opencv-script')) {
@@ -1430,6 +1430,18 @@ export default function ProjectDetail({ project, onBack }) {
 
     const totalArea = measurements.reduce((s, m) => s + (Number(m.area_cm2) * (m.quantity || 1)), 0);
     const totalQty = measurements.reduce((s, m) => s + (m.quantity || 1), 0);
+
+    const saveEdit = async () => {
+        if (!editName.trim()) { alert('Vui lòng nhập tên'); return; }
+        setEditSaving(true);
+        try {
+            await api.updateMeasurement(editingId, { name: editName.trim(), quantity: editQuantity });
+            setMeasurements(prev => prev.map(m =>
+                m.id === editingId ? { ...m, name: editName.trim(), quantity: editQuantity } : m
+            ));
+            setEditingId(null);
+        } catch (e) { alert('Lỗi cập nhật: ' + e.message); } finally { setEditSaving(false); }
+    };
 
     const TABS = [
         { key: 'list', icon: <Layers size={15} />, label: `Danh sách (${measurements.length})` },
@@ -1487,14 +1499,18 @@ export default function ProjectDetail({ project, onBack }) {
                         ) : (
                             <div className="pd-grid">
                                 {measurements.map(m => (
-                                    <div key={m.id} className={`pd-card${deletingId === m.id ? ' is-deleting' : ''}`} onClick={() => setSelected(m)}>
+                                    <div key={m.id} className={`pd-card${deletingId === m.id ? ' is-deleting' : ''}`}
+                                        onClick={() => setSelected(m)}>
                                         {m.thumbnail_url ? (
-                                            <img className="pd-card-thumb" src={m.thumbnail_url} alt={m.name} onError={e => { e.target.style.display = 'none'; }} />
+                                            <img className="pd-card-thumb" src={m.thumbnail_url} alt={m.name}
+                                                onError={e => { e.target.style.display = 'none'; }} />
                                         ) : (
                                             <div className="pd-card-thumb-placeholder"><Layers size={40} /></div>
                                         )}
                                         <div className="pd-card-hint"><ZoomIn size={12} /> Xem chi tiết</div>
-                                        <button className="pd-delete-btn" onClick={e => handleDelete(e, m.id)} title="Xóa"><Trash2 size={13} /></button>
+                                        <button className="pd-delete-btn" onClick={e => handleDelete(e, m.id)} title="Xóa">
+                                            <Trash2 size={13} />
+                                        </button>
                                         <div className="pd-card-body">
                                             <h3 className="pd-card-title">{m.name}</h3>
                                             <div className="pd-card-meta">
@@ -1505,6 +1521,19 @@ export default function ProjectDetail({ project, onBack }) {
                                                 <span className="pd-area-value">{(Number(m.area_cm2) * (m.quantity || 1) / 10000).toFixed(4)}</span>
                                                 <span className="pd-area-unit">m²</span>
                                             </div>
+                                            {/* Nút sửa */}
+                                            <button
+                                                className="pd-btn ghost"
+                                                style={{ marginTop: 8, width: '100%', justifyContent: 'center', fontSize: 12, padding: '6px 0' }}
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                    setEditingId(m.id);
+                                                    setEditName(m.name);
+                                                    setEditQuantity(m.quantity || 1);
+                                                }}
+                                            >
+                                                <Pencil size={12} /> Sửa tên / số lượng
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
@@ -1564,6 +1593,51 @@ export default function ProjectDetail({ project, onBack }) {
                                 {parsePolygon(selected.polygon_points) > 0 && <span> · {parsePolygon(selected.polygon_points)} đỉnh</span>}
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+            {editingId && (
+                <div className="pd-modal-bg" onClick={e => e.target === e.currentTarget && setEditingId(null)}>
+                    <div className="pd-qty-modal">
+                        <button className="pd-modal-x" onClick={() => setEditingId(null)}><X size={18} /></button>
+                        <h3>Sửa chi tiết</h3>
+                        {(() => {
+                            const m = measurements.find(m => m.id === editingId);
+                            const areaCm2 = Number(m?.area_cm2 || 0);
+                            return (
+                                <>
+                                    <p className="pd-qty-sub">Diện tích 1 chi tiết: <strong>{areaCm2.toFixed(2)} cm²</strong></p>
+                                    <div className="pd-field-group">
+                                        <label className="pd-field-label">Tên chi tiết <span style={{ color: '#ef4444' }}>*</span></label>
+                                        <input className="pd-field-input" type="text" value={editName}
+                                            onChange={e => setEditName(e.target.value)}
+                                            placeholder="Tên chi tiết..."
+                                            maxLength={100} autoFocus
+                                            onKeyDown={e => e.key === 'Enter' && !editSaving && editName.trim() && saveEdit()} />
+                                    </div>
+                                    <div className="pd-field-group">
+                                        <label className="pd-field-label">Số lượng</label>
+                                        <div className="pd-qty-control">
+                                            <button onClick={() => setEditQuantity(q => Math.max(1, q - 1))}>−</button>
+                                            <input type="number" min="1" max="9999" value={editQuantity}
+                                                onChange={e => setEditQuantity(Math.max(1, parseInt(e.target.value) || 1))} />
+                                            <button onClick={() => setEditQuantity(q => Math.min(9999, q + 1))}>+</button>
+                                        </div>
+                                    </div>
+                                    <div className="pd-qty-preview">
+                                        <div><span>Diện tích 1 chi tiết</span><strong>{areaCm2.toFixed(2)} cm²</strong></div>
+                                        <div><span>Tổng ({editQuantity} chi tiết)</span>
+                                            <strong>{(areaCm2 * editQuantity / 10000).toFixed(4)} m²</strong></div>
+                                    </div>
+                                    <div className="pd-qty-actions">
+                                        <button className="pd-btn ghost" onClick={() => setEditingId(null)} disabled={editSaving}>Hủy</button>
+                                        <button className="pd-btn primary" onClick={saveEdit} disabled={editSaving || !editName.trim()}>
+                                            <Save size={15} />{editSaving ? 'Đang lưu...' : 'Cập nhật'}
+                                        </button>
+                                    </div>
+                                </>
+                            );
+                        })()}
                     </div>
                 </div>
             )}
