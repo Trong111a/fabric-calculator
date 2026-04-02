@@ -1234,6 +1234,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                                 </button>
                             </>
                         )
+                        }
                         {step === 'result' && (
                             <button className="pd-btn primary" onClick={reset}><Upload size={15} /> Đo chi tiết khác</button>
                         )}
