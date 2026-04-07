@@ -4,6 +4,7 @@ import {
     Camera, Upload, RotateCcw, Ruler, CheckCircle,
     Folder, LogOut, X, Save, Pipette
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../services/api';
 import ProjectManager from '../ProjectManager/ProjectManager';
 import './ViewMain.css';
@@ -35,6 +36,7 @@ function rgbToHsv(r, g, b) {
 }
 
 export default function ViewMain({ user, onLogout }) {
+    const { t } = useTranslation();
     const [image, setImage] = useState(null);
     const [rawImageData, setRawImageData] = useState(null);
     const [step, setStep] = useState('upload');
@@ -64,7 +66,6 @@ export default function ViewMain({ user, onLogout }) {
     const [quantity, setQuantity] = useState(1);
     const [saving, setSaving] = useState(false);
 
-    // Zoom / pan state
     const [zoom, setZoom] = useState(1);
     const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
 
@@ -87,7 +88,6 @@ export default function ViewMain({ user, onLogout }) {
         } else load();
     }, []);
 
-    // Zoom bằng wheel
     const handleWheel = useCallback((e) => {
         e.preventDefault();
         const delta = e.deltaY > 0 ? 0.9 : 1.1;
@@ -116,12 +116,11 @@ export default function ViewMain({ user, onLogout }) {
             ctx.fillRect(0, 0, W, image.height);
             const fs = Math.max(22, W / 22);
             ctx.font = `bold ${fs}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillStyle = 'rgba(0,0,0,0.55)';
-            ctx.fillText('Chạm vào bề mặt rập để lấy màu', W / 2 + 3, image.height / 2 + 3);
+            ctx.fillText(t('guide_pick_sub'), W / 2 + 3, image.height / 2 + 3);
             ctx.fillStyle = '#fff';
-            ctx.fillText('Chạm vào bề mặt rập để lấy màu', W / 2, image.height / 2);
+            ctx.fillText(t('guide_pick_sub'), W / 2, image.height / 2);
             ctx.textBaseline = 'alphabetic';
         }
 
@@ -212,7 +211,7 @@ export default function ViewMain({ user, onLogout }) {
                 ctx.textBaseline = 'alphabetic';
             }
         }
-    }, [image, step, rulerPos, rulerLength, rulerAngle, polygonPoints, hoverPointIdx, dragPointIdx, area]);
+    }, [image, step, rulerPos, rulerLength, rulerAngle, polygonPoints, hoverPointIdx, dragPointIdx, area, t]);
 
     useEffect(() => { drawCanvas(); }, [drawCanvas]);
 
@@ -245,8 +244,7 @@ export default function ViewMain({ user, onLogout }) {
         const r = rawImageData.data[idx];
         const g = rawImageData.data[idx + 1];
         const b = rawImageData.data[idx + 2];
-        const hsv = rgbToHsv(r, g, b);
-        setPickedColor(hsv);
+        setPickedColor(rgbToHsv(r, g, b));
         setPickedRgb({ r, g, b });
         setStep('scan');
     };
@@ -320,7 +318,7 @@ export default function ViewMain({ user, onLogout }) {
 
     const scanAndCalc = async () => {
         if (!rawImageData || !cvReady || !pixelsPerCm) {
-            alert('⚠️ Chưa hiệu chuẩn hoặc OpenCV chưa sẵn sàng'); return;
+            alert(t('calibrate_warning')); return;
         }
         setLoading(true);
         try {
@@ -342,7 +340,6 @@ export default function ViewMain({ user, onLogout }) {
             }
             const lo = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), loArr);
             const hi = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), hiArr);
-
             const mask = new cv.Mat(); cv.inRange(hsv, lo, hi, mask);
             const k1 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
             const cl = new cv.Mat(); cv.morphologyEx(mask, cl, cv.MORPH_OPEN, k1, new cv.Point(-1, -1), 1);
@@ -364,7 +361,6 @@ export default function ViewMain({ user, onLogout }) {
                 if (sc > mx) { mx = sc; best = c; }
             }
 
-            // Fallback: Canny
             if (!best) {
                 const gray = new cv.Mat();
                 cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
@@ -386,7 +382,7 @@ export default function ViewMain({ user, onLogout }) {
                 [gray, blurred, edges, kernel, dilated, cs2, hr2].forEach(m => m?.delete?.());
             }
 
-            if (!best) throw new Error('Không tìm thấy rập! Thử chọn lại màu rập.');
+            if (!best) throw new Error(t('no_pattern_found'));
 
             const pe = cv.arcLength(best, true); const ap = new cv.Mat();
             cv.approxPolyDP(best, ap, 0.002 * pe, true);
@@ -405,7 +401,7 @@ export default function ViewMain({ user, onLogout }) {
     const openSaveModal = () => { setFileName(''); setQuantity(1); setShowSaveModal(true); };
 
     const saveResult = async () => {
-        if (!fileName.trim()) { alert('Vui lòng nhập tên chi tiết'); return; }
+        if (!fileName.trim()) { alert(t('enter_detail_name')); return; }
         setSaving(true);
         try {
             await api.createMeasurement({
@@ -415,7 +411,7 @@ export default function ViewMain({ user, onLogout }) {
                 quantity, project_id: selectedProject?.id,
             });
             setShowSaveModal(false); setStep('result');
-        } catch (e) { alert('Lỗi lưu: ' + e.message); } finally { setSaving(false); }
+        } catch (e) { alert(t('save_error', { msg: e.message })); } finally { setSaving(false); }
     };
 
     const reset = () => {
@@ -427,12 +423,12 @@ export default function ViewMain({ user, onLogout }) {
     };
 
     const STEPS = [
-        { key: 'upload', label: 'Tải ảnh' },
-        { key: 'calibrate', label: 'Hiệu chuẩn' },
-        { key: 'pick', label: 'Chọn màu' },
-        { key: 'scan', label: 'Quét rập' },
-        { key: 'adjust', label: 'Chỉnh sửa' },
-        { key: 'result', label: 'Kết quả' },
+        { key: 'upload', label: t('step_upload') },
+        { key: 'calibrate', label: t('step_calibrate') },
+        { key: 'pick', label: t('step_pick_color') },
+        { key: 'scan', label: t('step_scan') },
+        { key: 'adjust', label: t('step_adjust') },
+        { key: 'result', label: t('step_result') },
     ];
     const stepIdx = STEPS.findIndex(s => s.key === step);
 
@@ -447,14 +443,13 @@ export default function ViewMain({ user, onLogout }) {
 
     return (
         <div className="vm-wrap">
-
             <header className="vm-header">
                 <div className="vm-header-left">
                     <div className="vm-logo"><Ruler size={20} color="#fff" /></div>
                     <div>
-                        <h1 className="vm-title">PATEC</h1>
+                        <h1 className="vm-title">{t('app_title')}</h1>
                         <span className={`vm-cv-badge ${cvReady ? 'ready' : ''}`}>
-                            {cvReady ? '✓ Sẵn sàng' : '⏳ Đang tải OpenCV...'}
+                            {cvReady ? t('cv_ready') : t('cv_loading')}
                         </span>
                     </div>
                 </div>
@@ -463,13 +458,13 @@ export default function ViewMain({ user, onLogout }) {
                         <div className="vm-project-chip"><Folder size={13} /><span>{selectedProject.name}</span></div>
                     )}
                     <button className="vm-folder-btn" onClick={() => setShowProjectManager(true)}>
-                        <Folder size={15} /><span>{selectedProject ? 'Đổi folder' : 'Folder'}</span>
+                        <Folder size={15} /><span>{selectedProject ? t('change_folder') : t('folder')}</span>
                     </button>
                     <div className="vm-user-chip">
                         <div className="vm-avatar">{(user?.name || 'U')[0].toUpperCase()}</div>
                         <span>{user?.name || 'User'}</span>
                     </div>
-                    <button className="vm-logout-btn" onClick={onLogout} title="Đăng xuất">
+                    <button className="vm-logout-btn" onClick={onLogout} title={t('logout')}>
                         <LogOut size={16} />
                     </button>
                 </div>
@@ -492,22 +487,21 @@ export default function ViewMain({ user, onLogout }) {
             )}
 
             <main className="vm-main">
-
                 {step === 'upload' && (
                     <div className="vm-upload-screen">
                         <div className="vm-upload-hero">
                             <div className="vm-upload-icon"><Ruler size={48} color="#6366f1" /></div>
-                            <h2>Đo diện tích bản rập</h2>
-                            <p>Tải ảnh hoặc chụp ảnh bản rập để bắt đầu đo tự động</p>
+                            <h2>{t('measure_title')}</h2>
+                            <p>{t('measure_sub')}</p>
                         </div>
                         <input ref={uploadRef} type="file" accept="image/*" onChange={handleImageUpload} className="vm-hidden" />
                         <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImageUpload} className="vm-hidden" />
                         <div className="vm-upload-btns">
                             <button className="vm-upload-btn primary" disabled={!cvReady} onClick={() => uploadRef.current?.click()}>
-                                <Upload size={22} /><span>Tải ảnh lên</span><small>JPG, PNG, WEBP</small>
+                                <Upload size={22} /><span>{t('upload_image')}</span><small>{t('upload_formats')}</small>
                             </button>
                             <button className="vm-upload-btn" disabled={!cvReady} onClick={() => cameraRef.current?.click()}>
-                                <Camera size={22} /><span>Chụp ảnh</span><small>Dùng thiết bị di động</small>
+                                <Camera size={22} /><span>{t('take_photo')}</span><small>{t('use_camera')}</small>
                             </button>
                         </div>
                     </div>
@@ -515,28 +509,27 @@ export default function ViewMain({ user, onLogout }) {
 
                 {image && step !== 'upload' && (
                     <div className="vm-section">
-
                         <div className="vm-guide">
                             <span className="vm-guide-icon">
                                 {step === 'calibrate' ? '📏' : step === 'pick' ? '🎯' : step === 'scan' ? '🔍' : step === 'adjust' ? '✋' : '✅'}
                             </span>
                             <div>
                                 <strong>
-                                    {step === 'calibrate' && 'Hiệu chuẩn thước đo'}
-                                    {step === 'pick' && 'Chọn màu rập'}
-                                    {step === 'scan' && 'Quét & nhận diện rập'}
-                                    {step === 'adjust' && 'Chỉnh polygon — kéo từng điểm để khớp viền rập'}
-                                    {step === 'result' && 'Hoàn tất — đã lưu thành công'}
+                                    {step === 'calibrate' && t('guide_calibrate_title')}
+                                    {step === 'pick' && t('guide_pick_title')}
+                                    {step === 'scan' && t('guide_scan_title')}
+                                    {step === 'adjust' && t('guide_adjust_title')}
+                                    {step === 'result' && t('guide_result_title')}
                                 </strong>
                                 <span>
-                                    {step === 'calibrate' && 'Kéo thước vào vật chuẩn 30cm · chỉnh độ dài & góc bên dưới'}
-                                    {step === 'pick' && 'Chạm / click vào bề mặt rập — hệ thống sẽ nhận màu và tìm biên'}
+                                    {step === 'calibrate' && t('guide_calibrate_sub')}
+                                    {step === 'pick' && t('guide_pick_sub')}
                                     {step === 'scan' && (
                                         <>
-                                            Tỷ lệ: {pixelsPerCm?.toFixed(2)} px/cm
+                                            <span translate="no">{t('ratio')}: {pixelsPerCm?.toFixed(2)} px/cm</span>
                                             {pickedRgb && (
                                                 <span style={{ marginLeft: 10, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                                                    · Màu rập:
+                                                    · {t('pattern_color')}
                                                     <span style={{
                                                         display: 'inline-block', width: 14, height: 14, borderRadius: 3,
                                                         background: `rgb(${pickedRgb.r},${pickedRgb.g},${pickedRgb.b})`,
@@ -546,47 +539,28 @@ export default function ViewMain({ user, onLogout }) {
                                             )}
                                         </>
                                     )}
-                                    {step === 'adjust' && 'Diện tích cập nhật realtime · Xác nhận để đặt tên & lưu'}
-                                    {step === 'result' && `${area?.toFixed(2)} cm² · ${(area / 10000)?.toFixed(4)} m²`}
+                                    {step === 'adjust' && t('guide_adjust_sub')}
+                                    {step === 'result' && <span translate="no">{area?.toFixed(2)} cm² · {(area / 10000)?.toFixed(4)} m²</span>}
                                 </span>
                             </div>
                         </div>
 
-                        {/* Zoom controls */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-                            <span style={{ fontSize: 13, color: '#6b7280', fontWeight: 500 }}>Zoom:</span>
-                            <button
-                                className="vm-btn ghost"
-                                style={{ padding: '5px 12px', fontSize: 13 }}
-                                onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}
-                            >−</button>
+                            <span style={{ fontSize: 13, color: '#6b7280', fontWeight: 500 }}>{t('zoom_label')}</span>
+                            <button className="vm-btn ghost" style={{ padding: '5px 12px', fontSize: 13 }}
+                                onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}>−</button>
                             <span style={{
                                 minWidth: 50, textAlign: 'center', fontSize: 13, fontWeight: 600,
                                 background: '#ede9fe', color: '#4f46e5', borderRadius: 6, padding: '3px 8px'
-                            }}>
-                                {Math.round(zoom * 100)}%
-                            </span>
-                            <button
-                                className="vm-btn ghost"
-                                style={{ padding: '5px 12px', fontSize: 13 }}
-                                onClick={() => setZoom(z => Math.min(5, z + 0.25))}
-                            >+</button>
-                            <button
-                                className="vm-btn ghost"
-                                style={{ padding: '5px 12px', fontSize: 13 }}
-                                onClick={() => { setZoom(1); setPanOffset({ x: 0, y: 0 }); }}
-                            >Reset</button>
-                            <span style={{ fontSize: 12, color: '#9ca3af', marginLeft: 4 }}>
-                                · Cuộn chuột hoặc pinch để zoom
-                            </span>
+                            }} translate="no">{Math.round(zoom * 100)}%</span>
+                            <button className="vm-btn ghost" style={{ padding: '5px 12px', fontSize: 13 }}
+                                onClick={() => setZoom(z => Math.min(5, z + 0.25))}>+</button>
+                            <button className="vm-btn ghost" style={{ padding: '5px 12px', fontSize: 13 }}
+                                onClick={() => { setZoom(1); setPanOffset({ x: 0, y: 0 }); }}>{t('zoom_reset')}</button>
+                            <span style={{ fontSize: 12, color: '#9ca3af', marginLeft: 4 }}>{t('zoom_hint')}</span>
                         </div>
 
-                        {/* Canvas container với zoom */}
-                        <div
-                            ref={containerRef}
-                            className="vm-canvas-wrap"
-                            style={{ overflow: 'hidden', cursor: getCursor() }}
-                        >
+                        <div ref={containerRef} className="vm-canvas-wrap" style={{ overflow: 'hidden', cursor: getCursor() }}>
                             <div style={{
                                 transform: `scale(${zoom}) translate(${panOffset.x / zoom}px, ${panOffset.y / zoom}px)`,
                                 transformOrigin: 'center center',
@@ -606,42 +580,37 @@ export default function ViewMain({ user, onLogout }) {
                                 />
                             </div>
                             {loading && (
-                                <div className="vm-overlay">
-                                    <div className="vm-spinner" /><span>Đang phân tích ảnh...</span>
-                                </div>
+                                <div className="vm-overlay"><div className="vm-spinner" /><span>{t('loading')}</span></div>
                             )}
                             {step === 'adjust' && area !== null && (
-                                <div className="vm-area-badge">
-                                    {(area / 10000).toFixed(4)} m²
-                                </div>
+                                <div className="vm-area-badge" translate="no">{(area / 10000).toFixed(4)} m²</div>
                             )}
                         </div>
 
                         {step === 'calibrate' && (
                             <div className="vm-controls">
                                 <div className="vm-control-group">
-                                    <label>Chiều dài thước</label>
+                                    <label>{t('ruler_length')}</label>
                                     <div className="vm-slider-row">
                                         <input type="range" min="100" max={image.height}
                                             value={rulerLength} onChange={e => setRulerLength(Number(e.target.value))} />
                                         <div className="vm-badges">
-                                            <span className="vm-badge">{Math.round(rulerLength)} px = 30cm</span>
-                                            <span className="vm-badge accent">{(rulerLength / 30).toFixed(2)} px/cm</span>
+                                            <span className="vm-badge" translate="no">{Math.round(rulerLength)} px = 30cm</span>
+                                            <span className="vm-badge accent" translate="no">{(rulerLength / 30).toFixed(2)} px/cm</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="vm-control-group">
-                                    <label>Hoặc nhập trực tiếp px/cm</label>
+                                    <label>{t('direct_px_cm')}</label>
                                     <input
                                         type="number" min="1" step="0.1"
                                         value={(rulerLength / 30).toFixed(2)}
                                         onChange={e => setRulerLength(parseFloat(e.target.value) * 30 || rulerLength)}
-                                        className="vm-angle-input"
-                                        style={{ maxWidth: 160 }}
+                                        className="vm-angle-input" style={{ maxWidth: 160 }}
                                     />
                                 </div>
                                 <div className="vm-control-group">
-                                    <label>Góc xoay</label>
+                                    <label>{t('rotation_angle')}</label>
                                     <div className="vm-angle-row">
                                         <button onClick={() => setRulerAngle(a => (a - 10 + 360) % 360)}>↺ −10°</button>
                                         <button onClick={() => setRulerAngle(a => (a - 1 + 360) % 360)}>−1°</button>
@@ -661,12 +630,12 @@ export default function ViewMain({ user, onLogout }) {
                         {step === 'adjust' && (
                             <div className="vm-result-grid">
                                 <div className="vm-result-card accent">
-                                    <span>Diện tích</span>
-                                    <strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong>
+                                    <span>{t('area_label')}</span>
+                                    <strong translate="no">{(area / 10000)?.toFixed(4)}<em>m²</em></strong>
                                 </div>
                                 <div className="vm-result-card">
-                                    <span>Tỷ lệ</span>
-                                    <strong>{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong>
+                                    <span>{t('ratio')}</span>
+                                    <strong translate="no">{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong>
                                 </div>
                             </div>
                         )}
@@ -674,76 +643,68 @@ export default function ViewMain({ user, onLogout }) {
                         {step === 'result' && area !== null && (
                             <div className="vm-result-grid">
                                 <div className="vm-result-card accent">
-                                    <span>Diện tích 1 chi tiết</span>
-                                    <strong>{area.toFixed(2)}<em>cm²</em></strong>
+                                    <span>{t('area_one_detail')}</span>
+                                    <strong translate="no">{area.toFixed(2)}<em>cm²</em></strong>
                                 </div>
                                 <div className="vm-result-card">
-                                    <span>Quy đổi</span>
-                                    <strong>{(area / 10000).toFixed(4)}<em>m²</em></strong>
+                                    <span>{t('convert_m2')}</span>
+                                    <strong translate="no">{(area / 10000).toFixed(4)}<em>m²</em></strong>
                                 </div>
                                 <div className="vm-result-card">
-                                    <span>Tỷ lệ</span>
-                                    <strong>{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong>
+                                    <span>{t('ratio')}</span>
+                                    <strong translate="no">{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong>
                                 </div>
                                 <div className="vm-result-card">
-                                    <span>Số đỉnh</span>
-                                    <strong>{polygonPoints.length}<em>đỉnh</em></strong>
+                                    <span>{t('vertices_label')}</span>
+                                    <strong translate="no">{polygonPoints.length}</strong>
                                 </div>
                                 {quantity > 1 && (
                                     <div className="vm-result-card accent">
-                                        <span>Tổng ({quantity} chi tiết)</span>
-                                        <strong>{(area * quantity / 10000).toFixed(4)}<em>m²</em></strong>
+                                        <span>{t('total_qty_detail', { qty: quantity })}</span>
+                                        <strong translate="no">{(area * quantity / 10000).toFixed(4)}<em>m²</em></strong>
                                     </div>
                                 )}
                             </div>
                         )}
 
                         <div className="vm-actions">
-                            <button className="vm-btn ghost" onClick={reset}>
-                                <RotateCcw size={15} /> Làm lại
-                            </button>
-
+                            <button className="vm-btn ghost" onClick={reset}><RotateCcw size={15} /> {t('redo')}</button>
                             {step === 'calibrate' && (
-                                <button className="vm-btn primary" onClick={() => { setPixelsPerCm(rulerLength / 30); setStep('pick'); }}>
-                                    <CheckCircle size={15} /> Xác nhận · {(rulerLength / 30).toFixed(2)} px/cm
+                                <button className="vm-btn primary" onClick={() => { setPixelsPerCm(rulerLength / 30); setStep('pick'); }} translate="no">
+                                    <CheckCircle size={15} /> {t('confirm_calibrate', { value: (rulerLength / 30).toFixed(2) })}
                                 </button>
                             )}
-
                             {step === 'pick' && (
                                 <button className="vm-btn ghost" onClick={() => setStep('calibrate')}>
-                                    ← Hiệu chuẩn lại
+                                    {t('recalibrate')}
                                 </button>
                             )}
-
                             {step === 'scan' && (
                                 <>
                                     <button className="vm-btn ghost" onClick={() => setStep('pick')}>
-                                        <Pipette size={14} /> Chọn lại màu
+                                        <Pipette size={14} /> {t('repick_color')}
                                     </button>
                                     <button className="vm-btn primary" disabled={loading} onClick={scanAndCalc}>
-                                        <Ruler size={15} /> Quét &amp; Tính
+                                        <Ruler size={15} /> {t('scan_calculate')}
                                     </button>
                                 </>
                             )}
-
                             {step === 'adjust' && (
                                 <>
                                     <button className="vm-btn ghost" onClick={() => { setStep('scan'); setPolygonPoints([]); setArea(null); }}>
-                                        ← Quét lại
+                                        {t('rescan')}
                                     </button>
-                                    <button className="vm-btn success" onClick={openSaveModal}>
-                                        <CheckCircle size={15} /> Xác nhận · {(area / 10000)?.toFixed(4)} m²
+                                    <button className="vm-btn success" onClick={openSaveModal} translate="no">
+                                        <CheckCircle size={15} /> {t('confirm_area', { value: (area / 10000)?.toFixed(4) })}
                                     </button>
                                 </>
                             )}
-
                             {step === 'result' && (
                                 <button className="vm-btn primary" onClick={reset}>
-                                    <Upload size={15} /> Đo rập khác
+                                    <Upload size={15} /> {t('measure_another_vm')}
                                 </button>
                             )}
                         </div>
-
                     </div>
                 )}
             </main>
@@ -752,23 +713,25 @@ export default function ViewMain({ user, onLogout }) {
                 <div className="vm-modal-bg" onClick={e => e.target === e.currentTarget && setShowSaveModal(false)}>
                     <div className="vm-modal">
                         <button className="vm-modal-close" onClick={() => setShowSaveModal(false)}><X size={18} /></button>
-                        <h3>Lưu chi tiết</h3>
-                        <p className="vm-modal-sub">
-                            Diện tích: <strong>{(area / 10000)?.toFixed(4)} m²</strong>
-                            {selectedProject && <> · Folder: <strong>{selectedProject.name}</strong></>}
-                        </p>
+                        <h3>{t('save_detail_title')}</h3>
+                        <p className="vm-modal-sub"
+                            dangerouslySetInnerHTML={{ __html: t('save_area_info', {
+                                area: (area / 10000)?.toFixed(4),
+                                folder: selectedProject ? selectedProject.name : '—'
+                            }) }}
+                        />
                         <div className="vm-field-group">
-                            <label className="vm-field-label">Tên chi tiết <span className="vm-field-required">*</span></label>
+                            <label className="vm-field-label">{t('detail_name_label')} <span className="vm-field-required">*</span></label>
                             <input
                                 className="vm-field-input" type="text" value={fileName}
                                 onChange={e => setFileName(e.target.value)}
-                                placeholder="VD: Thân trước, Tay áo, Cổ áo..."
+                                placeholder={t('detail_name_eg')}
                                 maxLength={100} autoFocus
                                 onKeyDown={e => e.key === 'Enter' && !saving && fileName.trim() && saveResult()}
                             />
                         </div>
                         <div className="vm-field-group">
-                            <label className="vm-field-label">Số lượng</label>
+                            <label className="vm-field-label">{t('quantity')}</label>
                             <div className="vm-qty-control">
                                 <button onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</button>
                                 <input type="number" min="1" max="9999" value={quantity}
@@ -777,13 +740,13 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         </div>
                         <div className="vm-modal-preview">
-                            <div><span>Diện tích 1 chi tiết</span><strong>{(area / 10000)?.toFixed(4)} m²</strong></div>
-                            <div><span>Tổng ({quantity} chi tiết)</span><strong>{(((area || 0) * quantity) / 10000).toFixed(4)} m²</strong></div>
+                            <div><span>{t('area_one_preview')}</span><strong translate="no">{(area / 10000)?.toFixed(4)} m²</strong></div>
+                            <div><span>{t('total_preview', { qty: quantity })}</span><strong translate="no">{(((area || 0) * quantity) / 10000).toFixed(4)} m²</strong></div>
                         </div>
                         <div className="vm-modal-actions">
-                            <button className="vm-btn ghost" onClick={() => setShowSaveModal(false)} disabled={saving}>Hủy</button>
+                            <button className="vm-btn ghost" onClick={() => setShowSaveModal(false)} disabled={saving}>{t('cancel')}</button>
                             <button className="vm-btn primary" onClick={saveResult} disabled={saving || !fileName.trim()}>
-                                <Save size={15} />{saving ? 'Đang lưu...' : 'Lưu kết quả'}
+                                <Save size={15} />{saving ? t('saving') : t('save_result')}
                             </button>
                         </div>
                     </div>

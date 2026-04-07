@@ -1,70 +1,66 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../services/api';
 import './ResetPassword.css';
 
 function ResetPassword({ onNavigate }) {
+    const { t } = useTranslation();
     const [token, setToken] = useState('');
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
     const [showPw, setShowPw] = useState(false);
     const [showCf, setShowCf] = useState(false);
-    const [status, setStatus] = useState('idle'); 
+    const [status, setStatus] = useState('idle');
     const [errorMsg, setErrorMsg] = useState('');
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        const t = params.get('token');
-        if (t) setToken(t);
-        else setStatus('error'), setErrorMsg('Link không hợp lệ hoặc đã hết hạn');
-    }, []);
+        const tk = params.get('token');
+        if (tk) setToken(tk);
+        else { setStatus('error'); setErrorMsg(t('link_invalid')); }
+    }, [t]);
 
     const handleReset = async () => {
         if (!password || !confirm) return;
-        if (password.length < 6) {
-            setErrorMsg('Mật khẩu phải có ít nhất 6 ký tự');
-            setStatus('error'); return;
-        }
-        if (password !== confirm) {
-            setErrorMsg('Mật khẩu xác nhận không khớp');
-            setStatus('error'); return;
-        }
+        if (password.length < 6) { setErrorMsg(t('error_pw_short')); setStatus('error'); return; }
+        if (password !== confirm) { setErrorMsg(t('error_pw_mismatch')); setStatus('error'); return; }
         setStatus('loading'); setErrorMsg('');
         try {
             await api.resetPassword(token, password);
             setStatus('success');
         } catch (err) {
             setStatus('error');
-            setErrorMsg(err.message || 'Đặt lại thất bại, thử lại sau');
+            setErrorMsg(err.message || t('reset_failed'));
         }
     };
+
+    const strengthLabel = password.length < 6 ? t('pw_too_short') : password.length < 10 ? t('pw_medium') : t('pw_strong');
+    const strengthClass = password.length < 6 ? '' : password.length < 10 ? 'medium' : 'strong';
 
     return (
         <div className="rp-wrap">
             <div className="rp-card">
-                <div className="rp-logo">
-                    <Lock size={28} color="#fff" />
-                </div>
-                <h2 className="rp-title">Đặt mật khẩu mới</h2>
+                <div className="rp-logo"><Lock size={28} color="#fff" /></div>
+                <h2 className="rp-title">{t('reset_title')}</h2>
 
                 {status === 'success' ? (
                     <div className="rp-success">
                         <CheckCircle size={48} color="#10b981" />
-                        <p>Mật khẩu đã được đặt lại!</p>
-                        <p className="rp-success-sub">Bạn có thể đăng nhập bằng mật khẩu mới.</p>
+                        <p>{t('reset_success_title')}</p>
+                        <p className="rp-success-sub">{t('reset_success_sub')}</p>
                         <button className="rp-btn" onClick={() => onNavigate('login')}>
-                            Đăng nhập ngay
+                            {t('login_now')}
                         </button>
                     </div>
                 ) : (
                     <>
-                        <p className="rp-sub">Nhập mật khẩu mới cho tài khoản của bạn</p>
+                        <p className="rp-sub">{t('reset_sub')}</p>
 
                         {status === 'error' && errorMsg && (
                             <div className="rp-error">
-                                <AlertCircle size={15} />
-                                <span>{errorMsg}</span>
+                                <AlertCircle size={15} /><span>{errorMsg}</span>
                             </div>
                         )}
 
@@ -72,7 +68,7 @@ function ResetPassword({ onNavigate }) {
                             <Lock size={17} className="rp-icon" />
                             <input
                                 type={showPw ? 'text' : 'password'}
-                                placeholder="Mật khẩu mới (ít nhất 6 ký tự)"
+                                placeholder={t('new_password_placeholder')}
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
                                 disabled={status === 'loading' || !token}
@@ -87,7 +83,7 @@ function ResetPassword({ onNavigate }) {
                             <Lock size={17} className="rp-icon" />
                             <input
                                 type={showCf ? 'text' : 'password'}
-                                placeholder="Xác nhận mật khẩu"
+                                placeholder={t('confirm_password_placeholder')}
                                 value={confirm}
                                 onChange={e => setConfirm(e.target.value)}
                                 disabled={status === 'loading' || !token}
@@ -101,10 +97,9 @@ function ResetPassword({ onNavigate }) {
                         {password && (
                             <div className="rp-strength">
                                 {[1, 2, 3, 4].map(i => (
-                                    <div key={i} className={`rp-strength-bar ${password.length >= i * 3 ? (password.length >= 10 ? 'strong' : 'medium') : ''
-                                        }`} />
+                                    <div key={i} className={`rp-strength-bar ${password.length >= i * 3 ? strengthClass : ''}`} />
                                 ))}
-                                <span>{password.length < 6 ? 'Quá ngắn' : password.length < 10 ? 'Trung bình' : 'Mạnh'}</span>
+                                <span>{strengthLabel}</span>
                             </div>
                         )}
 
@@ -114,13 +109,13 @@ function ResetPassword({ onNavigate }) {
                             disabled={status === 'loading' || !token || !password || !confirm}
                         >
                             {status === 'loading'
-                                ? <><Loader size={16} className="rp-spin" /> Đang xử lý...</>
-                                : 'Đặt lại mật khẩu'
+                                ? <><Loader size={16} className="rp-spin" /> {t('resetting')}</>
+                                : t('reset_btn')
                             }
                         </button>
 
                         <button className="rp-back" onClick={() => onNavigate('login')}>
-                            Quay lại đăng nhập
+                            {t('back_to_login')}
                         </button>
                     </>
                 )}
@@ -129,8 +124,5 @@ function ResetPassword({ onNavigate }) {
     );
 }
 
-ResetPassword.propTypes = {
-    onNavigate: PropTypes.func.isRequired,
-};
-
+ResetPassword.propTypes = { onNavigate: PropTypes.func.isRequired };
 export default ResetPassword;

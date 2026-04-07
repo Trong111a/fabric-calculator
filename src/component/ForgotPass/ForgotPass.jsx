@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Mail, ArrowLeft, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import { api } from '../../services/api';
+import { useTranslation } from 'react-i18next';
 import './ForgotPass.css';
 
 function ForgotPass({ onNavigate }) {
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState('idle');
     const [errorMsg, setErrorMsg] = useState('');
@@ -18,7 +20,7 @@ function ForgotPass({ onNavigate }) {
             setStatus('success');
         } catch (err) {
             setStatus('error');
-            setErrorMsg(err.message || 'Gửi thất bại, thử lại sau');
+            setErrorMsg(err.message || t('reset_failed'));
         }
     };
 
@@ -26,19 +28,21 @@ function ForgotPass({ onNavigate }) {
         <div className="fp-wrap">
             <div className="fp-card">
                 <button className="back" onClick={() => onNavigate('login')}>
-                    <ArrowLeft size={20} /> Quay lại
+                    <ArrowLeft size={20} /> {t('back_to_login')}
                 </button>
 
-                <h2>Quên Mật Khẩu</h2>
-                <p className="sub">Nhập email để nhận link đặt lại mật khẩu</p>
+                <h2>{t('forgot_title')}</h2>
+                <p className="sub">{t('forgot_sub')}</p>
 
                 {status === 'success' ? (
                     <div className="fp-success">
                         <CheckCircle size={40} color="#10b981" />
-                        <p>Đã gửi link đặt lại mật khẩu!</p>
-                        <p className="fp-success-sub">Kiểm tra hộp thư của <strong>{email}</strong><br />và làm theo hướng dẫn trong email.</p>
+                        <p>{t('forgot_sent_title')}</p>
+                        <p className="fp-success-sub"
+                            dangerouslySetInnerHTML={{ __html: t('forgot_sent_sub', { email: `<strong>${email}</strong>` }) }}
+                        />
                         <button className="btn-primary" onClick={() => onNavigate('login')}>
-                            Quay lại đăng nhập
+                            {t('back_to_login')}
                         </button>
                     </div>
                 ) : (
@@ -56,7 +60,7 @@ function ForgotPass({ onNavigate }) {
                                 type="email"
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
-                                placeholder="Email"
+                                placeholder={t('email')}
                                 disabled={status === 'loading'}
                                 onKeyDown={e => e.key === 'Enter' && handleSend()}
                             />
@@ -68,8 +72,8 @@ function ForgotPass({ onNavigate }) {
                             disabled={status === 'loading' || !email.trim()}
                         >
                             {status === 'loading'
-                                ? <><Loader size={16} className="fp-spin" /> Đang gửi...</>
-                                : 'Gửi email'
+                                ? <><Loader size={16} className="fp-spin" /> {t('sending')}</>
+                                : t('send_email')
                             }
                         </button>
                     </>

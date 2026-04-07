@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Mail, Lock } from 'lucide-react';
-import { useTranslation } from 'react-i18next'; // Thêm i18n
+import { useTranslation } from 'react-i18next';
 import './Login.css';
 import { api } from '../../services/api';
 
@@ -50,13 +50,13 @@ function Login({ onLoginSuccess, onNavigate }) {
                         placeholder={t('password')}
                         value={password}
                         onChange={e => setPassword(e.target.value)}
-                        onKeyPress={e => e.key === 'Enter' && handleLogin()}
+                        onKeyDown={e => e.key === 'Enter' && handleLogin()}
                         disabled={loading}
                     />
                 </div>
 
                 <button className="btn-primary" onClick={handleLogin} disabled={loading}>
-                    {loading ? <span>{t('logging_in')}</span> : <span>{t('login')}</span>}
+                    {loading ? t('logging_in') : t('login')}
                 </button>
 
                 <div className="links">

@@ -40,23 +40,29 @@ function Register({ onNavigate }) {
                 {success && <div className="success">{t('register_success')}</div>}
 
                 <div className="input-group">
-                    <User size={18} /><input name="name" placeholder="Name" onChange={handleChange} disabled={loading || success} />
+                    <User size={18} />
+                    <input name="name" placeholder="Name" onChange={handleChange} disabled={loading || success} />
                 </div>
                 <div className="input-group">
-                    <Mail size={18} /><input name="email" placeholder={t('email')} onChange={handleChange} disabled={loading || success} />
+                    <Mail size={18} />
+                    <input name="email" placeholder={t('email')} onChange={handleChange} disabled={loading || success} />
                 </div>
                 <div className="input-group">
-                    <Lock size={18} /><input name="password" type="password" placeholder={t('password')} onChange={handleChange} disabled={loading || success} />
+                    <Lock size={18} />
+                    <input name="password" type="password" placeholder={t('password')} onChange={handleChange}
+                        onKeyDown={e => e.key === 'Enter' && handleRegister()} disabled={loading || success} />
                 </div>
                 <div className="input-group">
-                    <Lock size={18} /><input name="confirmPassword" type="password" placeholder={t('confirm_password')} onChange={handleChange} disabled={loading || success} />
+                    <Lock size={18} />
+                    <input name="confirmPassword" type="password" placeholder={t('confirm_password')} onChange={handleChange}
+                        onKeyDown={e => e.key === 'Enter' && handleRegister()} disabled={loading || success} />
                 </div>
 
                 <button className="btn-primary" onClick={handleRegister} disabled={loading || success}>
-                    {loading ? <span>{t('registering')}</span> : <span>{t('register')}</span>}
+                    {loading ? t('registering') : t('register')}
                 </button>
                 <div className="links">
-                     <span>{t('have_account')} <b onClick={() => onNavigate('login')}>{t('login')}</b></span>
+                    <span>{t('have_account')} <b onClick={() => onNavigate('login')}>{t('login')}</b></span>
                 </div>
             </div>
         </div>

@@ -1,112 +1,426 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
+    import i18n from 'i18next';
+    import { initReactI18next } from 'react-i18next';
+    import LanguageDetector from 'i18next-browser-languagedetector';
 
-const resources = {
-  en: {
-    translation: {
-      // Auth
-      "login": "Login",
-      "register": "Register",
-      "email": "Email",
-      "password": "Password",
-      "confirm_password": "Confirm Password",
-      "forgot_password": "Forgot Password?",
-      "no_account": "Don't have an account?",
-      "have_account": "Already have an account?",
-      "logging_in": "Logging in...",
-      "registering": "Registering...",
-      "logout": "Logout",
-      
-      // Project Manager
-      "projects": "Projects",
-      "create_project": "Create Project",
-      "project_name": "Project Name",
-      "delete_project": "Delete Project",
-      "total_items": "items",
-      "empty_projects": "No projects found.",
-      
-      // Project Detail & Calculation
-      "update": "Update",
-      "cancel": "Cancel",
-      "save": "Save",
-      "saving": "Saving...",
-      "back": "Back",
-      "area": "Area",
-      "quantity": "Quantity",
-      "total_area": "Total Area",
-      "unit_m2": "m²",
-      "scan": "Scan",
-      "manual_draw": "Manual Draw",
-      "download": "Download",
-      "delete_confirm": "Are you sure you want to delete this?",
-      
-      // Messages
-      "login_failed": "Login failed",
-      "register_success": "Registration successful!",
-      "error_fill_all": "Please fill in all fields!",
-      "error_pw_short": "Password must be at least 6 characters",
-      "error_pw_mismatch": "Passwords do not match"
-    }
-  },
-  vi: {
-    translation: {
-      // Auth
-      "login": "Đăng Nhập",
-      "register": "Đăng Ký",
-      "email": "Email",
-      "password": "Mật khẩu",
-      "confirm_password": "Xác nhận mật khẩu",
-      "forgot_password": "Quên mật khẩu?",
-      "no_account": "Chưa có tài khoản?",
-      "have_account": "Đã có tài khoản?",
-      "logging_in": "Đang đăng nhập...",
-      "registering": "Đang đăng ký...",
-      "logout": "Đăng xuất",
-      
-      // Project Manager
-      "projects": "Dự án",
-      "create_project": "Tạo dự án mới",
-      "project_name": "Tên dự án",
-      "delete_project": "Xóa project",
-      "total_items": "chi tiết",
-      "empty_projects": "Chưa có dự án nào.",
-      
-      // Project Detail & Calculation
-      "update": "Cập nhật",
-      "cancel": "Hủy",
-      "save": "Lưu kết quả",
-      "saving": "Đang lưu...",
-      "back": "Quay lại",
-      "area": "Diện tích",
-      "quantity": "Số lượng",
-      "total_area": "Tổng diện tích",
-      "unit_m2": "m²",
-      "scan": "Quét mẫu",
-      "manual_draw": "Vẽ tay",
-      "download": "Tải về",
-      "delete_confirm": "Bạn có chắc chắn muốn xóa không?",
-      
-      // Messages
-      "login_failed": "Đăng nhập thất bại",
-      "register_success": "Đăng ký thành công!",
-      "error_fill_all": "Vui lòng điền đầy đủ!",
-      "error_pw_short": "Mật khẩu ≥ 6 ký tự!",
-      "error_pw_mismatch": "Mật khẩu xác nhận không khớp!"
-    }
-  }
-};
+    const resources = {
+    en: {
+        translation: {
+        // Auth
+        "login": "Login",
+        "register": "Register",
+        "email": "Email",
+        "password": "Password",
+        "confirm_password": "Confirm Password",
+        "forgot_password": "Forgot Password?",
+        "no_account": "Don't have an account?",
+        "have_account": "Already have an account?",
+        "logging_in": "Logging in...",
+        "registering": "Registering...",
+        "logout": "Logout",
 
-i18n
-  .use(LanguageDetector) // Tự động nhận diện ngôn ngữ trình duyệt
-  .use(initReactI18next)
-  .init({
-    resources,
-    fallbackLng: 'vi', // Mặc định là Tiếng Việt
-    debug: false,
-    interpolation: {
-      escapeValue: false 
-    }
-  });
+        // Forgot Password
+        "forgot_title": "Forgot Password",
+        "forgot_sub": "Enter your email to receive a reset link",
+        "send_email": "Send Email",
+        "sending": "Sending...",
+        "forgot_sent_title": "Reset link sent!",
+        "forgot_sent_sub": "Check your inbox at {{email}} and follow the instructions.",
+        "back_to_login": "Back to Login",
 
-export default i18n;
+        // Reset Password
+        "reset_title": "Set New Password",
+        "reset_sub": "Enter your new password",
+        "new_password_placeholder": "New password (at least 6 characters)",
+        "confirm_password_placeholder": "Confirm password",
+        "resetting": "Processing...",
+        "reset_btn": "Reset Password",
+        "reset_success_title": "Password reset!",
+        "reset_success_sub": "You can now log in with your new password.",
+        "login_now": "Log In Now",
+        "pw_too_short": "Too short",
+        "pw_medium": "Medium",
+        "pw_strong": "Strong",
+
+        // Project Manager
+        "projects": "Projects",
+        "manage_projects": "Manage Projects",
+        "create_project": "Create Project",
+        "creating_project": "Creating...",
+        "project_name": "Project Name",
+        "project_name_placeholder": "Enter project name...",
+        "delete_project": "Delete Project",
+        "total_projects": "Total Projects",
+        "total_details": "Total Details",
+        "total_area": "Total Area",
+        "total_items": "items",
+        "files": "files",
+        "empty_projects": "No projects yet",
+        "empty_projects_sub": "Create a project to organize your patterns",
+        "create_first_project": "Create First Project",
+        "confirm_delete_project": "Delete this project?",
+
+        // Project Detail – header & tabs
+        "back": "Back",
+        "list_tab": "List ({{count}})",
+        "scan_tab": "Auto Scan",
+        "manual_tab": "Draw Polygon",
+        "export_tab": "Export CSV",
+
+        // Project Detail – stats
+        "stat_details": "Details",
+        "stat_quantity": "Total Quantity",
+        "stat_total_area": "Total Area",
+
+        // Project Detail – list
+        "loading": "Loading...",
+        "folder_empty": "Empty Folder",
+        "folder_empty_sub": "No details saved in this folder yet",
+        "measure_first": "Measure First Detail",
+        "view_detail": "View Detail",
+        "delete_confirm": "Delete this detail?",
+        "edit_name_qty": "Edit name / quantity",
+
+        // Project Detail – edit modal
+        "edit_detail": "Edit Detail",
+        "detail_name": "Detail Name",
+        "detail_name_placeholder": "Detail name...",
+        "detail_name_required": "Please enter a name",
+        "quantity": "Quantity",
+        "area_one": "Area (1 detail)",
+        "total_area_qty": "Total ({{qty}} details)",
+        "updating": "Updating...",
+        "update": "Update",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "save_to_folder": "Save to Folder",
+
+        // Project Detail – view modal
+        "measured_at": "Measured at",
+        "px_per_cm": "px/cm ratio",
+        "vertices": "Vertices",
+
+        // Scan Panel
+        "scan_badge_ready": "✓ OpenCV Ready",
+        "scan_badge_loading": "⏳ Loading OpenCV...",
+        "step_upload": "Upload",
+        "step_calibrate": "Calibrate",
+        "step_pick_color": "Pick Color",
+        "step_scan": "Scan",
+        "step_adjust": "Adjust",
+        "step_result": "Result",
+        "step_draw": "Draw Polygon",
+        "scan_upload_title": "Measure New Detail",
+        "scan_upload_sub": "Upload or take a photo of your pattern to measure and save into folder <strong>{{name}}</strong>",
+        "upload_image": "Upload Image",
+        "upload_formats": "JPG, PNG, WEBP",
+        "take_photo": "Take Photo",
+        "use_camera": "Use Camera",
+        "guide_calibrate_title": "Calibrate Ruler",
+        "guide_calibrate_sub": "Drag ruler to a 30cm reference · adjust length & angle below",
+        "guide_pick_title": "Pick Pattern Color",
+        "guide_pick_sub": "Tap / click on the pattern surface — system will detect the edge",
+        "guide_scan_title": "Scan & Detect Pattern",
+        "guide_adjust_title": "Adjust Polygon — drag each point to match the edge",
+        "guide_adjust_sub": "Area updates in realtime · Confirm to name & save",
+        "guide_result_title": "Done — saved successfully",
+        "ruler_length": "Ruler Length",
+        "direct_px_cm": "Or enter px/cm directly",
+        "rotation_angle": "Rotation Angle",
+        "pattern_color": "Pattern color:",
+        "area_label": "Area",
+        "convert_m2": "In m²",
+        "ratio": "Ratio",
+        "vertices_label": "Vertices",
+        "area_one_detail": "Area (1 detail)",
+        "total_qty_detail": "Total ({{qty}} details)",
+        "redo": "Redo",
+        "confirm_calibrate": "Confirm · {{value}} px/cm",
+        "recalibrate": "← Recalibrate",
+        "repick_color": "Re-pick Color",
+        "scan_calculate": "Scan & Calculate",
+        "rescan": "← Rescan",
+        "confirm_area": "Confirm · {{value}} m²",
+        "measure_another": "Measure Another",
+        "save_detail_title": "Save Detail",
+        "save_area_info": "Area: <strong>{{area}} m²</strong> · Folder: <strong>{{folder}}</strong>",
+        "detail_name_label": "Detail Name",
+        "detail_name_eg": "E.g.: Front Body, Sleeve, Collar...",
+        "area_one_preview": "Area (1 detail)",
+        "total_preview": "Total ({{qty}} details)",
+
+        // Manual Draw Panel
+        "manual_badge": "✏️ Manual Polygon Draw",
+        "manual_upload_title": "Draw Polygon Manually",
+        "manual_upload_sub": "Upload image, calibrate ruler, then <strong>tap/click each point</strong> on the pattern edge to calculate area",
+        "guide_draw_title": "Tap/click to place points · {{count}} points{{area}}",
+        "guide_draw_sub": "Drag points to adjust · Need ≥ 3 points · Scale: {{scale}} px/cm · Scroll to zoom",
+        "zoom_label": "Zoom:",
+        "zoom_reset": "Reset",
+        "zoom_hint": "· Scroll or pinch to zoom",
+        "delete_last_point": "← Delete Last Point",
+        "draw_another": "Draw Another Detail (same image)",
+        "new_image": "New Image",
+        "points_label": "Points",
+
+        // Download Panel
+        "export_title": "Export CSV Data",
+        "export_sub": "Download all details from folder <b>{{name}}</b> as Excel/CSV",
+        "preview_title": "Data Preview",
+        "col_name": "Detail Name",
+        "col_area_one": "Area (1 detail)",
+        "col_quantity": "Quantity",
+        "col_total_area": "Total Area",
+        "col_date": "Date",
+        "no_data": "No data yet",
+        "grand_total": "Grand Total",
+        "download_csv": "Download CSV",
+
+        // ViewMain
+        "app_title": "PATEC",
+        "cv_ready": "✓ Ready",
+        "cv_loading": "⏳ Loading OpenCV...",
+        "change_folder": "Change Folder",
+        "folder": "Folder",
+        "measure_title": "Measure Pattern Area",
+        "measure_sub": "Upload or take a photo of your pattern to start auto measurement",
+        "scan_result_area": "Area",
+        "scan_result_ratio": "Ratio",
+        "save_result": "Save Result",
+        "measure_another_vm": "Measure Another Pattern",
+
+        // Messages
+        "login_failed": "Login failed",
+        "register_success": "Registration successful!",
+        "error_fill_all": "Please fill in all fields!",
+        "error_pw_short": "Password must be at least 6 characters",
+        "error_pw_mismatch": "Passwords do not match",
+        "delete_failed": "Delete failed",
+        "save_error": "Save error: {{msg}}",
+        "update_error": "Update error: {{msg}}",
+        "calibrate_warning": "⚠️ Please calibrate first or OpenCV is not ready",
+        "no_pattern_found": "Pattern not found! Try picking a different color or use Manual Draw.",
+        "enter_detail_name": "Please enter detail name",
+        "no_area": "No area yet",
+        "link_invalid": "Link is invalid or has expired",
+        "reset_failed": "Reset failed, please try again"
+        }
+    },
+    vi: {
+        translation: {
+        // Auth
+        "login": "Đăng Nhập",
+        "register": "Đăng Ký",
+        "email": "Email",
+        "password": "Mật khẩu",
+        "confirm_password": "Xác nhận mật khẩu",
+        "forgot_password": "Quên mật khẩu?",
+        "no_account": "Chưa có tài khoản?",
+        "have_account": "Đã có tài khoản?",
+        "logging_in": "Đang đăng nhập...",
+        "registering": "Đang đăng ký...",
+        "logout": "Đăng xuất",
+
+        // Forgot Password
+        "forgot_title": "Quên Mật Khẩu",
+        "forgot_sub": "Nhập email để nhận link đặt lại mật khẩu",
+        "send_email": "Gửi email",
+        "sending": "Đang gửi...",
+        "forgot_sent_title": "Đã gửi link đặt lại mật khẩu!",
+        "forgot_sent_sub": "Kiểm tra hộp thư của {{email}} và làm theo hướng dẫn trong email.",
+        "back_to_login": "Quay lại đăng nhập",
+
+        // Reset Password
+        "reset_title": "Đặt mật khẩu mới",
+        "reset_sub": "Nhập mật khẩu mới cho tài khoản của bạn",
+        "new_password_placeholder": "Mật khẩu mới (ít nhất 6 ký tự)",
+        "confirm_password_placeholder": "Xác nhận mật khẩu",
+        "resetting": "Đang xử lý...",
+        "reset_btn": "Đặt lại mật khẩu",
+        "reset_success_title": "Mật khẩu đã được đặt lại!",
+        "reset_success_sub": "Bạn có thể đăng nhập bằng mật khẩu mới.",
+        "login_now": "Đăng nhập ngay",
+        "pw_too_short": "Quá ngắn",
+        "pw_medium": "Trung bình",
+        "pw_strong": "Mạnh",
+
+        // Project Manager
+        "projects": "Dự án",
+        "manage_projects": "Quản lý Project",
+        "create_project": "Tạo project",
+        "creating_project": "Đang tạo...",
+        "project_name": "Tên project",
+        "project_name_placeholder": "Nhập tên project...",
+        "delete_project": "Xóa project",
+        "total_projects": "Tổng project",
+        "total_details": "Tổng chi tiết",
+        "total_area": "Tổng diện tích",
+        "total_items": "chi tiết",
+        "files": "files",
+        "empty_projects": "Chưa có project nào",
+        "empty_projects_sub": "Tạo project để tổ chức các bản rập của bạn",
+        "create_first_project": "Tạo project đầu tiên",
+        "confirm_delete_project": "Xóa project này?",
+
+        // Project Detail – header & tabs
+        "back": "Quay lại",
+        "list_tab": "Danh sách ({{count}})",
+        "scan_tab": "Đo tự động",
+        "manual_tab": "Vẽ polygon",
+        "export_tab": "Xuất CSV",
+
+        // Project Detail – stats
+        "stat_details": "Số chi tiết",
+        "stat_quantity": "Tổng số lượng",
+        "stat_total_area": "Tổng diện tích",
+
+        // Project Detail – list
+        "loading": "Đang tải...",
+        "folder_empty": "Folder trống",
+        "folder_empty_sub": "Chưa có chi tiết nào được lưu vào folder này",
+        "measure_first": "Đo chi tiết đầu tiên",
+        "view_detail": "Xem chi tiết",
+        "delete_confirm": "Xóa chi tiết này?",
+        "edit_name_qty": "Sửa tên / số lượng",
+
+        // Project Detail – edit modal
+        "edit_detail": "Sửa chi tiết",
+        "detail_name": "Tên chi tiết",
+        "detail_name_placeholder": "Tên chi tiết...",
+        "detail_name_required": "Vui lòng nhập tên",
+        "quantity": "Số lượng",
+        "area_one": "Diện tích 1 chi tiết",
+        "total_area_qty": "Tổng ({{qty}} chi tiết)",
+        "updating": "Đang lưu...",
+        "update": "Cập nhật",
+        "cancel": "Hủy",
+        "save": "Lưu vào folder",
+        "saving": "Đang lưu...",
+        "save_to_folder": "Lưu vào folder",
+
+        // Project Detail – view modal
+        "measured_at": "Đo lúc:",
+        "px_per_cm": "Tỷ lệ px/cm",
+        "vertices": "Số đỉnh",
+
+        // Scan Panel
+        "scan_badge_ready": "✓ OpenCV sẵn sàng",
+        "scan_badge_loading": "⏳ Đang tải OpenCV...",
+        "step_upload": "Tải ảnh",
+        "step_calibrate": "Hiệu chuẩn",
+        "step_pick_color": "Chọn màu",
+        "step_scan": "Quét rập",
+        "step_adjust": "Chỉnh sửa",
+        "step_result": "Kết quả",
+        "step_draw": "Vẽ polygon",
+        "scan_upload_title": "Đo chi tiết mới",
+        "scan_upload_sub": "Tải ảnh hoặc chụp ảnh bản rập để đo & lưu vào folder <strong>{{name}}</strong>",
+        "upload_image": "Tải ảnh lên",
+        "upload_formats": "JPG, PNG, WEBP",
+        "take_photo": "Chụp ảnh",
+        "use_camera": "Dùng thiết bị di động",
+        "guide_calibrate_title": "Hiệu chuẩn thước đo",
+        "guide_calibrate_sub": "Kéo thước vào vật chuẩn 30cm · chỉnh độ dài & góc bên dưới",
+        "guide_pick_title": "Chọn màu rập",
+        "guide_pick_sub": "Chạm / click vào bề mặt rập — hệ thống sẽ nhận màu và tìm biên",
+        "guide_scan_title": "Quét & nhận diện rập",
+        "guide_adjust_title": "Chỉnh polygon — kéo từng điểm để khớp viền rập",
+        "guide_adjust_sub": "Diện tích cập nhật realtime · Xác nhận để đặt tên & lưu",
+        "guide_result_title": "Hoàn tất — đã lưu thành công",
+        "ruler_length": "Chiều dài thước",
+        "direct_px_cm": "Hoặc nhập trực tiếp px/cm",
+        "rotation_angle": "Góc xoay",
+        "pattern_color": "Màu rập:",
+        "area_label": "Diện tích",
+        "convert_m2": "Quy đổi",
+        "ratio": "Tỷ lệ",
+        "vertices_label": "Số đỉnh",
+        "area_one_detail": "Diện tích 1 chi tiết",
+        "total_qty_detail": "Tổng ({{qty}} chi tiết)",
+        "redo": "Làm lại",
+        "confirm_calibrate": "Xác nhận · {{value}} px/cm",
+        "recalibrate": "← Hiệu chuẩn lại",
+        "repick_color": "Chọn lại màu",
+        "scan_calculate": "Quét & Tính",
+        "rescan": "← Quét lại",
+        "confirm_area": "Xác nhận · {{value}} m²",
+        "measure_another": "Đo chi tiết khác",
+        "save_detail_title": "Lưu chi tiết",
+        "save_area_info": "Diện tích: <strong>{{area}} m²</strong> · Folder: <strong>{{folder}}</strong>",
+        "detail_name_label": "Tên chi tiết",
+        "detail_name_eg": "VD: Thân trước, Tay áo, Cổ áo...",
+        "area_one_preview": "Diện tích 1 chi tiết",
+        "total_preview": "Tổng ({{qty}} chi tiết)",
+
+        // Manual Draw Panel
+        "manual_badge": "✏️ Vẽ thủ polygon",
+        "manual_upload_title": "Vẽ polygon thủ công",
+        "manual_upload_sub": "Tải ảnh, hiệu chuẩn thước đo rồi <strong>chạm/click từng điểm</strong> trên viền rập để tính diện tích",
+        "guide_draw_title": "Chạm/click để đặt điểm · {{count}} điểm{{area}}",
+        "guide_draw_sub": "Kéo điểm để chỉnh · Cần ≥ 3 điểm · Tỷ lệ: {{scale}} px/cm · Cuộn để zoom",
+        "zoom_label": "Zoom:",
+        "zoom_reset": "Reset",
+        "zoom_hint": "· Cuộn chuột hoặc pinch để zoom",
+        "delete_last_point": "← Xóa điểm cuối",
+        "draw_another": "Vẽ chi tiết khác (cùng ảnh)",
+        "new_image": "Ảnh mới",
+        "points_label": "Số điểm",
+
+        // Download Panel
+        "export_title": "Xuất dữ liệu CSV",
+        "export_sub": "Tải toàn bộ chi tiết trong folder <b>{{name}}</b> ra file Excel/CSV",
+        "preview_title": "Xem trước dữ liệu",
+        "col_name": "Tên chi tiết",
+        "col_area_one": "DT 1 chi tiết",
+        "col_quantity": "Số lượng",
+        "col_total_area": "Tổng diện tích",
+        "col_date": "Ngày đo",
+        "no_data": "Chưa có dữ liệu",
+        "grand_total": "Tổng cộng",
+        "download_csv": "Tải xuống CSV",
+
+        // ViewMain
+        "app_title": "PATEC",
+        "cv_ready": "✓ Sẵn sàng",
+        "cv_loading": "⏳ Đang tải OpenCV...",
+        "change_folder": "Đổi folder",
+        "folder": "Folder",
+        "measure_title": "Đo diện tích bản rập",
+        "measure_sub": "Tải ảnh hoặc chụp ảnh bản rập để bắt đầu đo tự động",
+        "scan_result_area": "Diện tích",
+        "scan_result_ratio": "Tỷ lệ",
+        "save_result": "Lưu kết quả",
+        "measure_another_vm": "Đo rập khác",
+
+        // Messages
+        "login_failed": "Đăng nhập thất bại",
+        "register_success": "Đăng ký thành công!",
+        "error_fill_all": "Vui lòng điền đầy đủ!",
+        "error_pw_short": "Mật khẩu ≥ 6 ký tự!",
+        "error_pw_mismatch": "Mật khẩu xác nhận không khớp!",
+        "delete_failed": "Xóa thất bại",
+        "save_error": "Lỗi lưu: {{msg}}",
+        "update_error": "Lỗi cập nhật: {{msg}}",
+        "calibrate_warning": "⚠️ Chưa hiệu chuẩn hoặc OpenCV chưa sẵn sàng",
+        "no_pattern_found": "Không tìm thấy rập! Hãy chọn lại màu rập hoặc dùng Vẽ thủ công.",
+        "enter_detail_name": "Vui lòng nhập tên chi tiết",
+        "no_area": "Chưa có diện tích",
+        "link_invalid": "Link không hợp lệ hoặc đã hết hạn",
+        "reset_failed": "Đặt lại thất bại, thử lại sau"
+        }
+    }
+    };
+
+    i18n
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+        resources,
+        fallbackLng: 'vi',
+        debug: false,
+        interpolation: {
+        escapeValue: false
+        }
+    });
+
+    export default i18n;
