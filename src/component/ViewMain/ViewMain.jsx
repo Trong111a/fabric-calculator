@@ -36,7 +36,7 @@ function rgbToHsv(r, g, b) {
 }
 
 export default function ViewMain({ user, onLogout }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [image, setImage] = useState(null);
     const [rawImageData, setRawImageData] = useState(null);
     const [step, setStep] = useState('upload');
@@ -441,6 +441,11 @@ export default function ViewMain({ user, onLogout }) {
         );
     }
 
+    const toggleLanguage = () => {
+        const newLang = i18n.language === 'vi' ? 'en' : 'vi';
+        i18n.changeLanguage(newLang);
+    };
+
     return (
         <div className="vm-wrap">
             <header className="vm-header">
@@ -464,6 +469,10 @@ export default function ViewMain({ user, onLogout }) {
                         <div className="vm-avatar">{(user?.name || 'U')[0].toUpperCase()}</div>
                         <span>{user?.name || 'User'}</span>
                     </div>
+                    <button className="lang-btn" onClick={toggleLanguage}>
+                        {i18n.language === 'vi' ? 'EN' : 'VI'}
+                    </button>
+                    
                     <button className="vm-logout-btn" onClick={onLogout} title={t('logout')}>
                         <LogOut size={16} />
                     </button>
