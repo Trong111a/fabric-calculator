@@ -43,7 +43,7 @@ export default function ViewMain({ user, onLogout }) {
 
     const [rulerPos, setRulerPos] = useState({ x: 100, y: 100 });
     const [rulerLength, setRulerLength] = useState(300);
-    const [rulerAngle, setRulerAngle] = useState(90);
+    const [rulerAngle, setRulerAngle] = useState(0);
     const [pixelsPerCm, setPixelsPerCm] = useState(null);
     const [isDraggingRuler, setIsDraggingRuler] = useState(false);
     const [rulerDragOffset, setRulerDragOffset] = useState({ x: 0, y: 0 });
@@ -64,9 +64,14 @@ export default function ViewMain({ user, onLogout }) {
     const [quantity, setQuantity] = useState(1);
     const [saving, setSaving] = useState(false);
 
+    // Zoom / pan state
+    const [zoom, setZoom] = useState(1);
+    const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+
     const canvasRef = useRef(null);
     const uploadRef = useRef(null);
     const cameraRef = useRef(null);
+    const containerRef = useRef(null);
 
     useEffect(() => {
         const load = () => {
@@ -81,6 +86,20 @@ export default function ViewMain({ user, onLogout }) {
             document.body.appendChild(s);
         } else load();
     }, []);
+
+    // Zoom bằng wheel
+    const handleWheel = useCallback((e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        setZoom(z => Math.min(5, Math.max(0.5, z * delta)));
+    }, []);
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+        container.addEventListener('wheel', handleWheel, { passive: false });
+        return () => container.removeEventListener('wheel', handleWheel);
+    }, [handleWheel]);
 
     const drawCanvas = useCallback(() => {
         const canvas = canvasRef.current;
@@ -103,6 +122,7 @@ export default function ViewMain({ user, onLogout }) {
             ctx.fillText('Chạm vào bề mặt rập để lấy màu', W / 2 + 3, image.height / 2 + 3);
             ctx.fillStyle = '#fff';
             ctx.fillText('Chạm vào bề mặt rập để lấy màu', W / 2, image.height / 2);
+            ctx.textBaseline = 'alphabetic';
         }
 
         if (step === 'calibrate') {
@@ -181,7 +201,7 @@ export default function ViewMain({ user, onLogout }) {
                 const fs = Math.max(20, W / 25);
                 ctx.font = `bold ${fs}px Arial`;
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                const txt = `${area.toFixed(2)} cm²`;
+                const txt = `${(area / 10000).toFixed(4)} m²`;
                 const tw = ctx.measureText(txt).width; const pad = fs * 0.55;
                 ctx.fillStyle = 'rgba(79,70,229,0.88)';
                 ctx.beginPath();
@@ -195,7 +215,6 @@ export default function ViewMain({ user, onLogout }) {
     }, [image, step, rulerPos, rulerLength, rulerAngle, polygonPoints, hoverPointIdx, dragPointIdx, area]);
 
     useEffect(() => { drawCanvas(); }, [drawCanvas]);
-
 
     const toCanvas = (clientX, clientY) => {
         const c = canvasRef.current; const r = c.getBoundingClientRect();
@@ -217,7 +236,6 @@ export default function ViewMain({ user, onLogout }) {
         return -1;
     }, [polygonPoints]);
 
-
     const handleColorPick = (clientX, clientY) => {
         if (step !== 'pick' || !rawImageData) return;
         const { x, y } = toCanvas(clientX, clientY);
@@ -232,7 +250,6 @@ export default function ViewMain({ user, onLogout }) {
         setPickedRgb({ r, g, b });
         setStep('scan');
     };
-
 
     const onPointerDown = (clientX, clientY) => {
         if (step === 'pick') { handleColorPick(clientX, clientY); return; }
@@ -277,7 +294,6 @@ export default function ViewMain({ user, onLogout }) {
         return 'default';
     };
 
-
     const handleImageUpload = (e) => {
         const file = e.target.files?.[0]; if (!file) return;
         const reader = new FileReader();
@@ -293,13 +309,14 @@ export default function ViewMain({ user, onLogout }) {
                 setDragPointIdx(-1); setHoverPointIdx(-1);
                 setPickedColor(null); setPickedRgb(null);
                 setRulerPos({ x: img.width * 0.74, y: img.height * 0.12 });
-                setRulerLength(img.height * 0.65); setRulerAngle(90);
+                setRulerLength(img.height * 0.65);
+                setRulerAngle(0);
+                setZoom(1); setPanOffset({ x: 0, y: 0 });
             };
             img.src = ev.target.result;
         };
         reader.readAsDataURL(file); e.target.value = '';
     };
-
 
     const scanAndCalc = async () => {
         if (!rawImageData || !cvReady || !pixelsPerCm) {
@@ -346,6 +363,29 @@ export default function ViewMain({ user, onLogout }) {
                 const p = cv.arcLength(c, true); const sc = a * ((4 * Math.PI * a) / (p * p));
                 if (sc > mx) { mx = sc; best = c; }
             }
+
+            // Fallback: Canny
+            if (!best) {
+                const gray = new cv.Mat();
+                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+                const blurred = new cv.Mat(); cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
+                const edges = new cv.Mat(); cv.Canny(blurred, edges, 30, 100);
+                const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
+                const dilated = new cv.Mat(); cv.dilate(edges, dilated, kernel, new cv.Point(-1, -1), 3);
+                const cs2 = new cv.MatVector(); const hr2 = new cv.Mat();
+                cv.findContours(dilated, cs2, hr2, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+                let mx2 = 0;
+                for (let i = 0; i < cs2.size(); i++) {
+                    const c = cs2.get(i); const a = cv.contourArea(c); const pct = (a / imgArea) * 100;
+                    if (pct < 2 || pct > 90) continue;
+                    const rb = cv.boundingRect(c);
+                    if (rb.x <= 5 || rb.y <= 5 || rb.x + rb.width >= src.cols - 5 || rb.y + rb.height >= src.rows - 5) continue;
+                    const p = cv.arcLength(c, true); const sc = a * ((4 * Math.PI * a) / (p * p));
+                    if (sc > mx2) { mx2 = sc; best = c; }
+                }
+                [gray, blurred, edges, kernel, dilated, cs2, hr2].forEach(m => m?.delete?.());
+            }
+
             if (!best) throw new Error('Không tìm thấy rập! Thử chọn lại màu rập.');
 
             const pe = cv.arcLength(best, true); const ap = new cv.Mat();
@@ -361,7 +401,6 @@ export default function ViewMain({ user, onLogout }) {
             [src, hsv, lo, hi, mask, k1, cl, k2, fi, cs, hr, ap].forEach(m => m?.delete?.());
         } catch (err) { alert(`⚠️ ${err.message}`); } finally { setLoading(false); }
     };
-
 
     const openSaveModal = () => { setFileName(''); setQuantity(1); setShowSaveModal(true); };
 
@@ -384,8 +423,8 @@ export default function ViewMain({ user, onLogout }) {
         setPolygonPoints([]); setArea(null); setPixelsPerCm(null);
         setDragPointIdx(-1); setHoverPointIdx(-1);
         setPickedColor(null); setPickedRgb(null);
+        setZoom(1); setPanOffset({ x: 0, y: 0 });
     };
-
 
     const STEPS = [
         { key: 'upload', label: 'Tải ảnh' },
@@ -513,18 +552,59 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         </div>
 
-                        <div className="vm-canvas-wrap">
-                            <canvas
-                                ref={canvasRef}
-                                style={{ cursor: getCursor(), touchAction: 'none' }}
-                                onMouseDown={e => onPointerDown(e.clientX, e.clientY)}
-                                onMouseMove={e => onPointerMove(e.clientX, e.clientY)}
-                                onMouseUp={onPointerUp}
-                                onMouseLeave={() => { onPointerUp(); setHoverPointIdx(-1); }}
-                                onTouchStart={e => { e.preventDefault(); const t = e.touches[0]; onPointerDown(t.clientX, t.clientY); }}
-                                onTouchMove={e => { e.preventDefault(); const t = e.touches[0]; onPointerMove(t.clientX, t.clientY); }}
-                                onTouchEnd={e => { e.preventDefault(); onPointerUp(); }}
-                            />
+                        {/* Zoom controls */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+                            <span style={{ fontSize: 13, color: '#6b7280', fontWeight: 500 }}>Zoom:</span>
+                            <button
+                                className="vm-btn ghost"
+                                style={{ padding: '5px 12px', fontSize: 13 }}
+                                onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}
+                            >−</button>
+                            <span style={{
+                                minWidth: 50, textAlign: 'center', fontSize: 13, fontWeight: 600,
+                                background: '#ede9fe', color: '#4f46e5', borderRadius: 6, padding: '3px 8px'
+                            }}>
+                                {Math.round(zoom * 100)}%
+                            </span>
+                            <button
+                                className="vm-btn ghost"
+                                style={{ padding: '5px 12px', fontSize: 13 }}
+                                onClick={() => setZoom(z => Math.min(5, z + 0.25))}
+                            >+</button>
+                            <button
+                                className="vm-btn ghost"
+                                style={{ padding: '5px 12px', fontSize: 13 }}
+                                onClick={() => { setZoom(1); setPanOffset({ x: 0, y: 0 }); }}
+                            >Reset</button>
+                            <span style={{ fontSize: 12, color: '#9ca3af', marginLeft: 4 }}>
+                                · Cuộn chuột hoặc pinch để zoom
+                            </span>
+                        </div>
+
+                        {/* Canvas container với zoom */}
+                        <div
+                            ref={containerRef}
+                            className="vm-canvas-wrap"
+                            style={{ overflow: 'hidden', cursor: getCursor() }}
+                        >
+                            <div style={{
+                                transform: `scale(${zoom}) translate(${panOffset.x / zoom}px, ${panOffset.y / zoom}px)`,
+                                transformOrigin: 'center center',
+                                transition: isDraggingRuler || dragPointIdx >= 0 ? 'none' : 'transform 0.1s ease',
+                                width: '100%',
+                            }}>
+                                <canvas
+                                    ref={canvasRef}
+                                    style={{ maxWidth: '100%', height: 'auto', display: 'block', touchAction: 'none' }}
+                                    onMouseDown={e => onPointerDown(e.clientX, e.clientY)}
+                                    onMouseMove={e => onPointerMove(e.clientX, e.clientY)}
+                                    onMouseUp={onPointerUp}
+                                    onMouseLeave={() => { onPointerUp(); setHoverPointIdx(-1); }}
+                                    onTouchStart={e => { e.preventDefault(); const t = e.touches[0]; onPointerDown(t.clientX, t.clientY); }}
+                                    onTouchMove={e => { e.preventDefault(); const t = e.touches[0]; onPointerMove(t.clientX, t.clientY); }}
+                                    onTouchEnd={e => { e.preventDefault(); onPointerUp(); }}
+                                />
+                            </div>
                             {loading && (
                                 <div className="vm-overlay">
                                     <div className="vm-spinner" /><span>Đang phân tích ảnh...</span>
@@ -532,7 +612,6 @@ export default function ViewMain({ user, onLogout }) {
                             )}
                             {step === 'adjust' && area !== null && (
                                 <div className="vm-area-badge">
-                                    {/* {area.toFixed(2)} cm² &nbsp;·&nbsp;  */}
                                     {(area / 10000).toFixed(4)} m²
                                 </div>
                             )}
@@ -546,10 +625,20 @@ export default function ViewMain({ user, onLogout }) {
                                         <input type="range" min="100" max={image.height}
                                             value={rulerLength} onChange={e => setRulerLength(Number(e.target.value))} />
                                         <div className="vm-badges">
-                                            <span className="vm-badge">{Math.round(rulerLength)} px</span>
-                                            <span className="vm-badge accent">{(rulerLength / 30).toFixed(1)} px/cm</span>
+                                            <span className="vm-badge">{Math.round(rulerLength)} px = 30cm</span>
+                                            <span className="vm-badge accent">{(rulerLength / 30).toFixed(2)} px/cm</span>
                                         </div>
                                     </div>
+                                </div>
+                                <div className="vm-control-group">
+                                    <label>Hoặc nhập trực tiếp px/cm</label>
+                                    <input
+                                        type="number" min="1" step="0.1"
+                                        value={(rulerLength / 30).toFixed(2)}
+                                        onChange={e => setRulerLength(parseFloat(e.target.value) * 30 || rulerLength)}
+                                        className="vm-angle-input"
+                                        style={{ maxWidth: 160 }}
+                                    />
                                 </div>
                                 <div className="vm-control-group">
                                     <label>Góc xoay</label>
@@ -575,18 +664,10 @@ export default function ViewMain({ user, onLogout }) {
                                     <span>Diện tích</span>
                                     <strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong>
                                 </div>
-                                {/* <div className="vm-result-card">
-                                    <span>Quy đổi</span>
-                                    <strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong>
-                                </div> */}
                                 <div className="vm-result-card">
                                     <span>Tỷ lệ</span>
                                     <strong>{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong>
                                 </div>
-                                {/* <div className="vm-result-card">
-                                    <span>Số đỉnh</span>
-                                    <strong>{polygonPoints.length}<em>đỉnh</em></strong>
-                                </div> */}
                             </div>
                         )}
 
@@ -624,7 +705,7 @@ export default function ViewMain({ user, onLogout }) {
 
                             {step === 'calibrate' && (
                                 <button className="vm-btn primary" onClick={() => { setPixelsPerCm(rulerLength / 30); setStep('pick'); }}>
-                                    <CheckCircle size={15} /> Xác nhận · {(rulerLength / 30).toFixed(1)} px/cm
+                                    <CheckCircle size={15} /> Xác nhận · {(rulerLength / 30).toFixed(2)} px/cm
                                 </button>
                             )}
 
@@ -673,7 +754,7 @@ export default function ViewMain({ user, onLogout }) {
                         <button className="vm-modal-close" onClick={() => setShowSaveModal(false)}><X size={18} /></button>
                         <h3>Lưu chi tiết</h3>
                         <p className="vm-modal-sub">
-                            Diện tích: <strong>{(area/10000)?.toFixed(4)} m²</strong>
+                            Diện tích: <strong>{(area / 10000)?.toFixed(4)} m²</strong>
                             {selectedProject && <> · Folder: <strong>{selectedProject.name}</strong></>}
                         </p>
                         <div className="vm-field-group">
@@ -696,8 +777,8 @@ export default function ViewMain({ user, onLogout }) {
                             </div>
                         </div>
                         <div className="vm-modal-preview">
-                            {/* <div><span>Tổng</span><strong>{((area || 0) * quantity).toFixed(2)} cm²</strong></div> */}
-                            <div><span>Tổng</span><strong>{(((area || 0) * quantity) / 10000).toFixed(4)} m²</strong></div>
+                            <div><span>Diện tích 1 chi tiết</span><strong>{(area / 10000)?.toFixed(4)} m²</strong></div>
+                            <div><span>Tổng ({quantity} chi tiết)</span><strong>{(((area || 0) * quantity) / 10000).toFixed(4)} m²</strong></div>
                         </div>
                         <div className="vm-modal-actions">
                             <button className="vm-btn ghost" onClick={() => setShowSaveModal(false)} disabled={saving}>Hủy</button>

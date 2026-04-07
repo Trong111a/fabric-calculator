@@ -344,7 +344,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
     return (
         <div className="pd-scan-wrap">
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <span className="pd-cv-badge ready">✏️ Vẽ thủ công</span>
+                <span className="pd-cv-badge ready">✏️ Vẽ thủ polygon</span>
             </div>
 
             {/* Step bar */}
@@ -1184,19 +1184,19 @@ function ScanPanel({ project, cvReady, onSaved }) {
 
                     {step === 'adjust' && (
                         <div className="pd-result-grid">
-                            <div className="pd-result-card accent"><span>Diện tích</span><strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong></div>
-                            {/* <div className="pd-result-card"><span>Quy đổi</span><strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong></div> */}
+                            <div className="pd-result-card accent"><span>Diện tích</span><strong>{area?.toFixed(2)}<em>cm²</em></strong></div>
+                            <div className="pd-result-card"><span>Quy đổi</span><strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong></div>
                             <div className="pd-result-card"><span>Tỷ lệ</span><strong>{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong></div>
-                            {/* <div className="pd-result-card"><span>Số đỉnh</span><strong>{polygonPoints.length}<em>đỉnh</em></strong></div> */}
+                            <div className="pd-result-card"><span>Số đỉnh</span><strong>{polygonPoints.length}<em>đỉnh</em></strong></div>
                         </div>
                     )}
 
                     {step === 'result' && area !== null && (
                         <div className="pd-result-grid">
-                            <div className="pd-result-card accent"><span>Diện tích 1 chi tiết</span><strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong></div>
-                            {/* <div className="pd-result-card"><span>Quy đổi</span><strong>{(area / 10000).toFixed(4)}<em>m²</em></strong></div> */}
+                            <div className="pd-result-card accent"><span>Diện tích 1 chi tiết</span><strong>{area?.toFixed(2)}<em>cm²</em></strong></div>
+                            <div className="pd-result-card"><span>Quy đổi</span><strong>{(area / 10000).toFixed(4)}<em>m²</em></strong></div>
                             <div className="pd-result-card"><span>Tỷ lệ</span><strong>{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong></div>
-                            {/* <div className="pd-result-card"><span>Số đỉnh</span><strong>{polygonPoints.length}<em>đỉnh</em></strong></div> */}
+                            <div className="pd-result-card"><span>Số đỉnh</span><strong>{polygonPoints.length}<em>đỉnh</em></strong></div>
                             {quantity > 1 && (
                                 <div className="pd-result-card accent">
                                     <span>Tổng ({quantity} chi tiết)</span>
@@ -1450,7 +1450,7 @@ export default function ProjectDetail({ project, onBack }) {
     const TABS = [
         { key: 'list', icon: <Layers size={15} />, label: `Danh sách (${measurements.length})` },
         { key: 'scan', icon: <Ruler size={15} />, label: 'Đo tự động' },
-        { key: 'manual', icon: <MousePointer size={15} />, label: 'Vẽ thủ công' },
+        { key: 'manual', icon: <MousePointer size={15} />, label: 'Vẽ polygon' },
         { key: 'export', icon: <Download size={15} />, label: 'Xuất CSV' },
     ];
 
