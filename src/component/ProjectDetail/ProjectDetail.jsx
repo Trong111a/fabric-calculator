@@ -36,11 +36,11 @@ function rgbToHsv(r, g, b) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   MANUAL DRAW PANEL — chạm/click để đặt điểm, tính diện tích
+   MANUAL DRAW PANEL
 ══════════════════════════════════════════════════════════ */
 function ManualDrawPanel({ project, cvReady, onSaved }) {
     const [image, setImage] = useState(null);
-    const [step, setStep] = useState('upload'); // upload | calibrate | draw | result
+    const [step, setStep] = useState('upload');
     const [points, setPoints] = useState([]);
     const [pixelsPerCm, setPixelsPerCm] = useState(null);
     const [area, setArea] = useState(null);
@@ -51,20 +51,15 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
     const [hoverIdx, setHoverIdx] = useState(-1);
     const [dragIdx, setDragIdx] = useState(-1);
 
-    // Ruler state (giống ScanPanel)
     const [rulerPos, setRulerPos] = useState({ x: 100, y: 100 });
     const [rulerLength, setRulerLength] = useState(300);
     const [rulerAngle, setRulerAngle] = useState(90);
     const [isDraggingRuler, setIsDraggingRuler] = useState(false);
     const [rulerDragOffset, setRulerDragOffset] = useState({ x: 0, y: 0 });
 
-    // Zoom state
     const [zoom, setZoom] = useState(1);
     const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
-    const [isPanning, setIsPanning] = useState(false);
-    const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
-    // Edit after save
     const [editingMeasurement, setEditingMeasurement] = useState(null);
     const [editName, setEditName] = useState('');
     const [editQuantity, setEditQuantity] = useState(1);
@@ -86,7 +81,6 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
         const W = image.width;
         const displayScale = canvas.width / (canvas.getBoundingClientRect().width || canvas.width);
 
-        // Vẽ thước (giống ScanPanel)
         if (step === 'calibrate') {
             ctx.save();
             ctx.translate(rulerPos.x, rulerPos.y);
@@ -125,7 +119,6 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
             ctx.restore();
         }
 
-        // Vẽ polygon
         if (points.length > 0 && (step === 'draw' || step === 'result')) {
             ctx.beginPath();
             points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
@@ -157,7 +150,6 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                 const cx = points.reduce((s, p) => s + p.x, 0) / points.length;
                 const cy = points.reduce((s, p) => s + p.y, 0) / points.length;
                 const fs = Math.max(18, W / 28);
-                // Hiển thị m² giữa polygon
                 const txt = `${(area / 10000).toFixed(4)} m²`;
                 ctx.font = `bold ${fs}px Arial`;
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -194,7 +186,6 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
         return -1;
     }, [points]);
 
-    // Zoom bằng wheel
     const handleWheel = useCallback((e) => {
         e.preventDefault();
         const delta = e.deltaY > 0 ? 0.9 : 1.1;
@@ -210,7 +201,6 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
 
     const handleCanvasDown = (clientX, clientY) => {
         const { x, y } = toCanvas(clientX, clientY);
-
         if (step === 'calibrate') {
             const rad = (-rulerAngle * Math.PI) / 180;
             const dx = x - rulerPos.x, dy = y - rulerPos.y;
@@ -222,7 +212,6 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
             }
             return;
         }
-
         if (step === 'draw') {
             const idx = hitTest(x, y);
             if (idx >= 0) { setDragIdx(idx); return; }
@@ -234,12 +223,10 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
 
     const handleCanvasMove = (clientX, clientY) => {
         const { x, y } = toCanvas(clientX, clientY);
-
         if (step === 'calibrate' && isDraggingRuler) {
             setRulerPos({ x: x - rulerDragOffset.x, y: y - rulerDragOffset.y });
             return;
         }
-
         if (step === 'draw') {
             setHoverIdx(dragIdx >= 0 ? dragIdx : hitTest(x, y));
             if (dragIdx >= 0) {
@@ -277,7 +264,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                 setStep('calibrate');
                 setPoints([]); setArea(null); setPixelsPerCm(null);
                 setZoom(1); setPanOffset({ x: 0, y: 0 });
-                setRulerPos({ x: img.width * 0.74, y: img.height * 0.12 });
+                setRulerPos({ x: img.width * 0.5, y: img.height * 0.1 });
                 setRulerLength(img.height * 0.65);
                 setRulerAngle(90);
             };
@@ -344,10 +331,9 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
     return (
         <div className="pd-scan-wrap">
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <span className="pd-cv-badge ready">✏️ Vẽ thủ polygon</span>
+                <span className="pd-cv-badge ready" translate="no">✏️ Vẽ thủ polygon</span>
             </div>
 
-            {/* Step bar */}
             {step !== 'upload' && (
                 <div className="pd-step-bar">
                     {STEPS.map((label, i) => (
@@ -366,7 +352,6 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                 </div>
             )}
 
-            {/* Upload */}
             {step === 'upload' && (
                 <div className="pd-upload-screen">
                     <div className="pd-upload-hero">
@@ -387,7 +372,6 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                 </div>
             )}
 
-            {/* Canvas + controls */}
             {image && step !== 'upload' && (
                 <>
                     <div className="pd-guide">
@@ -408,12 +392,11 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                         </div>
                     </div>
 
-                    {/* Zoom controls */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 13, color: '#6b7280', fontWeight: 500 }}>Zoom:</span>
                         <button className="pd-btn ghost" style={{ padding: '5px 12px', fontSize: 13 }}
                             onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}>−</button>
-                        <span className="pd-badge accent" style={{ minWidth: 50, textAlign: 'center' }}>
+                        <span className="pd-badge accent" style={{ minWidth: 50, textAlign: 'center' }} translate="no">
                             {Math.round(zoom * 100)}%
                         </span>
                         <button className="pd-btn ghost" style={{ padding: '5px 12px', fontSize: 13 }}
@@ -423,7 +406,6 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                         <span style={{ fontSize: 12, color: '#9ca3af', marginLeft: 4 }}>· Cuộn chuột hoặc pinch để zoom</span>
                     </div>
 
-                    {/* Canvas container với zoom/pan */}
                     <div
                         ref={containerRef}
                         className="pd-canvas-wrap"
@@ -448,13 +430,12 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                             />
                         </div>
                         {step === 'draw' && area !== null && (
-                            <div className="pd-area-badge">
+                            <div className="pd-area-badge" translate="no">
                                 {(area / 10000).toFixed(4)} m²
                             </div>
                         )}
                     </div>
 
-                    {/* Calibrate controls (giống ScanPanel) */}
                     {step === 'calibrate' && (
                         <div className="pd-controls">
                             <div className="pd-control-group">
@@ -463,8 +444,8 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                                     <input type="range" min="100" max={image.height}
                                         value={rulerLength} onChange={e => setRulerLength(Number(e.target.value))} />
                                     <div className="pd-badges">
-                                        <span className="pd-badge">{Math.round(rulerLength)} px = 30cm</span>
-                                        <span className="pd-badge accent">{(rulerLength / 30).toFixed(2)} px/cm</span>
+                                        <span className="pd-badge" translate="no">{Math.round(rulerLength)} px = 30cm</span>
+                                        <span className="pd-badge accent" translate="no">{(rulerLength / 30).toFixed(2)} px/cm</span>
                                     </div>
                                 </div>
                             </div>
@@ -495,38 +476,36 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                         </div>
                     )}
 
-                    {/* Result grid */}
                     {(step === 'draw' || step === 'result') && (
                         <div className="pd-result-grid">
                             <div className="pd-result-card accent">
                                 <span>{step === 'result' ? 'Diện tích 1 chi tiết' : 'Diện tích'}</span>
-                                <strong>
-                                    {area ? (area / 10000).toFixed(4) : '—'}
-                                    <em>m²</em>
+                                <strong translate="no">
+                                    {area ? area.toFixed(2) : '—'}
+                                    <em>cm²</em>
                                 </strong>
                             </div>
                             <div className="pd-result-card accent">
                                 <span>Diện tích (m²)</span>
-                                <strong>{area ? (area / 10000).toFixed(4) : '—'}<em>m²</em></strong>
+                                <strong translate="no">{area ? (area / 10000).toFixed(4) : '—'}<em>m²</em></strong>
                             </div>
                             <div className="pd-result-card">
                                 <span>Tỷ lệ</span>
-                                <strong>{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong>
+                                <strong translate="no">{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong>
                             </div>
                             <div className="pd-result-card">
                                 <span>Số điểm</span>
-                                <strong>{points.length}<em>điểm</em></strong>
+                                <strong translate="no">{points.length}<em>điểm</em></strong>
                             </div>
                             {step === 'result' && quantity > 1 && (
                                 <div className="pd-result-card accent">
                                     <span>Tổng ({quantity} chi tiết)</span>
-                                    <strong>{(area * quantity / 10000).toFixed(4)}<em>m²</em></strong>
+                                    <strong translate="no">{(area * quantity / 10000).toFixed(4)}<em>m²</em></strong>
                                 </div>
                             )}
                         </div>
                     )}
 
-                    {/* Saved list (step result) */}
                     {step === 'result' && savedMeasurements.length > 0 && (
                         <div className="pd-csv-preview">
                             <div className="pd-csv-header">
@@ -548,9 +527,9 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                                         {savedMeasurements.map((m, i) => (
                                             <tr key={m.id || i}>
                                                 <td>{m.name}</td>
-                                                <td>{Number(m.area_cm2).toFixed(2)} cm²</td>
+                                                <td translate="no">{Number(m.area_cm2).toFixed(2)} cm²</td>
                                                 <td>{m.quantity || 1}</td>
-                                                <td>{(Number(m.area_cm2) * (m.quantity || 1) / 10000).toFixed(4)} m²</td>
+                                                <td translate="no">{(Number(m.area_cm2) * (m.quantity || 1) / 10000).toFixed(4)} m²</td>
                                                 <td>
                                                     <button
                                                         className="pd-btn ghost"
@@ -571,7 +550,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                     <div className="pd-actions">
                         <button className="pd-btn ghost" onClick={reset}><RotateCcw size={15} /> Làm lại</button>
                         {step === 'calibrate' && (
-                            <button className="pd-btn primary" onClick={confirmCalibrate}>
+                            <button className="pd-btn primary" onClick={confirmCalibrate} translate="no">
                                 <CheckCircle size={15} /> Xác nhận · {(rulerLength / 30).toFixed(2)} px/cm
                             </button>
                         )}
@@ -579,7 +558,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                             <button className="pd-btn ghost" onClick={removeLastPoint}>← Xóa điểm cuối</button>
                         )}
                         {step === 'draw' && points.length >= 3 && area && (
-                            <button className="pd-btn success" onClick={() => { setFileName(''); setQuantity(1); setShowSaveModal(true); }}>
+                            <button className="pd-btn success" translate="no" onClick={() => { setFileName(''); setQuantity(1); setShowSaveModal(true); }}>
                                 <CheckCircle size={15} /> Xác nhận · {(area / 10000).toFixed(4)} m²
                             </button>
                         )}
@@ -589,7 +568,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                                     setPoints([]); setArea(null);
                                     setStep('calibrate');
                                     setZoom(1); setPanOffset({ x: 0, y: 0 });
-                                    setRulerPos({ x: image.width * 0.74, y: image.height * 0.12 });
+                                    setRulerPos({ x: image.width * 0.5, y: image.height * 0.1 });
                                     setRulerLength(image.height * 0.65);
                                     setRulerAngle(90);
                                 }}>
@@ -604,14 +583,13 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                 </>
             )}
 
-            {/* Save modal */}
             {showSaveModal && (
                 <div className="pd-modal-bg" onClick={e => e.target === e.currentTarget && setShowSaveModal(false)}>
                     <div className="pd-qty-modal">
                         <button className="pd-modal-x" onClick={() => setShowSaveModal(false)}><X size={18} /></button>
                         <h3>Lưu chi tiết</h3>
                         <p className="pd-qty-sub">
-                            Diện tích: <strong>{(area / 10000).toFixed(4)} m²</strong> · Folder: <strong>{project.name}</strong>
+                            Diện tích: <strong translate="no">{(area / 10000).toFixed(4)} m²</strong> · Folder: <strong>{project.name}</strong>
                         </p>
                         <div className="pd-field-group">
                             <label className="pd-field-label">Tên chi tiết <span style={{ color: '#ef4444' }}>*</span></label>
@@ -631,8 +609,8 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                             </div>
                         </div>
                         <div className="pd-qty-preview">
-                            <div><span>Diện tích 1 chi tiết</span><strong>{(area / 10000)?.toFixed(4)} m²</strong></div>
-                            <div><span>Tổng ({quantity} chi tiết)</span><strong>{((area || 0) * quantity / 10000).toFixed(4)} m²</strong></div>
+                            <div><span>Diện tích 1 chi tiết</span><strong translate="no">{(area / 10000)?.toFixed(4)} m²</strong></div>
+                            <div><span>Tổng ({quantity} chi tiết)</span><strong translate="no">{((area || 0) * quantity / 10000).toFixed(4)} m²</strong></div>
                         </div>
                         <div className="pd-qty-actions">
                             <button className="pd-btn ghost" onClick={() => setShowSaveModal(false)} disabled={saving}>Hủy</button>
@@ -644,14 +622,13 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                 </div>
             )}
 
-            {/* Edit modal */}
             {editingMeasurement && (
                 <div className="pd-modal-bg" onClick={e => e.target === e.currentTarget && setEditingMeasurement(null)}>
                     <div className="pd-qty-modal">
                         <button className="pd-modal-x" onClick={() => setEditingMeasurement(null)}><X size={18} /></button>
                         <h3>Chỉnh sửa chi tiết</h3>
                         <p className="pd-qty-sub">
-                            Diện tích: <strong>{Number(editingMeasurement.area_cm2).toFixed(2)} cm²</strong>
+                            Diện tích: <strong translate="no">{Number(editingMeasurement.area_cm2).toFixed(2)} cm²</strong>
                         </p>
                         <div className="pd-field-group">
                             <label className="pd-field-label">Tên chi tiết <span style={{ color: '#ef4444' }}>*</span></label>
@@ -671,9 +648,9 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                             </div>
                         </div>
                         <div className="pd-qty-preview">
-                            <div><span>Diện tích 1 chi tiết</span><strong>{(Number(editingMeasurement.area_cm2) / 10000).toFixed(4)} m²</strong></div>
+                            <div><span>Diện tích 1 chi tiết</span><strong translate="no">{(Number(editingMeasurement.area_cm2) / 10000).toFixed(4)} m²</strong></div>
                             <div><span>Tổng ({editQuantity} chi tiết)</span>
-                                <strong>{(Number(editingMeasurement.area_cm2) * editQuantity / 10000).toFixed(4)} m²</strong>
+                                <strong translate="no">{(Number(editingMeasurement.area_cm2) * editQuantity / 10000).toFixed(4)} m²</strong>
                             </div>
                         </div>
                         <div className="pd-qty-actions">
@@ -688,8 +665,9 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
         </div>
     );
 }
+
 /* ══════════════════════════════════════════════════════════
-   SCAN PANEL — auto scan với OpenCV
+   SCAN PANEL
 ══════════════════════════════════════════════════════════ */
 function ScanPanel({ project, cvReady, onSaved }) {
     const [image, setImage] = useState(null);
@@ -731,7 +709,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
         const W = image.width;
         const displayScale = canvas.width / (canvas.getBoundingClientRect().width || canvas.width);
 
-        // Overlay pick mode
         if (step === 'pick') {
             ctx.fillStyle = 'rgba(0,0,0,0.35)';
             ctx.fillRect(0, 0, W, image.height);
@@ -923,7 +900,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 setStep('calibrate'); setPolygonPoints([]); setArea(null); setPixelsPerCm(null);
                 setDragPointIdx(-1); setHoverPointIdx(-1);
                 setPickedColor(null); setPickedRgb(null);
-                setRulerPos({ x: img.width * 0.74, y: img.height * 0.12 });
+                setRulerPos({ x: img.width * 0.5, y: img.height * 0.1 });
                 setRulerLength(img.height * 0.65); setRulerAngle(90);
             };
             img.src = ev.target.result;
@@ -977,7 +954,6 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 if (sc > mx) { mx = sc; best = c; }
             }
 
-            // Fallback: Canny
             if (!best) {
                 const gray = new cv.Mat();
                 cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
@@ -1051,7 +1027,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
     return (
         <div className="pd-scan-wrap">
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <span className={`pd-cv-badge ${cvReady ? 'ready' : ''}`}>
+                <span className={`pd-cv-badge ${cvReady ? 'ready' : ''}`} translate="no">
                     {cvReady ? '✓ OpenCV sẵn sàng' : '⏳ Đang tải OpenCV...'}
                 </span>
             </div>
@@ -1113,7 +1089,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                                 {step === 'pick' && 'Chạm / click vào bề mặt rập — hệ thống sẽ nhận màu và tìm biên'}
                                 {step === 'scan' && (
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                                        Tỷ lệ: {pixelsPerCm?.toFixed(2)} px/cm · Folder: {project.name}
+                                        <span translate="no">Tỷ lệ: {pixelsPerCm?.toFixed(2)} px/cm</span> · Folder: {project.name}
                                         {pickedRgb && (
                                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                                 · Màu rập:
@@ -1127,7 +1103,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                                     </span>
                                 )}
                                 {step === 'adjust' && 'Diện tích cập nhật realtime · Xác nhận để đặt tên & lưu'}
-                                {step === 'result' && `${area?.toFixed(2)} cm² · ${(area / 10000)?.toFixed(4)} m²`}
+                                {step === 'result' && <span translate="no">{area?.toFixed(2)} cm² · {(area / 10000)?.toFixed(4)} m²</span>}
                             </span>
                         </div>
                     </div>
@@ -1147,7 +1123,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                             <div className="pd-overlay"><div className="pd-overlay-spinner" /><span>Đang phân tích ảnh...</span></div>
                         )}
                         {step === 'adjust' && area !== null && (
-                            <div className="pd-area-badge">{(area / 10000).toFixed(4)} m²</div>
+                            <div className="pd-area-badge" translate="no">{(area / 10000).toFixed(4)} m²</div>
                         )}
                     </div>
 
@@ -1159,8 +1135,8 @@ function ScanPanel({ project, cvReady, onSaved }) {
                                     <input type="range" min="100" max={image.height}
                                         value={rulerLength} onChange={e => setRulerLength(Number(e.target.value))} />
                                     <div className="pd-badges">
-                                        <span className="pd-badge">{Math.round(rulerLength)} px</span>
-                                        <span className="pd-badge accent">{(rulerLength / 30).toFixed(1)} px/cm</span>
+                                        <span className="pd-badge" translate="no">{Math.round(rulerLength)} px</span>
+                                        <span className="pd-badge accent" translate="no">{(rulerLength / 30).toFixed(1)} px/cm</span>
                                     </div>
                                 </div>
                             </div>
@@ -1184,23 +1160,23 @@ function ScanPanel({ project, cvReady, onSaved }) {
 
                     {step === 'adjust' && (
                         <div className="pd-result-grid">
-                            <div className="pd-result-card accent"><span>Diện tích</span><strong>{area?.toFixed(2)}<em>cm²</em></strong></div>
-                            <div className="pd-result-card"><span>Quy đổi</span><strong>{(area / 10000)?.toFixed(4)}<em>m²</em></strong></div>
-                            <div className="pd-result-card"><span>Tỷ lệ</span><strong>{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong></div>
-                            <div className="pd-result-card"><span>Số đỉnh</span><strong>{polygonPoints.length}<em>đỉnh</em></strong></div>
+                            <div className="pd-result-card accent"><span>Diện tích</span><strong translate="no">{area?.toFixed(2)}<em>cm²</em></strong></div>
+                            <div className="pd-result-card"><span>Quy đổi</span><strong translate="no">{(area / 10000)?.toFixed(4)}<em>m²</em></strong></div>
+                            <div className="pd-result-card"><span>Tỷ lệ</span><strong translate="no">{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong></div>
+                            <div className="pd-result-card"><span>Số đỉnh</span><strong translate="no">{polygonPoints.length}<em>đỉnh</em></strong></div>
                         </div>
                     )}
 
                     {step === 'result' && area !== null && (
                         <div className="pd-result-grid">
-                            <div className="pd-result-card accent"><span>Diện tích 1 chi tiết</span><strong>{area?.toFixed(2)}<em>cm²</em></strong></div>
-                            <div className="pd-result-card"><span>Quy đổi</span><strong>{(area / 10000).toFixed(4)}<em>m²</em></strong></div>
-                            <div className="pd-result-card"><span>Tỷ lệ</span><strong>{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong></div>
-                            <div className="pd-result-card"><span>Số đỉnh</span><strong>{polygonPoints.length}<em>đỉnh</em></strong></div>
+                            <div className="pd-result-card accent"><span>Diện tích 1 chi tiết</span><strong translate="no">{area?.toFixed(2)}<em>cm²</em></strong></div>
+                            <div className="pd-result-card"><span>Quy đổi</span><strong translate="no">{(area / 10000).toFixed(4)}<em>m²</em></strong></div>
+                            <div className="pd-result-card"><span>Tỷ lệ</span><strong translate="no">{pixelsPerCm?.toFixed(2)}<em>px/cm</em></strong></div>
+                            <div className="pd-result-card"><span>Số đỉnh</span><strong translate="no">{polygonPoints.length}<em>đỉnh</em></strong></div>
                             {quantity > 1 && (
                                 <div className="pd-result-card accent">
                                     <span>Tổng ({quantity} chi tiết)</span>
-                                    <strong>{(area * quantity / 10000).toFixed(4)}<em>m²</em></strong>
+                                    <strong translate="no">{(area * quantity / 10000).toFixed(4)}<em>m²</em></strong>
                                 </div>
                             )}
                         </div>
@@ -1209,7 +1185,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                     <div className="pd-actions">
                         <button className="pd-btn ghost" onClick={reset}><RotateCcw size={15} /> Làm lại</button>
                         {step === 'calibrate' && (
-                            <button className="pd-btn primary" onClick={() => { setPixelsPerCm(rulerLength / 30); setStep('pick'); }}>
+                            <button className="pd-btn primary" translate="no" onClick={() => { setPixelsPerCm(rulerLength / 30); setStep('pick'); }}>
                                 <CheckCircle size={15} /> Xác nhận · {(rulerLength / 30).toFixed(1)} px/cm
                             </button>
                         )}
@@ -1229,12 +1205,11 @@ function ScanPanel({ project, cvReady, onSaved }) {
                         {step === 'adjust' && (
                             <>
                                 <button className="pd-btn ghost" onClick={() => { setStep('scan'); setPolygonPoints([]); setArea(null); }}>← Quét lại</button>
-                                <button className="pd-btn success" onClick={openSaveModal}>
+                                <button className="pd-btn success" translate="no" onClick={openSaveModal}>
                                     <CheckCircle size={15} /> Xác nhận · {(area / 10000)?.toFixed(4)} m²
                                 </button>
                             </>
-                        )
-                        }
+                        )}
                         {step === 'result' && (
                             <button className="pd-btn primary" onClick={reset}><Upload size={15} /> Đo chi tiết khác</button>
                         )}
@@ -1247,7 +1222,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                     <div className="pd-qty-modal">
                         <button className="pd-modal-x" onClick={() => setShowSaveModal(false)}><X size={18} /></button>
                         <h3>Lưu chi tiết</h3>
-                        <p className="pd-qty-sub">Diện tích: <strong>{(area / 10000)?.toFixed(4)} m²</strong> · Folder: <strong>{project.name}</strong></p>
+                        <p className="pd-qty-sub">Diện tích: <strong translate="no">{(area / 10000)?.toFixed(4)} m²</strong> · Folder: <strong>{project.name}</strong></p>
                         <div className="pd-field-group">
                             <label className="pd-field-label">Tên chi tiết <span style={{ color: '#ef4444' }}>*</span></label>
                             <input className="pd-field-input" type="text" value={fileName}
@@ -1266,8 +1241,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                             </div>
                         </div>
                         <div className="pd-qty-preview">
-                            {/* <div><span>Tổng</span><strong>{((area || 0) * quantity)/10000?.toFixed(2)} cm²</strong></div> */}
-                            <div><span>Tổng</span><strong>{(((area || 0) * quantity) / 10000).toFixed(4)} m²</strong></div>
+                            <div><span>Tổng</span><strong translate="no">{(((area || 0) * quantity) / 10000).toFixed(4)} m²</strong></div>
                         </div>
                         <div className="pd-qty-actions">
                             <button className="pd-btn ghost" onClick={() => setShowSaveModal(false)} disabled={saving}>Hủy</button>
@@ -1281,6 +1255,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
         </div>
     );
 }
+
 /* ══════════════════════════════════════════════════════════
    DOWNLOAD CSV
 ══════════════════════════════════════════════════════════ */
@@ -1296,7 +1271,6 @@ function DownloadPanel({ project, measurements }) {
             return [m.name, area.toFixed(2), (area / 10000).toFixed(4), qty, total.toFixed(2), (total / 10000).toFixed(4), Number(m.pixels_per_cm).toFixed(2), pts, date];
         });
 
-        // Tổng cộng
         const totalArea = measurements.reduce((s, m) => s + Number(m.area_cm2) * (m.quantity || 1), 0);
         const totalQty = measurements.reduce((s, m) => s + (m.quantity || 1), 0);
         rows.push([]);
@@ -1306,7 +1280,7 @@ function DownloadPanel({ project, measurements }) {
             .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
             .join('\n');
 
-        const BOM = '\uFEFF'; // UTF-8 BOM cho Excel đọc đúng tiếng Việt
+        const BOM = '\uFEFF';
         const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -1352,9 +1326,9 @@ function DownloadPanel({ project, measurements }) {
                                     return (
                                         <tr key={m.id}>
                                             <td>{m.name}</td>
-                                            <td>{area.toFixed(2)} cm²</td>
+                                            <td translate="no">{area.toFixed(2)} cm²</td>
                                             <td>{qty}</td>
-                                            <td>{(area * qty / 10000).toFixed(4)} m²</td>
+                                            <td translate="no">{(area * qty / 10000).toFixed(4)} m²</td>
                                             <td>{new Date(m.created_at).toLocaleDateString('vi-VN')}</td>
                                         </tr>
                                     );
@@ -1367,7 +1341,7 @@ function DownloadPanel({ project, measurements }) {
                                     <td><strong>Tổng cộng</strong></td>
                                     <td>—</td>
                                     <td><strong>{measurements.reduce((s, m) => s + (m.quantity || 1), 0)}</strong></td>
-                                    <td><strong>{(measurements.reduce((s, m) => s + Number(m.area_cm2) * (m.quantity || 1), 0) / 10000).toFixed(4)} m²</strong></td>
+                                    <td translate="no"><strong>{(measurements.reduce((s, m) => s + Number(m.area_cm2) * (m.quantity || 1), 0) / 10000).toFixed(4)} m²</strong></td>
                                     <td>—</td>
                                 </tr>
                             </tfoot>
@@ -1430,7 +1404,6 @@ export default function ProjectDetail({ project, onBack }) {
     };
 
     const fmt = d => new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const parsePolygon = (raw) => { try { const p = typeof raw === 'string' ? JSON.parse(raw) : raw; return Array.isArray(p) ? p.length : 0; } catch { return 0; } };
 
     const totalArea = measurements.reduce((s, m) => s + (Number(m.area_cm2) * (m.quantity || 1)), 0);
     const totalQty = measurements.reduce((s, m) => s + (m.quantity || 1), 0);
@@ -1462,7 +1435,7 @@ export default function ProjectDetail({ project, onBack }) {
                     <div className="pd-header-icon"><Folder size={22} color="#fff" /></div>
                     <div>
                         <h1 className="pd-header-title">{project.name}</h1>
-                        <p className="pd-header-sub">{measurements.length} chi tiết · {(totalArea / 10000).toFixed(4)} m²</p>
+                        <p className="pd-header-sub" translate="no">{measurements.length} chi tiết · {(totalArea / 10000).toFixed(4)} m²</p>
                     </div>
                 </div>
                 <div style={{ width: 110, flexShrink: 0 }} />
@@ -1486,7 +1459,10 @@ export default function ProjectDetail({ project, onBack }) {
                         ].map((stat, i) => (
                             <div key={i} className="pd-stat-item">
                                 <div className="pd-stat-icon">{stat.icon}</div>
-                                <div><div className="pd-stat-value">{stat.value}</div><div className="pd-stat-label">{stat.label}</div></div>
+                                <div>
+                                    <div className="pd-stat-value" translate="no">{stat.value}</div>
+                                    <div className="pd-stat-label">{stat.label}</div>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -1522,10 +1498,9 @@ export default function ProjectDetail({ project, onBack }) {
                                                 <div className="pd-meta-row"><span className="pd-meta-dot" /><span className="pd-meta-text">SL: {m.quantity || 1} chi tiết</span></div>
                                             </div>
                                             <div className="pd-card-area">
-                                                <span className="pd-area-value">{(Number(m.area_cm2) * (m.quantity || 1) / 10000).toFixed(4)}</span>
-                                                <span className="pd-area-unit">m²</span>
+                                                <span className="pd-area-value" translate="no">{(Number(m.area_cm2) * (m.quantity || 1) / 10000).toFixed(4)}</span>
+                                                <span className="pd-area-unit" translate="no">m²</span>
                                             </div>
-                                            {/* Nút sửa */}
                                             <button
                                                 className="pd-btn ghost"
                                                 style={{ marginTop: 8, width: '100%', justifyContent: 'center', fontSize: 12, padding: '6px 0' }}
@@ -1570,36 +1545,36 @@ export default function ProjectDetail({ project, onBack }) {
                             <div className="pd-modal-grid">
                                 <div className="pd-modal-card accent">
                                     <div className="pd-modal-card-label">Diện tích 1 chi tiết</div>
-                                    <div className="pd-modal-card-value">{(Number(selected.area_cm2) / 10000)?.toFixed(4)}<em>m²</em></div>
+                                    <div className="pd-modal-card-value" translate="no">{(Number(selected.area_cm2) / 10000)?.toFixed(4)}<em>m²</em></div>
                                 </div>
                                 <div className="pd-modal-card">
                                     <div className="pd-modal-card-label">Số lượng</div>
                                     <div className="pd-modal-card-row">
                                         <Hash size={16} color="#6366f1" />
-                                        <div className="pd-modal-card-value">{selected.quantity || 1}<em>chi tiết</em></div>
+                                        <div className="pd-modal-card-value" translate="no">{selected.quantity || 1}<em>chi tiết</em></div>
                                     </div>
                                 </div>
                                 <div className="pd-modal-card accent">
                                     <div className="pd-modal-card-label">Tổng diện tích</div>
-                                    <div className="pd-modal-card-value">{(Number(selected.area_cm2) * (selected.quantity || 1) / 10000).toFixed(4)}<em>m²</em></div>
+                                    <div className="pd-modal-card-value" translate="no">{(Number(selected.area_cm2) * (selected.quantity || 1) / 10000).toFixed(4)}<em>m²</em></div>
                                 </div>
                                 <div className="pd-modal-card">
                                     <div className="pd-modal-card-label">Tỷ lệ px/cm</div>
                                     <div className="pd-modal-card-row">
                                         <Ruler size={15} color="#6366f1" />
-                                        <div className="pd-modal-card-value" style={{ fontSize: 17 }}>{Number(selected.pixels_per_cm).toFixed(2)}<em>px/cm</em></div>
+                                        <div className="pd-modal-card-value" style={{ fontSize: 17 }} translate="no">{Number(selected.pixels_per_cm).toFixed(2)}<em>px/cm</em></div>
                                     </div>
                                 </div>
                             </div>
                             <div className="pd-modal-footer">
                                 <Calendar size={13} />
                                 Đo lúc: {fmt(selected.created_at)}
-                                {/* {parsePolygon(selected.polygon_points) > 0 && <span> · {parsePolygon(selected.polygon_points)} đỉnh</span>} */}
                             </div>
                         </div>
                     </div>
                 </div>
             )}
+
             {editingId && (
                 <div className="pd-modal-bg" onClick={e => e.target === e.currentTarget && setEditingId(null)}>
                     <div className="pd-qty-modal">
@@ -1610,7 +1585,7 @@ export default function ProjectDetail({ project, onBack }) {
                             const areaCm2 = Number(m?.area_cm2 || 0);
                             return (
                                 <>
-                                    <p className="pd-qty-sub">Diện tích 1 chi tiết: <strong>{(areaCm2 / 10000)?.toFixed(4)} m²</strong></p>
+                                    <p className="pd-qty-sub">Diện tích 1 chi tiết: <strong translate="no">{(areaCm2 / 10000)?.toFixed(4)} m²</strong></p>
                                     <div className="pd-field-group">
                                         <label className="pd-field-label">Tên chi tiết <span style={{ color: '#ef4444' }}>*</span></label>
                                         <input className="pd-field-input" type="text" value={editName}
@@ -1629,9 +1604,9 @@ export default function ProjectDetail({ project, onBack }) {
                                         </div>
                                     </div>
                                     <div className="pd-qty-preview">
-                                        <div><span>Diện tích 1 chi tiết</span><strong>{(areaCm2 / 10000)?.toFixed(4)} m²</strong></div>
+                                        <div><span>Diện tích 1 chi tiết</span><strong translate="no">{(areaCm2 / 10000)?.toFixed(4)} m²</strong></div>
                                         <div><span>Tổng ({editQuantity} chi tiết)</span>
-                                            <strong>{(areaCm2 * editQuantity / 10000).toFixed(4)} m²</strong></div>
+                                            <strong translate="no">{(areaCm2 * editQuantity / 10000).toFixed(4)} m²</strong></div>
                                     </div>
                                     <div className="pd-qty-actions">
                                         <button className="pd-btn ghost" onClick={() => setEditingId(null)} disabled={editSaving}>Hủy</button>
