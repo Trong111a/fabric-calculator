@@ -416,6 +416,7 @@
     .use(initReactI18next)
     .init({
         resources,
+        lng: 'vi',
         fallbackLng: 'vi',
         debug: false,
         interpolation: {
