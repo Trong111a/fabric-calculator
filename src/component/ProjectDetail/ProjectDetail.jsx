@@ -656,7 +656,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                         <div className="pd-qty-actions">
                             <button className="pd-btn ghost" onClick={() => setEditingMeasurement(null)} disabled={editSaving}>Hủy</button>
                             <button className="pd-btn primary" onClick={saveEdit} disabled={editSaving || !editName.trim()}>
-                                <Save size={15} />{editSaving ? 'Đang lưu...' : 'Cập nhật'}
+                                <Save size={15} />{editSaving ? <span>Đang lưu...</span> : <span>Cập nhật</span>}
                             </button>
                         </div>
                     </div>

@@ -2,22 +2,22 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Mail, Lock } from 'lucide-react';
 import './Login.css';
-import { api } from '../../services/api';  
+import { api } from '../../services/api';
 
 function Login({ onLoginSuccess, onNavigate }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);  
+    const [loading, setLoading] = useState(false);
 
-    const handleLogin = async () => {  
+    const handleLogin = async () => {
         setError('');
         setLoading(true);
 
         try {
-            const data = await api.login(email, password);  
-            api.setToken(data.token); 
-            onLoginSuccess(data.user);  
+            const data = await api.login(email, password);
+            api.setToken(data.token);
+            onLoginSuccess(data.user);
         } catch (err) {
             setError(err.message || 'Đăng nhập thất bại');
         } finally {
@@ -59,7 +59,7 @@ function Login({ onLoginSuccess, onNavigate }) {
                     onClick={handleLogin}
                     disabled={loading}
                 >
-                    {loading ? 'Đang đăng nhập...' : 'Đăng Nhập'}
+                    {loading ? <span>Đang đăng nhập...</span> : <span>Đăng Nhập</span>}
                 </button>
 
                 <div className="links">

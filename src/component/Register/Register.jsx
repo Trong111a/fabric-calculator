@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { User, Mail, Lock, ArrowLeft } from 'lucide-react';
 import './Register.css';
-import { api } from '../../services/api'; 
+import { api } from '../../services/api';
 
 function Register({ onNavigate }) {
     const [form, setForm] = useState({
@@ -13,11 +13,11 @@ function Register({ onNavigate }) {
     });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
-    const [loading, setLoading] = useState(false);  
+    const [loading, setLoading] = useState(false);
 
     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
-    const handleRegister = async () => {  
+    const handleRegister = async () => {
         setError('');
 
         if (!form.name || !form.email || !form.password) {
@@ -33,7 +33,7 @@ function Register({ onNavigate }) {
         setLoading(true);
 
         try {
-            await api.register(form.name, form.email, form.password); 
+            await api.register(form.name, form.email, form.password);
             setSuccess(true);
             setTimeout(() => onNavigate('login'), 1500);
         } catch (err) {
@@ -107,7 +107,7 @@ function Register({ onNavigate }) {
                     onClick={handleRegister}
                     disabled={loading || success}
                 >
-                    {loading ? 'Đang đăng ký...' : 'Đăng Ký'}
+                    {loading ? <span>Đang đăng ký...</span> : <span>Đăng Ký</span>}
                 </button>
             </div>
         </div>
