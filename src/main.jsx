@@ -3,7 +3,11 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 
-createRoot(document.getElementById('root')).render(
+const root = document.getElementById('root')
+root.setAttribute('translate', 'no')
+root.classList.add('notranslate')
+
+createRoot(root).render(
   <StrictMode>
     <App />
   </StrictMode>,
