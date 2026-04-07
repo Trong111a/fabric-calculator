@@ -322,7 +322,7 @@
         "guide_calibrate_title": "Hiệu chuẩn thước đo",
         "guide_calibrate_sub": "Kéo thước vào vật chuẩn 30cm · chỉnh độ dài & góc bên dưới",
         "guide_pick_title": "Chọn màu rập",
-        "guide_pick_sub": "Chạm / click vào bề mặt rập — hệ thống sẽ nhận màu và tìm biên",
+        "guide_pick_sub": "click vào bề mặt rập để nhận màu và tìm biên",
         "guide_scan_title": "Quét & nhận diện rập",
         "guide_adjust_title": "Chỉnh polygon — kéo từng điểm để khớp viền rập",
         "guide_adjust_sub": "Diện tích cập nhật realtime · Xác nhận để đặt tên & lưu",
