@@ -266,7 +266,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                 setZoom(1); setPanOffset({ x: 0, y: 0 });
                 setRulerPos({ x: img.width * 0.5, y: img.height * 0.1 });
                 setRulerLength(img.height * 0.65);
-                setRulerAngle(90);
+                setRulerAngle(0);
             };
             img.src = ev.target.result;
         };
@@ -570,7 +570,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
                                     setZoom(1); setPanOffset({ x: 0, y: 0 });
                                     setRulerPos({ x: image.width * 0.5, y: image.height * 0.1 });
                                     setRulerLength(image.height * 0.65);
-                                    setRulerAngle(90);
+                                    setRulerAngle(0);
                                 }}>
                                     <Pencil size={15} /> Vẽ chi tiết khác (cùng ảnh)
                                 </button>
@@ -901,7 +901,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 setDragPointIdx(-1); setHoverPointIdx(-1);
                 setPickedColor(null); setPickedRgb(null);
                 setRulerPos({ x: img.width * 0.5, y: img.height * 0.1 });
-                setRulerLength(img.height * 0.65); setRulerAngle(90);
+                setRulerLength(img.height * 0.65); setRulerAngle(0);
             };
             img.src = ev.target.result;
         };
