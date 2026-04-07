@@ -4,8 +4,10 @@ import { Folder, Plus, Trash2, ArrowLeft, FolderOpen, Package, Layers, TrendingU
 import { api } from '../../services/api';
 import ProjectDetail from '../ProjectDetail/ProjectDetail';
 import './ProjectManager.css';
+import { useTranslation } from 'react-i18next';
 
 function ProjectManager({ onBack }) {
+    const { t } = useTranslation();
     const [projects, setProjects] = useState([]);
     const [showCreate, setShowCreate] = useState(false);
     const [newProjectName, setNewProjectName] = useState('');
@@ -79,7 +81,7 @@ function ProjectManager({ onBack }) {
                 <button className="pm-back-btn" onClick={onBack}>
                     <ArrowLeft size={18} />
                     <span>Quay lại</span>
-                </button>
+                </button><h1>{t('projects')}</h1>
 
                 <div className="pm-header-center">
                     <div className="pm-header-icon">

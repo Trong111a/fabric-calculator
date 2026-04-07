@@ -53,7 +53,7 @@ function ManualDrawPanel({ project, cvReady, onSaved }) {
 
     const [rulerPos, setRulerPos] = useState({ x: 100, y: 100 });
     const [rulerLength, setRulerLength] = useState(300);
-    const [rulerAngle, setRulerAngle] = useState(90);
+    const [rulerAngle, setRulerAngle] = useState(0);
     const [isDraggingRuler, setIsDraggingRuler] = useState(false);
     const [rulerDragOffset, setRulerDragOffset] = useState({ x: 0, y: 0 });
 
@@ -677,7 +677,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
 
     const [rulerPos, setRulerPos] = useState({ x: 100, y: 100 });
     const [rulerLength, setRulerLength] = useState(300);
-    const [rulerAngle, setRulerAngle] = useState(90);
+    const [rulerAngle, setRulerAngle] = useState(0);
     const [pixelsPerCm, setPixelsPerCm] = useState(null);
     const [isDraggingRuler, setIsDraggingRuler] = useState(false);
     const [rulerDragOffset, setRulerDragOffset] = useState({ x: 0, y: 0 });
