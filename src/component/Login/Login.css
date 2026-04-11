@@ -385,3 +385,88 @@
         padding: 4px;
     }
 }
+
+/* ── About section ── */
+.login-about {
+    width: 100%;
+    max-width: 520px;
+    margin-top: 2rem;
+    padding: 1.5rem 1.75rem;
+    background: #fff;
+    border-radius: 1.25rem;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,0.06),
+        0 4px 16px rgba(10,45,110,0.07);
+}
+
+.about-divider {
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, #1a4fa8, #1565c0);
+    border-radius: 2px;
+    margin-bottom: 1rem;
+}
+
+.about-product {
+    font-size: 0.85rem;
+    color: #1e293b;
+    line-height: 1.6;
+    margin: 0 0 0.6rem;
+}
+.about-product strong {
+    color: #1a4fa8;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.about-desc {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.65;
+    margin: 0 0 1.25rem;
+    font-style: italic;
+}
+
+.about-contacts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.about-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.about-group-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    margin-bottom: 0.1rem;
+}
+
+.about-contact-item {
+    font-size: 0.8rem;
+    color: #374151;
+    text-decoration: none;
+    transition: color 0.15s;
+    line-height: 1.5;
+}
+.about-contact-item:hover { color: #1a4fa8; text-decoration: underline; }
+
+/* Mobile */
+@media (max-width: 768px) {
+    .login-about {
+        max-width: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        border-top: 1px solid #f1f5f9;
+        margin-top: 0;
+        padding: 1.5rem;
+    }
+}

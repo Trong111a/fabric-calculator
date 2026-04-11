@@ -142,6 +142,43 @@ function Login({ onLoginSuccess, onNavigate }) {
                     </div>
                 </div>
 
+                <div className="login-about">
+                    <div className="about-divider" />
+                    <p className="about-product">
+                        <strong>PATEC</strong> là sản phẩm đồ án Tốt nghiệp của Nhóm sinh viên ngành{' '}
+                        <em>Công nghệ May – Khóa K22</em>, Khoa Thời trang &amp; Du lịch,{' '}
+                        Trường ĐH Công nghệ Kỹ thuật TP.HCM.
+                    </p>
+                    <p className="about-desc">
+                        Đề tài: <em>"Nghiên cứu đề xuất công cụ hỗ trợ tính định mức dựa trên dữ liệu bộ mẫu"</em> —
+                        hướng đến các doanh nghiệp may mặc vừa và nhỏ, hỗ trợ rút ngắn thời gian tính toán định mức
+                        nguyên liệu từ bộ mẫu kỹ thuật.
+                    </p>
+                    <div className="about-contacts">
+                        <div className="about-group">
+                            <span className="about-group-label">Sinh viên thực hiện</span>
+                            <a href="mailto:vyvy30032004@gmail.com" className="about-contact-item">
+                                Lê Trần Thúy Vy · vyvy30032004@gmail.com
+                            </a>
+                            <a href="mailto:tranthu221004@gmail.com" className="about-contact-item">
+                                Trần Minh Thư · tranthu221004@gmail.com
+                            </a>
+                        </div>
+                        <div className="about-group">
+                            <span className="about-group-label">Giảng viên hướng dẫn</span>
+                            <a href="mailto:thucoanh@hcmute.edu.vn" className="about-contact-item">
+                                ThS Tạ Vũ Thục Oanh · thucoanh@hcmute.edu.vn
+                            </a>
+                        </div>
+                        <div className="about-group">
+                            <span className="about-group-label">Hỗ trợ kỹ thuật</span>
+                            <a href="mailto:nguyenvantrong3254@gmail.com" className="about-contact-item">
+                                Nguyễn Văn Trọng · nguyenvantrong3254@gmail.com
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <p className="login-footer">
                     © {new Date().getFullYear()} HCM-UTE · Khoa Thời trang &amp; Du lịch
                 </p>
