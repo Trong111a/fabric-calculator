@@ -212,7 +212,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: rgba(255, 255, 255, 0.78);
+    background: rgba(255, 255, 255, 0.65);
     pointer-events: none;
     z-index: 0;
 }
