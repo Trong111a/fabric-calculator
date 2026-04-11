@@ -498,13 +498,13 @@ export default function ViewMain({ user, onLogout }) {
             )}
 
             <main
-                className="vm-main has-bg"
-                style={{
+                className={`vm-main${step === 'upload' ? ' has-bg' : ''}`}
+                style={step === 'upload' ? {
                     backgroundImage: `url(${backgroundImg})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat',
-                }}
+                } : {}}
             >
                 {step === 'upload' && (
                     <div className="vm-upload-screen">

@@ -201,16 +201,25 @@
     overflow-y: auto;
     position: relative;
 }
-.vm-main.has-bg {
-    background-color: rgba(255, 255, 255, 0.88);
-    background-blend-mode: lighten;
-}
+
 .vm-upload-screen {
     max-width: 520px;
     margin: 40px auto;
     text-align: center;
 }
+.vm-main.has-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.78);
+    pointer-events: none;
+    z-index: 0;
+}
 
+.vm-main.has-bg .vm-upload-screen {
+    position: relative;
+    z-index: 1;
+}
 
 .vm-upload-hero { margin-bottom: 32px; }
 

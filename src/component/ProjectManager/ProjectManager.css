@@ -2,26 +2,9 @@
 
 .pm-wrap {
     min-height: 100vh;
-    /* background: #f4f6fb; */
+    background: #f4f6fb;
     font-family: 'DM Sans', system-ui, sans-serif;
     position: relative;
-}
-
-.pm-wrap::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: var(--bg-img);
-    background-size: cover;
-    background-position: center;
-    opacity: 0.12;
-    z-index: 0;
-    pointer-events: none;
-}
-
-.pm-wrap > * {
-    position: relative;
-    z-index: 1;
 }
 
 .pm-header {
