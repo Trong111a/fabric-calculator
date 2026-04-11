@@ -646,10 +646,26 @@ function ScanPanel({ project, cvReady, onSaved }) {
     const [fileName, setFileName] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [saving, setSaving] = useState(false);
+    const [zoom, setZoom] = useState(1);
+    const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
 
     const canvasRef = useRef(null);
     const uploadRef = useRef(null);
     const cameraRef = useRef(null);
+    const containerRef = useRef(null);
+
+    const handleWheel = useCallback((e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        setZoom(z => Math.min(5, Math.max(0.5, z * delta)));
+    }, []);
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+        container.addEventListener('wheel', handleWheel, { passive: false });
+        return () => container.removeEventListener('wheel', handleWheel);
+    }, [handleWheel]);
 
     const drawCanvas = useCallback(() => {
         const canvas = canvasRef.current;
@@ -837,6 +853,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 setDragPointIdx(-1); setHoverPointIdx(-1); setPickedColor(null); setPickedRgb(null);
                 setRulerPos({ x: img.width * 0.5, y: img.height * 0.1 });
                 setRulerLength(img.height * 0.65); setRulerAngle(0);
+                setZoom(1); setPanOffset({ x: 0, y: 0 });
             };
             img.src = ev.target.result;
         };
@@ -932,6 +949,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
         setImage(null); setRawImageData(null); setStep('upload');
         setPolygonPoints([]); setArea(null); setPixelsPerCm(null);
         setDragPointIdx(-1); setHoverPointIdx(-1); setPickedColor(null); setPickedRgb(null);
+        setZoom(1); setPanOffset({ x: 0, y: 0 });
     };
 
     const STEPS = [
@@ -1026,17 +1044,39 @@ function ScanPanel({ project, cvReady, onSaved }) {
                         </div>
                     </div>
 
-                    <div className="pd-canvas-wrap">
-                        <canvas ref={canvasRef}
-                            style={{ cursor: getCursor(), touchAction: 'none' }}
-                            onMouseDown={e => onPointerDown(e.clientX, e.clientY)}
-                            onMouseMove={e => onPointerMove(e.clientX, e.clientY)}
-                            onMouseUp={onPointerUp}
-                            onMouseLeave={() => { onPointerUp(); setHoverPointIdx(-1); }}
-                            onTouchStart={e => { e.preventDefault(); const t = e.touches[0]; onPointerDown(t.clientX, t.clientY); }}
-                            onTouchMove={e => { e.preventDefault(); const t = e.touches[0]; onPointerMove(t.clientX, t.clientY); }}
-                            onTouchEnd={e => { e.preventDefault(); onPointerUp(); }}
-                        />
+                    {/* Zoom controls */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 13, color: '#6b7280', fontWeight: 500 }}>{t('zoom_label')}</span>
+                        <button className="pd-btn ghost" style={{ padding: '5px 12px', fontSize: 13 }}
+                            onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}>−</button>
+                        <span className="pd-badge accent" style={{ minWidth: 50, textAlign: 'center' }} translate="no">
+                            {Math.round(zoom * 100)}%
+                        </span>
+                        <button className="pd-btn ghost" style={{ padding: '5px 12px', fontSize: 13 }}
+                            onClick={() => setZoom(z => Math.min(5, z + 0.25))}>+</button>
+                        <button className="pd-btn ghost" style={{ padding: '5px 12px', fontSize: 13 }}
+                            onClick={() => { setZoom(1); setPanOffset({ x: 0, y: 0 }); }}>{t('zoom_reset')}</button>
+                        <span style={{ fontSize: 12, color: '#9ca3af', marginLeft: 4 }}>{t('zoom_hint')}</span>
+                    </div>
+
+                    <div ref={containerRef} className="pd-canvas-wrap" style={{ overflow: 'hidden', cursor: getCursor() }}>
+                        <div style={{
+                            transform: `scale(${zoom}) translate(${panOffset.x / zoom}px, ${panOffset.y / zoom}px)`,
+                            transformOrigin: 'center center',
+                            transition: isDraggingRuler || dragPointIdx >= 0 ? 'none' : 'transform 0.1s ease',
+                            width: '100%',
+                        }}>
+                            <canvas ref={canvasRef}
+                                style={{ maxWidth: '100%', height: 'auto', display: 'block', touchAction: 'none' }}
+                                onMouseDown={e => onPointerDown(e.clientX, e.clientY)}
+                                onMouseMove={e => onPointerMove(e.clientX, e.clientY)}
+                                onMouseUp={onPointerUp}
+                                onMouseLeave={() => { onPointerUp(); setHoverPointIdx(-1); }}
+                                onTouchStart={e => { e.preventDefault(); const t = e.touches[0]; onPointerDown(t.clientX, t.clientY); }}
+                                onTouchMove={e => { e.preventDefault(); const t = e.touches[0]; onPointerMove(t.clientX, t.clientY); }}
+                                onTouchEnd={e => { e.preventDefault(); onPointerUp(); }}
+                            />
+                        </div>
                         {loading && (
                             <div className="pd-overlay"><div className="pd-overlay-spinner" /><span>{t('loading')}</span></div>
                         )}
