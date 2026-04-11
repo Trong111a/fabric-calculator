@@ -66,7 +66,7 @@ function Login({ onLoginSuccess, onNavigate }) {
 
                     <div className="form-header">
                         <h2 className="form-title">{t('login')}</h2>
-                        <p className="form-subtitle">Đăng nhập để tiếp tục sử dụng hệ thống</p>
+                        <p className="form-subtitle">{t('login_subtitle')}</p>
                     </div>
 
                     {error && (

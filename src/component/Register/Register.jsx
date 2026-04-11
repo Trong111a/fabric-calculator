@@ -79,9 +79,9 @@ function Register({ onNavigate }) {
                         </div>
                     ) : (
                         <>
-                            <div className="rg-form-header">
+                            <div className="rg-header">
                                 <h2 className="rg-title">{t('register')}</h2>
-                                <p className="rg-subtitle">Tạo tài khoản để sử dụng hệ thống</p>
+                                <p className="rg-subtitle">{t('register_subtitle')}</p>
                             </div>
 
                             {error && (
@@ -91,11 +91,18 @@ function Register({ onNavigate }) {
                             )}
 
                             <div className="rg-field-group">
-                                <label className="rg-field-label">Họ và tên</label>
+                                <label className="rg-field-label">{t('full_name')}</label>
                                 <div className={`rg-field-wrap ${form.name ? 'has-value' : ''}`}>
                                     <User size={16} className="rg-field-icon" />
-                                    <input name="name" className="rg-field-input" placeholder="Nguyễn Văn A"
-                                        onChange={handleChange} disabled={loading} />
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        placeholder={t('full_name_placeholder')}
+                                        value={form.name}
+                                        onChange={handleChange}
+                                        disabled={loading}
+                                        className="rg-field-input"
+                                    />
                                 </div>
                             </div>
 
