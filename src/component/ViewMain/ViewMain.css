@@ -200,6 +200,7 @@
     padding: 24px;
     overflow-y: auto;
     position: relative;
+    background-color: #d2e3e9;
 }
 
 .vm-upload-screen {
