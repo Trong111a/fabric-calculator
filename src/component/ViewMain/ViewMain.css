@@ -199,14 +199,26 @@
     flex: 1;
     padding: 24px;
     overflow-y: auto;
+    position: relative;
 }
 
 .vm-upload-screen {
     max-width: 520px;
     margin: 40px auto;
     text-align: center;
-    border-radius: 16px;
-    overflow: hidden;
+}
+.vm-main.has-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.78);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.vm-main.has-bg .vm-upload-screen {
+    position: relative;
+    z-index: 1;
 }
 
 .vm-upload-hero { margin-bottom: 32px; }

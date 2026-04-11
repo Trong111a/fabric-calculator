@@ -497,34 +497,24 @@ export default function ViewMain({ user, onLogout }) {
                 </div>
             )}
 
-            <main className="vm-main">
+            <main
+                className={`vm-main${step === 'upload' ? ' has-bg' : ''}`}
+                style={step === 'upload' ? {
+                    backgroundImage: `url(${backgroundImg})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                } : {}}
+            >
                 {step === 'upload' && (
-                    <div
-                        className="vm-upload-screen"
-                        style={{
-                            position: 'relative',
-                            backgroundImage: `url(${backgroundImg})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            backgroundRepeat: 'no-repeat',
-                        }}
-                    >
-                        <div style={{
-                            position: 'absolute',
-                            inset: 0,
-                            backgroundColor: 'rgba(255, 255, 255, 0.83)',
-                            pointerEvents: 'none',
-                        }} />
-
+                    <div className="vm-upload-screen">
                         <div className="vm-upload-hero" style={{ position: 'relative', zIndex: 1 }}>
                             <div className="vm-upload-icon"><Ruler size={48} color="#6366f1" /></div>
                             <h2>{t('measure_title')}</h2>
                             <p>{t('measure_sub')}</p>
                         </div>
-
                         <input ref={uploadRef} type="file" accept="image/*" onChange={handleImageUpload} className="vm-hidden" />
                         <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImageUpload} className="vm-hidden" />
-
                         <div className="vm-upload-btns" style={{ position: 'relative', zIndex: 1 }}>
                             <button className="vm-upload-btn primary" disabled={!cvReady} onClick={() => uploadRef.current?.click()}>
                                 <Upload size={22} /><span>{t('upload_image')}</span><small>{t('upload_formats')}</small>
