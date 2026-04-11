@@ -349,12 +349,39 @@
 @media (max-width: 768px) {
     .login-brand { display: none; }
     .mobile-logo { display: flex; }
-    .login-form-panel { background: #fff; justify-content: flex-start; padding-top: 0; }
+    
+    .login-form-panel { 
+        background: #fff; 
+        justify-content: flex-start; 
+        padding-top: 0; 
+    }
+    
     .login-card {
         box-shadow: none;
         border-radius: 0;
         padding: 2rem 1.5rem;
         max-width: 100%;
         min-height: 100vh;
+    }
+
+    .mobile-logo {
+        background: linear-gradient(160deg, #0a2d6e 0%, #1a4fa8 55%, #1565c0 100%);
+        margin: -2rem -1.5rem 1.75rem;
+        padding: 1.5rem;
+        border-bottom: none;
+    }
+
+    .mobile-abbr { 
+        color: rgba(255,255,255,0.7); 
+    }
+
+    .mobile-school-name { 
+        color: #fff; 
+    }
+
+    .mobile-logo-img {
+        background: #fff;
+        border-radius: 50%;
+        padding: 4px;
     }
 }
