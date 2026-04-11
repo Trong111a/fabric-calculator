@@ -152,7 +152,7 @@ function Login({ onLoginSuccess, onNavigate }) {
                     <p className="about-desc">
                         Đề tài: <em>&quot;Nghiên cứu đề xuất công cụ hỗ trợ tính định mức dựa trên dữ liệu bộ mẫu&quot;</em> —
                         hướng đến các doanh nghiệp may mặc vừa và nhỏ, hỗ trợ rút ngắn thời gian tính toán định mức
-                        nguyên liệu từ bộ mẫu kỹ thuật.
+                        nguyên liệu từ bộ mẫu kỹ thuật và sản phẩm thực tế.
                     </p>
                     <div className="about-contacts">
                         <div className="about-group">

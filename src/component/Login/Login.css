@@ -465,7 +465,7 @@
         border-radius: 0;
         box-shadow: none;
         border-top: 1px solid #f1f5f9;
-        /* margin-top: 0; */
+        margin-top: 1rem;
         padding: 1.5rem;
     }
 }
