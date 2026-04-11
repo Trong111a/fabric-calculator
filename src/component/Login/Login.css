@@ -387,8 +387,8 @@
 }
 
 .login-about {
-    width: 100%;
-    max-width: 600px;
+    /* width: 100%; */
+    max-width: 1000px;
     margin-top: 2rem;
     padding: 1.5rem 1.75rem;
     background: #fff;
@@ -465,7 +465,7 @@
         border-radius: 0;
         box-shadow: none;
         border-top: 1px solid #f1f5f9;
-        margin-top: 0;
-        padding: 0.5rem;
+        /* margin-top: 0; */
+        padding: 1.5rem;
     }
 }
