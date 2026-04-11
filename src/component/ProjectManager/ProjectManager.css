@@ -2,7 +2,7 @@
 
 .pm-wrap {
     min-height: 100vh;
-    background: #f4f6fb;
+    /* background: #f4f6fb; */
     font-family: 'DM Sans', system-ui, sans-serif;
     position: relative;
 }
