@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, Loader, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../services/api';
 import './ResetPassword.css';
