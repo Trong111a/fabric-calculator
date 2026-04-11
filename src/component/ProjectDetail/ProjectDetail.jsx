@@ -1377,14 +1377,7 @@ export default function ProjectDetail({ project, onBack }) {
     ];
 
     return (
-        <div className="pd-wrap" style={{
-            backgroundImage: `url(${backgroundImg})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            backgroundColor: 'rgba(255,255,255,0.88)',
-            backgroundBlendMode: 'lighten',
-        }}>
+        <div className="pd-wrap" style={{ '--bg-img': `url(${backgroundImg})` }}>
             <header className="pd-header">
                 <button className="pd-back-btn" onClick={onBack}><ArrowLeft size={18} /><span>{t('back')}</span></button>
                 <div className="pd-header-center">

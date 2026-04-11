@@ -54,14 +54,7 @@ function ProjectManager({ onBack }) {
     ];
 
     return (
-        <div className="pm-wrap" style={{
-            backgroundImage: `url(${backgroundImg})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            backgroundColor: 'rgba(255,255,255,0.88)',
-            backgroundBlendMode: 'lighten',
-        }}>
+        <div className="pm-wrap" style={{ '--bg-img': `url(${backgroundImg})` }}>
             <div className="pm-bg-mesh" />
             <header className="pm-header">
                 <button className="pm-back-btn" onClick={onBack}><ArrowLeft size={18} /><span>{t('back')}</span></button>
