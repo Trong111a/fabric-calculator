@@ -42,9 +42,9 @@ function ProjectManager({ onBack }) {
         return <ProjectDetail project={openedProject} onBack={() => { setOpenedProject(null); loadProjects(); }} />;
     }
 
-    const totalArea = projects.reduce((sum, p) => sum + (p.total_area_cm2 || 0), 0);
-    const totalFiles = projects.reduce((sum, p) => sum + (p.file_count || 0), 0);
-    const totalQty = projects.reduce((sum, p) => sum + (p.total_quantity || 0), 0);
+    const totalArea = projects.reduce((sum, p) => sum + (Number(p.total_area_cm2) || 0), 0);
+    const totalFiles = projects.reduce((sum, p) => sum + (Number(p.file_count) || 0), 0);
+    const totalQty = projects.reduce((sum, p) => sum + (Number(p.total_quantity) || 0), 0);
 
     const stats = [
         { icon: <Layers size={16} />, label: t('total_projects'), value: projects.length },
@@ -136,7 +136,7 @@ function ProjectManager({ onBack }) {
                                         <div className="pm-meta-row"><span className="pm-meta-dot" /><span className="pm-meta-text">{project.total_quantity || 0} {t('total_items')}</span></div>
                                     </div>
                                     <div className="pm-card-area">
-                                        <span className="pm-area-value">{((project.total_area_cm2 || 0) / 10000).toFixed(4)}</span>
+                                        <span className="pm-area-value">{((Number(project.total_area_cm2) || 0) / 10000).toFixed(4)}</span>
                                         <span className="pm-area-unit">m²</span>
                                     </div>
                                     <button className="pm-delete-btn"
