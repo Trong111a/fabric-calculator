@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import './Login.css';
 import { api } from '../../services/api';
 import logoHCMUTE from '../../assets/images/hcmute-logo.png';
+import LanguageSwitcher from '../LanguageSwitcher/LanguageSwitcher';
 
 function Login({ onLoginSuccess, onNavigate }) {
     const { t } = useTranslation();
@@ -30,6 +31,7 @@ function Login({ onLoginSuccess, onNavigate }) {
 
     return (
         <div className="login-root">
+            <LanguageSwitcher />
             {/* Left panel — brand */}
             <div className="login-brand">
                 <div className="brand-overlay" />
