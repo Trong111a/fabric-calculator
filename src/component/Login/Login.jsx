@@ -31,13 +31,7 @@ function Login({ onLoginSuccess, onNavigate }) {
 
     return (
         <div className="login-root">
-            <div className="login-bg" style={{
-
-                backgroundImage: `url(${backgroundImg})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-            }} />
+            <div className="login-form-panel" style={{ '--login-bg': `url(${backgroundImg})` }}></div>
             {/* Left panel — brand */}
             <div className="login-brand">
                 <div className="brand-overlay" />
