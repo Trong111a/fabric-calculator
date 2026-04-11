@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { User, Mail, Lock } from 'lucide-react';
+import { User, Mail, Lock, ArrowLeft, ArrowRight, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './Register.css';
 import { api } from '../../services/api';
+import logoHCMUTE from '../../assets/images/hcmute-logo.png';
 
 function Register({ onNavigate }) {
     const { t } = useTranslation();
     const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+    const [showPw, setShowPw] = useState(false);
+    const [showCf, setShowCf] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -19,12 +22,11 @@ function Register({ onNavigate }) {
         if (!form.name || !form.email || !form.password) return setError(t('error_fill_all'));
         if (form.password.length < 6) return setError(t('error_pw_short'));
         if (form.password !== form.confirmPassword) return setError(t('error_pw_mismatch'));
-
         setLoading(true);
         try {
             await api.register(form.name, form.email, form.password);
             setSuccess(true);
-            setTimeout(() => onNavigate('login'), 1500);
+            setTimeout(() => onNavigate('login'), 2000);
         } catch (err) {
             setError(err.message || 'Error');
         } finally {
@@ -33,37 +35,126 @@ function Register({ onNavigate }) {
     };
 
     return (
-        <div className="reg-wrap">
-            <div className="reg-card">
-                <h2>{t('register')}</h2>
-                {error && <div className="error">{error}</div>}
-                {success && <div className="success">{t('register_success')}</div>}
+        <div className="rg-root">
+            <div className="rg-brand">
+                <div className="rg-brand-overlay" />
+                <div className="rg-brand-content">
+                    <div className="rg-brand-logo-ring">
+                        <img src={logoHCMUTE} alt="HCM-UTE" className="rg-brand-logo-img" />
+                    </div>
+                    <div className="rg-brand-name-block">
+                        <span className="rg-brand-abbr">HCM·UTE</span>
+                        <h1 className="rg-brand-name-vi">Trường Đại học<br />Công nghệ Kỹ thuật<br />TP.HCM</h1>
+                        <p className="rg-brand-name-en">Ho Chi Minh City University<br />of Technology and Education</p>
+                    </div>
+                    <div className="rg-brand-divider" />
+                    <p className="rg-brand-tagline">Hệ thống quản lý<br />đo diện tích vải</p>
+                </div>
+                <div className="rg-brand-deco rg-deco-1" />
+                <div className="rg-brand-deco rg-deco-2" />
+                <div className="rg-brand-deco rg-deco-3" />
+            </div>
 
-                <div className="input-group">
-                    <User size={18} />
-                    <input name="name" placeholder="Name" onChange={handleChange} disabled={loading || success} />
-                </div>
-                <div className="input-group">
-                    <Mail size={18} />
-                    <input name="email" placeholder={t('email')} onChange={handleChange} disabled={loading || success} />
-                </div>
-                <div className="input-group">
-                    <Lock size={18} />
-                    <input name="password" type="password" placeholder={t('password')} onChange={handleChange}
-                        onKeyDown={e => e.key === 'Enter' && handleRegister()} disabled={loading || success} />
-                </div>
-                <div className="input-group">
-                    <Lock size={18} />
-                    <input name="confirmPassword" type="password" placeholder={t('confirm_password')} onChange={handleChange}
-                        onKeyDown={e => e.key === 'Enter' && handleRegister()} disabled={loading || success} />
+            <div className="rg-form-panel">
+                <div className="rg-card">
+                    <div className="rg-mobile-logo">
+                        <img src={logoHCMUTE} alt="HCM-UTE" className="rg-mobile-logo-img" />
+                        <div>
+                            <div className="rg-mobile-abbr">HCM·UTE</div>
+                            <div className="rg-mobile-school-name">ĐH Công nghệ Kỹ thuật TP.HCM</div>
+                        </div>
+                    </div>
+
+                    <button className="rg-back-btn" onClick={() => onNavigate('login')}>
+                        <ArrowLeft size={15} /> {t('back_to_login')}
+                    </button>
+
+                    {success ? (
+                        <div className="rg-success-state">
+                            <div className="rg-success-icon-wrap">
+                                <CheckCircle size={36} />
+                            </div>
+                            <h2 className="rg-success-title">{t('register_success')}</h2>
+                            <p className="rg-success-sub">Đang chuyển hướng đến trang đăng nhập...</p>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="rg-form-header">
+                                <h2 className="rg-title">{t('register')}</h2>
+                                <p className="rg-subtitle">Tạo tài khoản để sử dụng hệ thống</p>
+                            </div>
+
+                            {error && (
+                                <div className="rg-error">
+                                    <span className="rg-error-dot" />{error}
+                                </div>
+                            )}
+
+                            <div className="rg-field-group">
+                                <label className="rg-field-label">Họ và tên</label>
+                                <div className={`rg-field-wrap ${form.name ? 'has-value' : ''}`}>
+                                    <User size={16} className="rg-field-icon" />
+                                    <input name="name" className="rg-field-input" placeholder="Nguyễn Văn A"
+                                        onChange={handleChange} disabled={loading} />
+                                </div>
+                            </div>
+
+                            <div className="rg-field-group">
+                                <label className="rg-field-label">{t('email')}</label>
+                                <div className={`rg-field-wrap ${form.email ? 'has-value' : ''}`}>
+                                    <Mail size={16} className="rg-field-icon" />
+                                    <input name="email" type="email" className="rg-field-input"
+                                        placeholder="example@hcmute.edu.vn"
+                                        onChange={handleChange} disabled={loading} />
+                                </div>
+                            </div>
+
+                            <div className="rg-field-group">
+                                <label className="rg-field-label">{t('password')}</label>
+                                <div className={`rg-field-wrap ${form.password ? 'has-value' : ''}`}>
+                                    <Lock size={16} className="rg-field-icon" />
+                                    <input name="password" type={showPw ? 'text' : 'password'}
+                                        className="rg-field-input" placeholder="••••••••"
+                                        onChange={handleChange} disabled={loading}
+                                        onKeyDown={e => e.key === 'Enter' && handleRegister()} />
+                                    <button type="button" className="rg-eye-btn"
+                                        onClick={() => setShowPw(v => !v)} tabIndex={-1}>
+                                        {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="rg-field-group">
+                                <label className="rg-field-label">{t('confirm_password')}</label>
+                                <div className={`rg-field-wrap ${form.confirmPassword ? 'has-value' : ''}`}>
+                                    <Lock size={16} className="rg-field-icon" />
+                                    <input name="confirmPassword" type={showCf ? 'text' : 'password'}
+                                        className="rg-field-input" placeholder="••••••••"
+                                        onChange={handleChange} disabled={loading}
+                                        onKeyDown={e => e.key === 'Enter' && handleRegister()} />
+                                    <button type="button" className="rg-eye-btn"
+                                        onClick={() => setShowCf(v => !v)} tabIndex={-1}>
+                                        {showCf ? <EyeOff size={15} /> : <Eye size={15} />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button className={`rg-submit-btn ${loading ? 'is-loading' : ''}`}
+                                onClick={handleRegister} disabled={loading}>
+                                {loading ? <span className="rg-spinner" /> : <><span>{t('register')}</span><ArrowRight size={17} /></>}
+                            </button>
+
+                            <div className="rg-login-row">
+                                <span>{t('have_account')}</span>
+                                <button className="rg-login-link" onClick={() => onNavigate('login')}>{t('login')}</button>
+                            </div>
+                        </>
+                    )}
                 </div>
 
-                <button className="btn-primary" onClick={handleRegister} disabled={loading || success}>
-                    {loading ? t('registering') : t('register')}
-                </button>
-                <div className="links">
-                    <span>{t('have_account')} <b onClick={() => onNavigate('login')}>{t('login')}</b></span>
-                </div>
+                <p className="rg-footer">
+                    © {new Date().getFullYear()} HCM-UTE · Khoa Công nghệ May &amp; Thời trang
+                </p>
             </div>
         </div>
     );
