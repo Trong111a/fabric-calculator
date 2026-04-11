@@ -5,6 +5,7 @@
     display: flex;
     font-family: 'Be Vietnam Pro', sans-serif;
     background: #f4f6fb;
+    position: relative;
 }
 
 .login-brand {
@@ -123,20 +124,29 @@
 .deco-1 { width: 320px; height: 320px; top: -80px; left: -80px; }
 .deco-2 { width: 220px; height: 220px; bottom: -60px; right: -60px; border-color: rgba(255,60,60,0.12); }
 .deco-3 { width: 120px; height: 120px; top: 50%; right: -20px; transform: translateY(-50%); }
+.login-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.08;
+    pointer-events: none;
+}
 
 .login-form-panel {
+    position: relative;
+    z-index: 1;
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 2rem 1.5rem;
-    background: #f4f6fb;
+    /* background: #f4f6fb; */
     min-height: 100vh;
 }
 
 .login-card {
-    background: #fff;
+    /* background: #fff; */
     width: 100%;
     max-width: 420px;
     border-radius: 1.25rem;

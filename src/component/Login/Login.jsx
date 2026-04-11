@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import './Login.css';
 import { api } from '../../services/api';
 import logoHCMUTE from '../../assets/images/hcmute-logo.png';
+import backgroundImg from '../../assets/images/background.png';
 
 function Login({ onLoginSuccess, onNavigate }) {
     const { t } = useTranslation();
@@ -30,6 +31,13 @@ function Login({ onLoginSuccess, onNavigate }) {
 
     return (
         <div className="login-root">
+            <div className="login-bg" style={{
+
+                backgroundImage: `url(${backgroundImg})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+            }} />
             {/* Left panel — brand */}
             <div className="login-brand">
                 <div className="brand-overlay" />
