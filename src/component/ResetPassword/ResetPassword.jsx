@@ -119,7 +119,7 @@ function ResetPassword({ onNavigate }) {
                                 </div>
                                 {password && (
                                     <div className="rsp-strength">
-                                        {[1,2,3].map(i => (
+                                        {[1, 2, 3].map(i => (
                                             <div key={i} className={`rsp-strength-bar ${i <= strengthLevel ? strengthClass : ''}`} />
                                         ))}
                                         <span className={`rsp-strength-label ${strengthClass}`}>{strengthLabel}</span>
@@ -156,7 +156,7 @@ function ResetPassword({ onNavigate }) {
                 </div>
 
                 <p className="rsp-footer">
-                    © {new Date().getFullYear()} HCM-UTE · Khoa Công nghệ May &amp; Thời trang
+                    © {new Date().getFullYear()} HCM-UTE · Khoa Thời trang &amp; Du lịch
                 </p>
             </div>
         </div>

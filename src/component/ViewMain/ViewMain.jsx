@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../services/api';
 import ProjectManager from '../ProjectManager/ProjectManager';
 import './ViewMain.css';
+import backgroundImg from '../../assets/images/background.jpg';
 
 function calcArea(pts, ppc) {
     if (!pts.length || !ppc) return 0;
@@ -73,6 +74,7 @@ export default function ViewMain({ user, onLogout }) {
     const uploadRef = useRef(null);
     const cameraRef = useRef(null);
     const containerRef = useRef(null);
+    const bg = useRef(new Image());
 
     useEffect(() => {
         const load = () => {
@@ -472,7 +474,7 @@ export default function ViewMain({ user, onLogout }) {
                     <button className="lang-btn" onClick={toggleLanguage}>
                         {i18n.language === 'vi' ? 'EN' : 'VI'}
                     </button>
-                    
+
                     <button className="vm-logout-btn" onClick={onLogout} title={t('logout')}>
                         <LogOut size={16} />
                     </button>
@@ -497,15 +499,33 @@ export default function ViewMain({ user, onLogout }) {
 
             <main className="vm-main">
                 {step === 'upload' && (
-                    <div className="vm-upload-screen">
-                        <div className="vm-upload-hero">
+                    <div
+                        className="vm-upload-screen"
+                        style={{
+                            position: 'relative',
+                            backgroundImage: `url(${backgroundImg})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat',
+                        }}
+                    >
+                        <div style={{
+                            position: 'absolute',
+                            inset: 0,
+                            backgroundColor: 'rgba(255, 255, 255, 0.83)',
+                            pointerEvents: 'none',
+                        }} />
+
+                        <div className="vm-upload-hero" style={{ position: 'relative', zIndex: 1 }}>
                             <div className="vm-upload-icon"><Ruler size={48} color="#6366f1" /></div>
                             <h2>{t('measure_title')}</h2>
                             <p>{t('measure_sub')}</p>
                         </div>
+
                         <input ref={uploadRef} type="file" accept="image/*" onChange={handleImageUpload} className="vm-hidden" />
                         <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImageUpload} className="vm-hidden" />
-                        <div className="vm-upload-btns">
+
+                        <div className="vm-upload-btns" style={{ position: 'relative', zIndex: 1 }}>
                             <button className="vm-upload-btn primary" disabled={!cvReady} onClick={() => uploadRef.current?.click()}>
                                 <Upload size={22} /><span>{t('upload_image')}</span><small>{t('upload_formats')}</small>
                             </button>
@@ -724,10 +744,12 @@ export default function ViewMain({ user, onLogout }) {
                         <button className="vm-modal-close" onClick={() => setShowSaveModal(false)}><X size={18} /></button>
                         <h3>{t('save_detail_title')}</h3>
                         <p className="vm-modal-sub"
-                            dangerouslySetInnerHTML={{ __html: t('save_area_info', {
-                                area: (area / 10000)?.toFixed(4),
-                                folder: selectedProject ? selectedProject.name : '—'
-                            }) }}
+                            dangerouslySetInnerHTML={{
+                                __html: t('save_area_info', {
+                                    area: (area / 10000)?.toFixed(4),
+                                    folder: selectedProject ? selectedProject.name : '—'
+                                })
+                            }}
                         />
                         <div className="vm-field-group">
                             <label className="vm-field-label">{t('detail_name_label')} <span className="vm-field-required">*</span></label>

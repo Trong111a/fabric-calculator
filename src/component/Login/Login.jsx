@@ -143,7 +143,7 @@ function Login({ onLoginSuccess, onNavigate }) {
                 </div>
 
                 <p className="login-footer">
-                    © {new Date().getFullYear()} HCM-UTE · Khoa Công nghệ May &amp; Thời trang
+                    © {new Date().getFullYear()} HCM-UTE · Khoa Thời trang &amp; Du lịch
                 </p>
             </div>
         </div>
