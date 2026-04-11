@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './Login.css';
 import { api } from '../../services/api';
+import logoHCMUTE from '../../assets/images/logo-hcmute.png';
 
 function Login({ onLoginSuccess, onNavigate }) {
     const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -27,42 +29,122 @@ function Login({ onLoginSuccess, onNavigate }) {
     };
 
     return (
-        <div className="login-wrap">
-            <div className="login-card">
-                <h2>{t('login')}</h2>
-                {error && <div className="error">{error}</div>}
+        <div className="login-root">
+            {/* Left panel — brand */}
+            <div className="login-brand">
+                <div className="brand-overlay" />
+                <div className="brand-content">
+                    <div className="brand-logo-ring">
+                        <img src={logoHCMUTE} alt="HCM-UTE Logo" className="brand-logo-img" />
+                    </div>
+                    <div className="brand-name-block">
+                        <span className="brand-abbr">HCM·UTE</span>
+                        <h1 className="brand-name-vi">Trường Đại học<br />Công nghệ Kỹ thuật<br />TP.HCM</h1>
+                        <p className="brand-name-en">Ho Chi Minh City University<br />of Technology and Engineering</p>
+                    </div>
+                    <div className="brand-divider" />
+                    <p className="brand-tagline">Hệ thống quản lý<br />đo diện tích vải</p>
+                </div>
+                <div className="brand-deco deco-1" />
+                <div className="brand-deco deco-2" />
+                <div className="brand-deco deco-3" />
+            </div>
 
-                <div className="input-group">
-                    <Mail size={18} />
-                    <input
-                        type="email"
-                        placeholder={t('email')}
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
+            {/* Right panel — form */}
+            <div className="login-form-panel">
+                <div className="login-card">
+                    {/* Mobile logo */}
+                    <div className="mobile-logo">
+                        <img src={logoHCMUTE} alt="HCM-UTE" className="mobile-logo-img" />
+                        <div>
+                            <div className="mobile-abbr">HCM·UTE</div>
+                            <div className="mobile-school-name">ĐH Công nghệ Kỹ thuật TP.HCM</div>
+                        </div>
+                    </div>
+
+                    <div className="form-header">
+                        <h2 className="form-title">{t('login')}</h2>
+                        <p className="form-subtitle">Đăng nhập để tiếp tục sử dụng hệ thống</p>
+                    </div>
+
+                    {error && (
+                        <div className="login-error">
+                            <span className="error-dot" />
+                            {error}
+                        </div>
+                    )}
+
+                    <div className="field-group">
+                        <label className="field-label">{t('email')}</label>
+                        <div className={`field-wrap ${email ? 'has-value' : ''}`}>
+                            <Mail size={16} className="field-icon" />
+                            <input
+                                type="email"
+                                placeholder="example@hcmute.edu.vn"
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                disabled={loading}
+                                className="field-input"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="field-group">
+                        <label className="field-label">{t('password')}</label>
+                        <div className={`field-wrap ${password ? 'has-value' : ''}`}>
+                            <Lock size={16} className="field-icon" />
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                                disabled={loading}
+                                className="field-input"
+                            />
+                            <button
+                                type="button"
+                                className="eye-btn"
+                                onClick={() => setShowPassword(v => !v)}
+                                tabIndex={-1}
+                            >
+                                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="forgot-row">
+                        <button className="forgot-btn" onClick={() => onNavigate('forgot')}>
+                            {t('forgot_password')}
+                        </button>
+                    </div>
+
+                    <button
+                        className={`login-btn ${loading ? 'is-loading' : ''}`}
+                        onClick={handleLogin}
                         disabled={loading}
-                    />
+                    >
+                        {loading ? (
+                            <span className="spinner" />
+                        ) : (
+                            <>
+                                <span>{t('login')}</span>
+                                <ArrowRight size={17} />
+                            </>
+                        )}
+                    </button>
+
+                    <div className="register-row">
+                        <span>{t('no_account')}</span>
+                        <button className="register-link" onClick={() => onNavigate('register')}>
+                            {t('register')}
+                        </button>
+                    </div>
                 </div>
 
-                <div className="input-group">
-                    <Lock size={18} />
-                    <input
-                        type="password"
-                        placeholder={t('password')}
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                        disabled={loading}
-                    />
-                </div>
-
-                <button className="btn-primary" onClick={handleLogin} disabled={loading}>
-                    {loading ? t('logging_in') : t('login')}
-                </button>
-
-                <div className="links">
-                    <button onClick={() => onNavigate('forgot')}>{t('forgot_password')}</button>
-                    <span>{t('no_account')} <b onClick={() => onNavigate('register')}>{t('register')}</b></span>
-                </div>
+                <p className="login-footer">
+                    © {new Date().getFullYear()} HCM-UTE · Khoa Công nghệ May &amp; Thời trang
+                </p>
             </div>
         </div>
     );
