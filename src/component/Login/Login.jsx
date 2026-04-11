@@ -4,7 +4,7 @@ import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './Login.css';
 import { api } from '../../services/api';
-import logoHCMUTE from '../../assets/images/logo-hcmute.png';
+import logoHCMUTE from '../../assets/images/hcmute-logo.png';
 
 function Login({ onLoginSuccess, onNavigate }) {
     const { t } = useTranslation();
