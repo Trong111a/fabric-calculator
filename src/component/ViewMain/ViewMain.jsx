@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../services/api';
 import ProjectManager from '../ProjectManager/ProjectManager';
 import './ViewMain.css';
-import backgroundImg from '../../assets/images/background.jpg';
+import backgroundImg from '../../assets/images/background.png';
 
 function calcArea(pts, ppc) {
     if (!pts.length || !ppc) return 0;
@@ -498,13 +498,13 @@ export default function ViewMain({ user, onLogout }) {
             )}
 
             <main
-                className={`vm-main${step === 'upload' ? ' has-bg' : ''}`}
-                style={step === 'upload' ? {
+                className="vm-main has-bg"
+                style={{
                     backgroundImage: `url(${backgroundImg})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat',
-                } : {}}
+                }}
             >
                 {step === 'upload' && (
                     <div className="vm-upload-screen">
