@@ -57,6 +57,7 @@
     width: 96px;
     height: 96px;
     object-fit: contain;
+    mix-blend-mode: multiply;
 }
 
 @keyframes float {
