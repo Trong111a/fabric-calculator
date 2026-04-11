@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../services/api';
 import ProjectDetail from '../ProjectDetail/ProjectDetail';
 import './ProjectManager.css';
+import backgroundImg from '../../assets/images/background.png';
 
 function ProjectManager({ onBack }) {
     const { t } = useTranslation();
@@ -53,7 +54,14 @@ function ProjectManager({ onBack }) {
     ];
 
     return (
-        <div className="pm-wrap">
+        <div className="pm-wrap" style={{
+            backgroundImage: `url(${backgroundImg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundColor: 'rgba(255,255,255,0.88)',
+            backgroundBlendMode: 'lighten',
+        }}>
             <div className="pm-bg-mesh" />
             <header className="pm-header">
                 <button className="pm-back-btn" onClick={onBack}><ArrowLeft size={18} /><span>{t('back')}</span></button>
