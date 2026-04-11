@@ -74,7 +74,6 @@ export default function ViewMain({ user, onLogout }) {
     const uploadRef = useRef(null);
     const cameraRef = useRef(null);
     const containerRef = useRef(null);
-    const bg = useRef(new Image());
 
     useEffect(() => {
         const load = () => {

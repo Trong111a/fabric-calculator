@@ -1,10 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
 .pm-wrap {
-    min-height: 100vh;
-    background: #f4f6fb;
+     min-height: 100vh;
     font-family: 'DM Sans', system-ui, sans-serif;
     position: relative;
+    background-color: rgba(255, 255, 255, 0.88);
+    background-blend-mode: lighten;
 }
 
 .pm-header {

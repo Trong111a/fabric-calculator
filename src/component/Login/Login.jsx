@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import './Login.css';
 import { api } from '../../services/api';
 import logoHCMUTE from '../../assets/images/hcmute-logo.png';
-import backgroundImg from '../../assets/images/login_picture.jpg';
 
 function Login({ onLoginSuccess, onNavigate }) {
     const { t } = useTranslation();
@@ -52,14 +51,7 @@ function Login({ onLoginSuccess, onNavigate }) {
             </div>
 
             {/* Right panel — form */}
-            <div
-                className="login-form-panel"
-                style={{
-                    backgroundImage: `url(${backgroundImg})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                }}
-            >
+            <div className="login-form-panel">
                 <div className="login-card">
                     {/* Mobile logo */}
                     <div className="mobile-logo">

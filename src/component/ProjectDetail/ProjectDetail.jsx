@@ -9,6 +9,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { api } from '../../services/api';
 import './ProjectDetail.css';
+import backgroundImg from '../../assets/images/background.png';
 
 function calcArea(pts, ppc) {
     if (!pts || pts.length < 3 || !ppc) return 0;
@@ -1376,7 +1377,11 @@ export default function ProjectDetail({ project, onBack }) {
     ];
 
     return (
-        <div className="pd-wrap">
+        <div className="pd-wrap" style={{
+            backgroundImage: `url(${backgroundImg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+        }}>
             <header className="pd-header">
                 <button className="pd-back-btn" onClick={onBack}><ArrowLeft size={18} /><span>{t('back')}</span></button>
                 <div className="pd-header-center">
