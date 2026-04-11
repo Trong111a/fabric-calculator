@@ -31,7 +31,6 @@ function Login({ onLoginSuccess, onNavigate }) {
 
     return (
         <div className="login-root">
-            <div className="login-form-panel" style={{ '--login-bg': `url(${backgroundImg})` }}></div>
             {/* Left panel — brand */}
             <div className="login-brand">
                 <div className="brand-overlay" />
@@ -53,7 +52,14 @@ function Login({ onLoginSuccess, onNavigate }) {
             </div>
 
             {/* Right panel — form */}
-            <div className="login-form-panel">
+            <div
+                className="login-form-panel"
+                style={{
+                    backgroundImage: `url(${backgroundImg})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                }}
+            >
                 <div className="login-card">
                     {/* Mobile logo */}
                     <div className="mobile-logo">
