@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import './Login.css';
 import { api } from '../../services/api';
 import logoHCMUTE from '../../assets/images/hcmute-logo.png';
-import backgroundImg from '../../assets/images/background.png';
+import backgroundImg from '../../assets/images/login_picture.jpg';
 
 function Login({ onLoginSuccess, onNavigate }) {
     const { t } = useTranslation();
