@@ -151,9 +151,10 @@ export default function ViewMain({ user, onLogout }) {
                     ctx.textAlign = 'center'; ctx.fillText(i, 0, y - fs * 0.3);
                 }
                 if (i === 0) {
-                    ctx.fillStyle = '#1e1b4b'; ctx.font = `bold ${fs}px Arial`;
-                    ctx.textAlign = 'left'; ctx.fillText('0', rw / 2 + 4, fs);
+                    ctx.fillStyle = '#1e1b4b';
+                    ctx.font = `bold ${fs}px Arial`;
                     ctx.textAlign = 'center';
+                    ctx.fillText('0', 0, fs);
                 }
             }
             const hr = Math.max(8, Math.min(16, 12 * displayScale));
