@@ -258,8 +258,10 @@ function ManualDrawPanel({ project, onSaved }) {
                 setImage(img); setStep('calibrate');
                 setPoints([]); setArea(null); setPixelsPerCm(null);
                 setZoom(1); setPanOffset({ x: 0, y: 0 });
-                setRulerPos({ x: img.width * 0.5, y: img.height * 0.1 });
-                setRulerLength(img.height * 0.65); setRulerAngle(180);
+                const rLen = img.height * 0.65;
+                setRulerLength(rLen);
+                setRulerPos({ x: img.width * 0.78, y: img.height * 0.05 + rLen });
+                setRulerAngle(180);
             };
             img.src = ev.target.result;
         };
@@ -531,8 +533,10 @@ function ManualDrawPanel({ project, onSaved }) {
                                 <button className="pd-btn primary" onClick={() => {
                                     setPoints([]); setArea(null); setStep('calibrate');
                                     setZoom(1); setPanOffset({ x: 0, y: 0 });
-                                    setRulerPos({ x: image.width * 0.5, y: image.height * 0.1 });
-                                    setRulerLength(image.height * 0.65); setRulerAngle(0);
+                                    const rLen2 = image.height * 0.65;
+                                    setRulerLength(rLen2);
+                                    setRulerPos({ x: image.width * 0.78, y: image.height * 0.05 + rLen2 });
+                                    setRulerAngle(180);
                                 }}>
                                     <Pencil size={15} /> {t('draw_another')}
                                 </button>
@@ -862,8 +866,10 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 setRawImageData(octx.getImageData(0, 0, img.width, img.height));
                 setStep('calibrate'); setPolygonPoints([]); setArea(null); setPixelsPerCm(null);
                 setDragPointIdx(-1); setHoverPointIdx(-1); setPickedColor(null); setPickedRgb(null);
-                setRulerPos({ x: img.width * 0.5, y: img.height * 0.1 });
-                setRulerLength(img.height * 0.65); setRulerAngle(180);
+                const rLen = img.height * 0.65;
+                setRulerLength(rLen);
+                setRulerPos({ x: img.width * 0.78, y: img.height * 0.05 + rLen });
+                setRulerAngle(180);
                 setZoom(1); setPanOffset({ x: 0, y: 0 });
             };
             img.src = ev.target.result;

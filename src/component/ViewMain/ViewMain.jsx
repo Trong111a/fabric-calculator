@@ -312,8 +312,9 @@ export default function ViewMain({ user, onLogout }) {
                 setStep('calibrate'); setPolygonPoints([]); setArea(null); setPixelsPerCm(null);
                 setDragPointIdx(-1); setHoverPointIdx(-1);
                 setPickedColor(null); setPickedRgb(null);
-                setRulerPos({ x: img.width * 0.74, y: img.height * 0.12 });
-                setRulerLength(img.height * 0.65);
+                const rLen = img.height * 0.65;
+                setRulerLength(rLen);
+                setRulerPos({ x: img.width * 0.78, y: img.height * 0.05 + rLen });
                 setRulerAngle(180);
                 setZoom(1); setPanOffset({ x: 0, y: 0 });
             };
