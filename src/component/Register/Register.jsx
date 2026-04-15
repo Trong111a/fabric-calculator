@@ -44,9 +44,15 @@ function Register({ onNavigate }) {
                     </div>
                     <div className="rg-brand-name-block">
                         <span className="rg-brand-abbr">HCM·UTE</span>
-                        <h1 className="rg-brand-name-vi">Trường Đại học<br />Công nghệ Kỹ thuật<br />TP.HCM</h1>
+                        <h1 className="rg-brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />TP.HCM</h1>
                         <p className="rg-brand-name-en">Ho Chi Minh City University<br />of Technology and Education</p>
                     </div>
+
+                    <div className="rg-brand-unit-info">
+                        <p className="rg-brand-faculty">KHOA THỜI TRANG VÀ DU LỊCH</p>
+                        <p className="brand-department">BỘ MÔN CÔNG NGHỆ MAY</p>
+                    </div> 
+
                     <div className="rg-brand-divider" />
                     <p className="rg-brand-tagline">Hệ thống quản lý<br />đo diện tích vải</p>
                 </div>

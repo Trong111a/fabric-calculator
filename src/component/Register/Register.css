@@ -42,7 +42,7 @@
 }
 @keyframes rg-slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 
-.rg-mobile-logo { display: none; align-items: center; gap: 0.875rem; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #eef0f5;background: linear-gradient(160deg, rgb(0, 55, 100) 0%, rgb(0, 85, 141) 55%, rgb(0, 100, 160) 100%); }
+.rg-mobile-logo { display: none; align-items: center; gap: 0.875rem; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #eef0f5; }
 .rg-mobile-logo-img { width: 48px; height: 48px; object-fit: contain; }
 .rg-mobile-abbr { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em; color: rgb(0, 85, 141); text-transform: uppercase; }
 .rg-mobile-school-name { font-size: 0.8rem; font-weight: 600; color: #1e293b; margin-top: 2px; line-height: 1.4; }
@@ -93,4 +93,27 @@
     .rg-mobile-logo { display: flex; }
     .rg-form-panel { background: #fff; justify-content: flex-start; padding-top: 0; }
     .rg-card { box-shadow: none; border-radius: 0; padding: 2rem 1.5rem; max-width: 100%; min-height: 100vh; }
+}
+
+.rg-brand-unit-info {
+    margin: 1.2rem 0;
+    padding: 0.8rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.rg-brand-faculty {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: 0.03em;
+}
+
+.rg-brand-department {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 0.3rem;
+    text-transform: uppercase;
 }

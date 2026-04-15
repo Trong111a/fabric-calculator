@@ -51,6 +51,7 @@
         0 0 0 12px rgba(255,255,255,0.07),
         0 16px 48px rgba(0,0,0,0.35);
     animation: float 5s ease-in-out infinite;
+    padding: 5px;
 }
 
 .brand-logo-img {
@@ -468,4 +469,27 @@
         margin-top: 1rem;
         padding: 1.5rem;
     }
+}
+
+.brand-unit-info {
+    margin: 1rem 0; /* Tạo khoảng cách trên dưới */
+    border-top: 1px solid rgba(255, 255, 255, 0.2); /* Đường kẻ mờ ngăn cách */
+    padding-top: 0.8rem;
+}
+
+.brand-faculty {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #ffffff;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.brand-department {
+    font-weight: 400;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-top: 0.2rem;
+    text-transform: uppercase;
 }

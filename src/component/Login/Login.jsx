@@ -41,9 +41,15 @@ function Login({ onLoginSuccess, onNavigate }) {
                     </div>
                     <div className="brand-name-block">
                         <span className="brand-abbr">HCM·UTE</span>
-                        <h1 className="brand-name-vi">Trường Đại học<br />Công nghệ Kỹ thuật<br />TP.HCM</h1>
+                        <h1 className="brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />TP.HCM</h1>
                         <p className="brand-name-en">Ho Chi Minh City University<br />of Technology and Engineering</p>
                     </div>
+
+                    <div className="brand-unit-info">
+                        <p className="brand-faculty">KHOA THỜI TRANG VÀ DU LỊCH</p>
+                        <p className="brand-department">BỘ MÔN CÔNG NGHỆ MAY</p>
+                    </div>
+                    
                     <div className="brand-divider" />
                     <p className="brand-tagline">Hệ thống quản lý<br />đo diện tích vải</p>
                 </div>
