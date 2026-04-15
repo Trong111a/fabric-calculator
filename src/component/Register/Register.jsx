@@ -51,7 +51,7 @@ function Register({ onNavigate }) {
                     <div className="rg-brand-unit-info">
                         <p className="rg-brand-faculty">KHOA THỜI TRANG VÀ DU LỊCH</p>
                         <p className="brand-department">BỘ MÔN CÔNG NGHỆ MAY</p>
-                    </div> 
+                    </div>
 
                     <div className="rg-brand-divider" />
                     <p className="rg-brand-tagline">Hệ thống quản lý<br />đo diện tích vải</p>
@@ -67,7 +67,11 @@ function Register({ onNavigate }) {
                         <img src={logoHCMUTE} alt="HCM-UTE" className="rg-mobile-logo-img" />
                         <div>
                             <div className="rg-mobile-abbr">HCM·UTE</div>
-                            <div className="rg-mobile-school-name">ĐH Công nghệ Kỹ thuật TP.HCM</div>
+                            <div className="rg-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
+                        </div>
+                        <div className="rg-mobile-unit">
+                            <p>KHOA THỜI TRANG VÀ DU LỊCH</p>
+                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
                         </div>
                     </div>
 

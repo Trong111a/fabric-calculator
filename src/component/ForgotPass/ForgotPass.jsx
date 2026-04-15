@@ -58,8 +58,14 @@ function ForgotPass({ onNavigate }) {
                         <img src={logoHCMUTE} alt="HCM-UTE" className="fp-mobile-logo-img" />
                         <div>
                             <div className="fp-mobile-abbr">HCM·UTE</div>
-                            <div className="fp-mobile-school-name">ĐH Công nghệ Kỹ thuật TP.HCM</div>
+                            <div className="fp-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
                         </div>
+
+                        <div className="fp-mobile-unit">
+                            <p>KHOA THỜI TRANG VÀ DU LỊCH</p>
+                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
+                        </div>  
+
                     </div>
 
                     <button className="fp-back-btn" onClick={() => onNavigate('login')}>

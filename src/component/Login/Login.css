@@ -493,3 +493,23 @@
     margin-top: 0.2rem;
     text-transform: uppercase;
 }
+
+.mobile-unit {
+    margin-top: 4px;
+}
+
+.mobile-unit p {
+    font-size: 10px;          
+    font-weight: 600;
+    color: #475569;       
+    margin: 0;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.mobile-logo div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-left: 10px;
+}

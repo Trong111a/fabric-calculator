@@ -49,7 +49,7 @@ function Login({ onLoginSuccess, onNavigate }) {
                         <p className="brand-faculty">KHOA THỜI TRANG VÀ DU LỊCH</p>
                         <p className="brand-department">BỘ MÔN CÔNG NGHỆ MAY</p>
                     </div>
-                    
+
                     <div className="brand-divider" />
                     <p className="brand-tagline">Hệ thống quản lý<br />đo diện tích vải</p>
                 </div>
@@ -66,8 +66,14 @@ function Login({ onLoginSuccess, onNavigate }) {
                         <img src={logoHCMUTE} alt="HCM-UTE" className="mobile-logo-img" />
                         <div>
                             <div className="mobile-abbr">HCM·UTE</div>
-                            <div className="mobile-school-name">ĐH Công nghệ Kỹ thuật TP.HCM</div>
+                            <div className="mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
                         </div>
+
+                        <div className="mobile-unit">
+                            <p>KHOA THỜI TRANG VÀ DU LỊCH</p>
+                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
+                        </div> 
+
                     </div>
 
                     <div className="form-header">
