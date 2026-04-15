@@ -71,7 +71,7 @@
 }
 
 /* Mobile logo */
-.fp-mobile-logo { display: none; align-items: center; gap: 0.875rem; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #eef0f5; }
+.fp-mobile-logo { display: none; align-items: center; gap: 0.875rem; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #eef0f5; background: linear-gradient(160deg, rgb(0, 55, 100) 0%, rgb(0, 85, 141) 55%, rgb(0, 100, 160) 100%);}
 .fp-mobile-logo-img { width: 48px; height: 48px; object-fit: contain; }
 .fp-mobile-abbr { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em; color: rgb(0, 85, 141); text-transform: uppercase; }
 .fp-mobile-school-name { font-size: 0.8rem; font-weight: 600; color: #1e293b; margin-top: 2px; line-height: 1.4; }
