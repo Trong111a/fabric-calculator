@@ -150,16 +150,21 @@ export default function ViewMain({ user, onLogout }) {
                     ctx.fillStyle = '#1e1b4b'; ctx.font = `bold ${fs}px Arial`;
                     ctx.textAlign = 'center'; ctx.fillText(i, 0, y - fs * 0.3);
                 }
+                if (i === 0) {
+                    ctx.fillStyle = '#1e1b4b'; ctx.font = `bold ${fs}px Arial`;
+                    ctx.textAlign = 'left'; ctx.fillText('0', rw / 2 + 4, fs);
+                    ctx.textAlign = 'center';
+                }
             }
             const hr = Math.max(8, Math.min(16, 12 * displayScale));
             ctx.fillStyle = '#6366f1';
             ctx.shadowColor = 'rgba(99,102,241,0.55)'; ctx.shadowBlur = 16;
-            ctx.beginPath(); ctx.arc(0, 0, hr, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(0, rulerLength, hr, 0, Math.PI * 2); ctx.fill();
             ctx.shadowBlur = 0;
             ctx.strokeStyle = '#fff'; ctx.lineWidth = Math.max(2.5, W / 380); ctx.stroke();
             ctx.fillStyle = '#fff'; ctx.font = `bold ${hr * 0.85}px Arial`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText('≡', 0, 0); ctx.textBaseline = 'alphabetic';
+            ctx.fillText('≡', 0, rulerLength); ctx.textBaseline = 'alphabetic';
             ctx.restore();
         }
 
@@ -309,7 +314,7 @@ export default function ViewMain({ user, onLogout }) {
                 setPickedColor(null); setPickedRgb(null);
                 setRulerPos({ x: img.width * 0.74, y: img.height * 0.12 });
                 setRulerLength(img.height * 0.65);
-                setRulerAngle(0);
+                setRulerAngle(180);
                 setZoom(1); setPanOffset({ x: 0, y: 0 });
             };
             img.src = ev.target.result;
