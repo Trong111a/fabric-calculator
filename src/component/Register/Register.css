@@ -45,7 +45,7 @@
 .rg-mobile-logo {
     display: none;
     flex-wrap: nowrap;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.75rem;
     background: linear-gradient(160deg, rgb(0, 55, 100) 0%, rgb(0, 85, 141) 55%, rgb(0, 100, 160) 100%);
     margin: -2rem -1.5rem 1.75rem;
@@ -59,6 +59,7 @@
     background: #fff;
     border-radius: 50%;
     padding: 4px;
+    margin-top: 2px;
 }
 .rg-mobile-abbr { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em; color: rgba(255,255,255,0.7); text-transform: uppercase; }
 .rg-mobile-school-name { font-size: 0.8rem; font-weight: 600; color: #fff; margin-top: 2px; line-height: 1.4; }
@@ -79,7 +80,7 @@
 .rg-mobile-logo div {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     margin-left: 0;
     min-width: 0;         
     flex: 1;

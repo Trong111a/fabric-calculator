@@ -40,7 +40,7 @@ function ForgotPass({ onNavigate }) {
                     </div>
 
                     <div className="fp-brand-unit-info">
-                        <p className="fp-brand-faculty">KHOA THỜI TRANG VÀ DU LỊCH</p>
+                        <p className="fp-brand-faculty">KHOA THỜI TRANG &amp; DU LỊCH</p>
                         <p className="fp-brand-department">BỘ MÔN CÔNG NGHỆ MAY</p>
                     </div>
 

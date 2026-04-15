@@ -56,7 +56,7 @@ function ResetPassword({ onNavigate }) {
                     </div>
 
                     <div className="rsp-brand-unit-info">
-                        <p className="rsp-brand-faculty">KHOA THỜI TRANG VÀ DU LỊCH</p>
+                        <p className="rsp-brand-faculty">KHOA THỜI TRANG &amp; DU LỊCH</p>
                         <p className="rsp-brand-department">BỘ MÔN CÔNG NGHỆ MAY</p>
                     </div>
 

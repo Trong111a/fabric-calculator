@@ -69,7 +69,7 @@ function Login({ onLoginSuccess, onNavigate }) {
                             <div className="mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
 
                             <div className="mobile-unit">
-                                <p>KHOA THỜI TRANG VÀ DU LỊCH</p>
+                                <p>KHOA THỜI TRANG &amp; DU LỊCH</p>
                                 <p>BỘ MÔN CÔNG NGHỆ MAY</p>
                             </div>
                         </div>

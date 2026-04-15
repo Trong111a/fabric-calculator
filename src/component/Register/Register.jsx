@@ -49,7 +49,7 @@ function Register({ onNavigate }) {
                     </div>
 
                     <div className="rg-brand-unit-info">
-                        <p className="rg-brand-faculty">KHOA THỜI TRANG VÀ DU LỊCH</p>
+                        <p className="rg-brand-faculty">KHOA THỜI TRANG &amp; DU LỊCH</p>
                         <p className="brand-department">BỘ MÔN CÔNG NGHỆ MAY</p>
                     </div>
 
