@@ -148,8 +148,8 @@ function Login({ onLoginSuccess, onNavigate }) {
                     <div className="about-divider" />
                     <p className="about-product">
                         <strong>PATEC</strong> là sản phẩm đồ án Tốt nghiệp của Nhóm sinh viên ngành{' '}
-                        <em>Công nghệ May – Khóa K22</em>, Khoa Thời trang &amp; Du lịch,{' '}
-                        Trường ĐH Công nghệ Kỹ thuật TP.HCM.
+                        <em>Công nghệ May – Khóa K22</em>, <br />
+                        Khoa Thời trang &amp; Du lịch, Trường ĐH Công nghệ Kỹ thuật TP.HCM.
                     </p>
                     <p className="about-desc">
                         Đề tài: <em>&quot;Nghiên cứu đề xuất công cụ hỗ trợ tính định mức dựa trên dữ liệu bộ mẫu&quot;</em> —
