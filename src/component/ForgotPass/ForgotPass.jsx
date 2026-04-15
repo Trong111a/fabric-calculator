@@ -42,7 +42,7 @@ function ForgotPass({ onNavigate }) {
                     <div className="fp-brand-unit-info">
                         <p className="fp-brand-faculty">KHOA THỜI TRANG VÀ DU LỊCH</p>
                         <p className="fp-brand-department">BỘ MÔN CÔNG NGHỆ MAY</p>
-                    </div> 
+                    </div>
 
                     <div className="fp-brand-divider" />
                     <p className="fp-brand-tagline">Hệ thống quản lý<br />đo diện tích vải</p>
@@ -59,12 +59,13 @@ function ForgotPass({ onNavigate }) {
                         <div>
                             <div className="fp-mobile-abbr">HCM·UTE</div>
                             <div className="fp-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
-                        </div>
 
-                        <div className="fp-mobile-unit">
-                            <p>KHOA THỜI TRANG VÀ DU LỊCH</p>
-                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
-                        </div>  
+
+                            <div className="fp-mobile-unit">
+                                <p>KHOA THỜI TRANG  &amp; DU LỊCH</p>
+                                <p>BỘ MÔN CÔNG NGHỆ MAY</p>
+                            </div>
+                        </div>
 
                     </div>
 

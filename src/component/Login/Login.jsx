@@ -46,7 +46,7 @@ function Login({ onLoginSuccess, onNavigate }) {
                     </div>
 
                     <div className="brand-unit-info">
-                        <p className="brand-faculty">KHOA THỜI TRANG VÀ DU LỊCH</p>
+                        <p className="brand-faculty">KHOA THỜI TRANG  &amp; DU LỊCH</p>
                         <p className="brand-department">BỘ MÔN CÔNG NGHỆ MAY</p>
                     </div>
 
@@ -67,12 +67,13 @@ function Login({ onLoginSuccess, onNavigate }) {
                         <div>
                             <div className="mobile-abbr">HCM·UTE</div>
                             <div className="mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
+
+                            <div className="mobile-unit">
+                                <p>KHOA THỜI TRANG VÀ DU LỊCH</p>
+                                <p>BỘ MÔN CÔNG NGHỆ MAY</p>
+                            </div>
                         </div>
 
-                        <div className="mobile-unit">
-                            <p>KHOA THỜI TRANG VÀ DU LỊCH</p>
-                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
-                        </div> 
 
                     </div>
 
@@ -160,7 +161,7 @@ function Login({ onLoginSuccess, onNavigate }) {
                     <div className="about-divider" />
                     <p className="about-product">
                         <strong>PATEC</strong> là sản phẩm đồ án Tốt nghiệp của Nhóm sinh viên ngành{' '}
-                        <em>Công nghệ May – Khóa K22</em>, <br />
+                        <em>Công nghệ May – Khóa K22</em>. <br />
                         Khoa Thời trang &amp; Du lịch, Trường ĐH Công nghệ Kỹ thuật TP.HCM.
                     </p>
                     <p className="about-desc">

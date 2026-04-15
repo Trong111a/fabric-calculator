@@ -55,10 +55,10 @@ function ResetPassword({ onNavigate }) {
                         <p className="rsp-brand-name-en">Ho Chi Minh City University<br />of Technology and Education</p>
                     </div>
 
-                     <div className="rsp-brand-unit-info">
+                    <div className="rsp-brand-unit-info">
                         <p className="rsp-brand-faculty">KHOA THỜI TRANG VÀ DU LỊCH</p>
                         <p className="rsp-brand-department">BỘ MÔN CÔNG NGHỆ MAY</p>
-                    </div> 
+                    </div>
 
                     <div className="rsp-brand-divider" />
                     <p className="rsp-brand-tagline">Hệ thống quản lý<br />đo diện tích vải</p>
@@ -75,12 +75,13 @@ function ResetPassword({ onNavigate }) {
                         <div>
                             <div className="rsp-mobile-abbr">HCM·UTE</div>
                             <div className="rsp-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
+
+                            <div className="rsp-mobile-unit">
+                                <p>KHOA THỜI TRANG &amp; DU LỊCH</p>
+                                <p>BỘ MÔN CÔNG NGHỆ MAY</p>
+                            </div>
                         </div>
 
-                         <div className="rsp-mobile-unit">
-                            <p>KHOA THỜI TRANG VÀ DU LỊCH</p>
-                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
-                        </div>  
 
                     </div>
 

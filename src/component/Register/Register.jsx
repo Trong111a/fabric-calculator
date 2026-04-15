@@ -68,11 +68,13 @@ function Register({ onNavigate }) {
                         <div>
                             <div className="rg-mobile-abbr">HCM·UTE</div>
                             <div className="rg-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
+
+                            <div className="rg-mobile-unit">
+                                <p>KHOA THỜI TRANG  &amp; DU LỊCH</p>
+                                <p>BỘ MÔN CÔNG NGHỆ MAY</p>
+                            </div>
                         </div>
-                        <div className="rg-mobile-unit">
-                            <p>KHOA THỜI TRANG VÀ DU LỊCH</p>
-                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
-                        </div>
+
                     </div>
 
                     <button className="rg-back-btn" onClick={() => onNavigate('login')}>
