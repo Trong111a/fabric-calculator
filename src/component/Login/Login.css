@@ -11,7 +11,7 @@
     position: relative;
     width: 420px;
     flex-shrink: 0;
-    background: linear-gradient(160deg, rgb(0, 55, 100) 0%, rgb(0, 85, 141) 55%, rgb(0, 100, 160) 100%);
+    background: #0266a8;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -59,7 +59,6 @@
     height: 100%;
     object-fit: cover;
     mix-blend-mode: multiply;
-    
 }
 
 @keyframes float {
@@ -163,7 +162,7 @@
     border-bottom: 1px solid #eef0f5;
 }
 .mobile-logo-img { width: 44px; height: 44px; flex-shrink: 0; object-fit: contain; }
-.mobile-abbr { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em; color: rgb(0, 85, 141); text-transform: uppercase; }
+.mobile-abbr { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em; color: #00558d; text-transform: uppercase; }
 .mobile-school-name { font-size: 0.8rem; font-weight: 600; color: #1e293b; margin-top: 2px; line-height: 1.4; }
 
 .form-header { margin-bottom: 1.75rem; }
@@ -228,14 +227,14 @@
     transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
 }
 .field-wrap:focus-within {
-    border-color: rgb(0, 85, 141);
+    border-color: #00558d;
     background: #fff;
     box-shadow: 0 0 0 3px rgba(0, 85, 141, 0.1);
 }
 .field-wrap.has-value { border-color: #93c5fd; background: #fff; }
 
 .field-icon { color: #94a3b8; flex-shrink: 0; transition: color 0.18s; }
-.field-wrap:focus-within .field-icon { color: rgb(0, 85, 141); }
+.field-wrap:focus-within .field-icon { color: #00558d; }
 
 .field-input {
     flex: 1;
@@ -259,7 +258,7 @@
     align-items: center;
     transition: color 0.15s;
 }
-.eye-btn:hover { color: rgb(0, 85, 141); }
+.eye-btn:hover { color: #00558d; }
 
 .forgot-row {
     display: flex;
@@ -271,7 +270,7 @@
     background: none;
     border: none;
     font-size: 0.8rem;
-    color: rgb(0, 85, 141);
+    color: #00558d;
     cursor: pointer;
     font-family: 'Be Vietnam Pro', sans-serif;
     font-weight: 500;
@@ -285,7 +284,7 @@
     padding: 0.8rem 1.5rem;
     border: none;
     border-radius: 0.75rem;
-    background: linear-gradient(135deg, rgb(0, 85, 141) 0%, rgb(0, 55, 100) 100%);
+    background: #0266a8;
     color: #fff;
     font-family: 'Be Vietnam Pro', sans-serif;
     font-size: 0.95rem;
@@ -330,7 +329,7 @@
 .register-link {
     background: none;
     border: none;
-    color: rgb(0, 85, 141);
+    color: #00558d;
     font-weight: 600;
     cursor: pointer;
     font-family: 'Be Vietnam Pro', sans-serif;
@@ -350,40 +349,38 @@
 
 @media (max-width: 768px) {
     .login-brand { display: none; }
-    .mobile-logo {  
+    .mobile-logo {
         display: flex;
-        flex-wrap: nowrap;          
+        flex-wrap: nowrap;
         align-items: flex-start;
         gap: 0.75rem;
-        background: linear-gradient(160deg, rgb(0, 55, 100) 0%, rgb(0, 85, 141) 55%, rgb(0, 100, 160) 100%);
+        background: #0266a8;
         margin: -2rem -1.5rem 1.75rem;
         padding: 1.5rem;
         border-bottom: none;
-        position: relative;      
-        padding-top: 3rem; 
+        position: relative;
+        padding-top: 3rem;
     }
-    
-    .login-form-panel { 
-        background: #fff; 
-        justify-content: flex-start; 
-        padding-top: 0; 
+
+    .login-form-panel {
+        background: #fff;
+        justify-content: flex-start;
+        padding-top: 0;
     }
-    
+
     .login-card {
         box-shadow: none;
         border-radius: 0;
         padding: 2rem 1.5rem;
         max-width: 100%;
-        /* min-height: 100vh; */
     }
 
-
-    .mobile-abbr { 
-        color: rgba(255,255,255,0.7); 
+    .mobile-abbr {
+        color: rgba(255,255,255,0.7);
     }
 
-    .mobile-school-name { 
-        color: #fff; 
+    .mobile-school-name {
+        color: #fff;
     }
 
     .mobile-logo-img {
@@ -395,7 +392,6 @@
 }
 
 .login-about {
-    /* width: 100%; */
     max-width: 1000px;
     margin-top: 2rem;
     padding: 1.5rem 1.75rem;
@@ -409,7 +405,7 @@
 .about-divider {
     width: 40px;
     height: 3px;
-    background: linear-gradient(90deg, rgb(0, 85, 141), rgb(0, 100, 160));
+    background: #00558d;
     border-radius: 2px;
     margin-bottom: 1rem;
 }
@@ -421,7 +417,7 @@
     margin: 0 0 0.6rem;
 }
 .about-product strong {
-    color: rgb(0, 85, 141);
+    color: #00558d;
     font-weight: 700;
     font-size: 0.95rem;
 }
@@ -464,9 +460,8 @@
     transition: color 0.15s;
     line-height: 1.5;
 }
-.about-contact-item:hover { color: rgb(0, 85, 141); text-decoration: underline; }
+.about-contact-item:hover { color: #00558d; text-decoration: underline; }
 
-/* Mobile */
 @media (max-width: 768px) {
     .login-about {
         max-width: 100%;
@@ -479,8 +474,8 @@
 }
 
 .brand-unit-info {
-    margin: 1rem 0; /* Tạo khoảng cách trên dưới */
-    border-top: 1px solid rgba(255, 255, 255, 0.2); /* Đường kẻ mờ ngăn cách */
+    margin: 1rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
     padding-top: 0.8rem;
 }
 
@@ -501,14 +496,14 @@
     text-transform: uppercase;
 }
 
-.mobile-unit {          
+.mobile-unit {
     margin-top: 2px;
 }
 
 .mobile-unit p {
-    font-size: 10px;          
+    font-size: 10px;
     font-weight: 600;
-    color: rgba(255,255,255,0.7);    
+    color: rgba(255,255,255,0.7);
     margin: 0;
     line-height: 1.2;
     text-transform: uppercase;
@@ -520,7 +515,6 @@
     flex-direction: column;
     justify-content: flex-start;
     margin-left: 0;
-    margin-left: 0;
-    min-width: 0;             
+    min-width: 0;
     flex: 1;
 }

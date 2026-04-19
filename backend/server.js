@@ -20,9 +20,19 @@ app.use(helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: (origin, callback) => {
+        const allowed = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+            .split(',')
+            .map(o => o.trim());
+        if (!origin || allowed.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
 

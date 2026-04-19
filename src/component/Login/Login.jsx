@@ -41,7 +41,7 @@ function Login({ onLoginSuccess, onNavigate }) {
                     </div>
                     <div className="brand-name-block">
                         <span className="brand-abbr">HCM·UTE</span>
-                        <h1 className="brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />TP.HCM</h1>
+                        <h1 className="brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />THÀNH PHỐ HỒ CHÍ MINH</h1>
                         <p className="brand-name-en">Ho Chi Minh City University<br />of Technology and Engineering</p>
                     </div>
 
@@ -66,7 +66,7 @@ function Login({ onLoginSuccess, onNavigate }) {
                         <img src={logoHCMUTE} alt="HCM-UTE" className="mobile-logo-img" />
                         <div>
                             <div className="mobile-abbr">HCM·UTE</div>
-                            <div className="mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
+                            <div className="mobile-school-name">ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT THÀNH PHỐ HỒ CHÍ MINH</div>
 
                             <div className="mobile-unit">
                                 <p>KHOA THỜI TRANG &amp; DU LỊCH</p>
@@ -160,9 +160,9 @@ function Login({ onLoginSuccess, onNavigate }) {
                 <div className="login-about">
                     <div className="about-divider" />
                     <p className="about-product">
-                        <strong>PATEC</strong> là sản phẩm đồ án Tốt nghiệp của Nhóm sinh viên ngành{' '}
+                        <strong>PATECH</strong> là sản phẩm đồ án Tốt nghiệp của Nhóm sinh viên ngành{' '}
                         <em>Công nghệ May – Khóa K22</em>. <br />
-                        Khoa Thời trang &amp; Du lịch, Trường ĐH Công nghệ Kỹ thuật TP.HCM.
+                        Khoa Thời trang &amp; Du lịch, Trường Đại học Công nghệ Kỹ thuật Thành Phố Hồ Chí Minh.
                     </p>
                     <p className="about-desc">
                         Đề tài: <em>&quot;Nghiên cứu đề xuất công cụ hỗ trợ tính định mức dựa trên dữ liệu bộ mẫu&quot;</em> —
