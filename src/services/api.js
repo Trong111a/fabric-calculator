@@ -42,7 +42,17 @@ class ApiService {
             body: options.body ? JSON.stringify(options.body) : undefined
         });
 
-        const data = await res.json();
+        const text = await res.text(); 
+        console.log('Response status:', res.status);
+        console.log('Response body:', text);
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch {
+            throw new Error(`Server trả về không phải JSON (${res.status}): ${text.slice(0, 100)}`);
+        }
+
         if (!res.ok) throw new Error(data.error || 'Lỗi server');
         return prefixImageUrls(data);
     }
@@ -90,6 +100,11 @@ class ApiService {
     });
 
     updateMeasurement = (id, data) => this.request(`/measurements/${id}`, {
+        method: 'PUT',
+        body: data
+    });
+
+    updateProject = (id, data) => this.request(`/projects/${id}`, {
         method: 'PUT',
         body: data
     });

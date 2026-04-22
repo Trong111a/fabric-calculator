@@ -76,6 +76,26 @@ router.get('/:id', auth, async (req, res) => {
     }
 });
 
+router.put('/:id', auth, async (req, res) => {
+    try {
+        const { name, description } = req.body;
+        const result = await query(
+            `UPDATE projects 
+             SET name = COALESCE($1, name),
+                 description = COALESCE($2, description)
+             WHERE id = $3 AND user_id = $4
+             RETURNING *`,
+            [name, description, req.params.id, req.user.id]
+        );
+        if (result.rows.length === 0)
+            return res.status(404).json({ error: 'Không tìm thấy dự án' });
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 router.post('/:id/measurements', auth, async (req, res) => {
     try {
         const { measurement_id } = req.body;

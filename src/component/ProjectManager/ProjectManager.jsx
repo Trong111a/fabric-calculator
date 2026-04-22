@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Folder, Plus, Trash2, ArrowLeft, FolderOpen, Package, Layers, TrendingUp, X, Check } from 'lucide-react';
+import { Folder, Plus, Trash2, ArrowLeft, FolderOpen, Package, Layers, TrendingUp, X, Check, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../services/api';
 import ProjectDetail from '../ProjectDetail/ProjectDetail';
@@ -15,6 +15,8 @@ function ProjectManager({ onBack }) {
     const [loading, setLoading] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
     const [openedProject, setOpenedProject] = useState(null);
+    const [editingId, setEditingId] = useState(null);
+    const [editingName, setEditingName] = useState('');
 
     useEffect(() => { loadProjects(); }, []);
 
@@ -52,6 +54,30 @@ function ProjectManager({ onBack }) {
         { icon: <Package size={16} />, label: t('total_details'), value: totalQty },
         { icon: <TrendingUp size={16} />, label: t('total_area'), value: `${(totalArea / 10000).toFixed(3)} m²` },
     ];
+
+    const startRename = (e, project) => {
+        e.stopPropagation();
+        setEditingId(project.id);
+        setEditingName(project.name);
+    };
+
+    const confirmRename = async (e, id) => {
+        e.stopPropagation();
+        if (!editingName.trim()) return;
+        try {
+            await api.updateProject(id, { name: editingName.trim() });
+            setEditingId(null);
+            loadProjects();
+        } catch (err) {
+            console.error('Rename error:', err);
+            alert('Lỗi: ' + err.message);
+        }
+    };
+
+    const cancelRename = (e) => {
+        e.stopPropagation();
+        setEditingId(null);
+    };
 
     return (
         <div className="pm-wrap" style={{
@@ -135,7 +161,21 @@ function ProjectManager({ onBack }) {
                                     <div className="pm-card-icon-wrap" style={{ background: `hsl(${hue}, 70%, 96%)`, color: `hsl(${hue}, 60%, 45%)` }}>
                                         <Folder size={32} />
                                     </div>
-                                    <h3 className="pm-card-title">{project.name}</h3>
+                                    {editingId === project.id ? (
+                                        <input
+                                            className="pm-card-title-input"
+                                            value={editingName}
+                                            autoFocus
+                                            onClick={e => e.stopPropagation()}
+                                            onChange={e => setEditingName(e.target.value)}
+                                            onKeyDown={e => {
+                                                if (e.key === 'Enter') confirmRename(e, project.id);
+                                                if (e.key === 'Escape') cancelRename(e);
+                                            }}
+                                        />
+                                    ) : (
+                                        <h3 className="pm-card-title">{project.name}</h3>
+                                    )}
                                     <div className="pm-card-meta">
                                         <div className="pm-meta-row"><span className="pm-meta-dot" /><span className="pm-meta-text">{project.file_count || 0} {t('files')}</span></div>
                                         <div className="pm-meta-row"><span className="pm-meta-dot" /><span className="pm-meta-text">{project.total_quantity || 0} {t('total_items')}</span></div>
@@ -144,11 +184,31 @@ function ProjectManager({ onBack }) {
                                         <span className="pm-area-value">{((Number(project.total_area_cm2) || 0) / 10000).toFixed(4)}</span>
                                         <span className="pm-area-unit">m²</span>
                                     </div>
-                                    <button className="pm-delete-btn"
-                                        onClick={e => { e.stopPropagation(); deleteProject(project.id); }}
-                                        title={t('delete_project')}>
-                                        <Trash2 size={14} />
-                                    </button>
+                                    <div className="pm-card-actions">
+                                        {editingId === project.id ? (
+                                            <>
+                                                <button className="pm-action-btn pm-action-save" onClick={e => confirmRename(e, project.id)} title="Lưu">
+                                                    <Check size={14} />
+                                                </button>
+                                                <button className="pm-action-btn pm-action-cancel" onClick={cancelRename} title="Hủy">
+                                                    <X size={14} />
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button className="pm-action-btn pm-action-edit"
+                                                    onClick={e => startRename(e, project)}
+                                                    title={t('rename')}>
+                                                    <Pencil size={14} />
+                                                </button>
+                                                <button className="pm-action-btn pm-action-delete"
+                                                    onClick={e => { e.stopPropagation(); deleteProject(project.id); }}
+                                                    title={t('delete_project')}>
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                             );
                         })}
