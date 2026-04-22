@@ -160,13 +160,12 @@ function Login({ onLoginSuccess, onNavigate }) {
                 <div className="login-about">
                     <div className="about-divider" />
                     <p className="about-product">
-                        <strong>PATECH</strong> - Pattern Analysis To Estimate Costing & Handling là sản phẩm của đồ án Tốt nghiệp của Nhóm sinh viên<br/> ngành  {' '}
-                        <em>Công nghệ May – Khóa K22</em>. <br />
-                        Khoa Thời trang &amp; Du lịch, Trường Đại học Công nghệ Kỹ thuật Thành Phố Hồ Chí Minh.
+                        <strong>PATECH</strong> - Pattern Analysis To Estimate Costing & Handling là sản phẩm đồ án Tốt nghiệp của Nhóm sinh viên ngành  {' '}
+                        <em>Công nghệ May.</em> <br />Khóa K22 - Khoa Thời trang &amp; Du lịch - Trường Đại học Công nghệ Kỹ thuật Thành Phố Hồ Chí Minh.
                     </p>
                     <p className="about-desc">
                         Đề tài: <em>&quot;Nghiên cứu đề xuất công cụ hỗ trợ tính định mức dựa trên dữ liệu bộ mẫu&quot;</em> —
-                        hướng đến các doanh nghiệp may mặc vừa và nhỏ, hỗ trợ rút ngắn thời gian tính toán định mức
+                        hướng đến các doanh nghiệp may mặc vừa và nhỏ, <br />hỗ trợ rút ngắn thời gian tính toán định mức
                         nguyên liệu từ bộ mẫu kỹ thuật và sản phẩm thực tế.
                     </p>
                     <div className="about-contacts">
