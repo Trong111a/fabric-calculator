@@ -46,12 +46,15 @@ function Login({ onLoginSuccess, onNavigate }) {
                     </div>
 
                     <div className="brand-unit-info">
-                        <p className="brand-faculty">KHOA THỜI TRANG  &amp; DU LỊCH</p>
-                        <p className="brand-department">BỘ MÔN CÔNG NGHỆ MAY</p>
+                        <p className="brand-faculty">{t('faculty')}</p>
+                        <p className="brand-department">{t('major')}</p>
                     </div>
 
                     <div className="brand-divider" />
-                    <p className="brand-tagline">Hệ thống quản lý<br />đo diện tích vải</p>
+                    <p
+                        className="brand-tagline"
+                        dangerouslySetInnerHTML={{ __html: t('tagline') }}
+                    />
                 </div>
                 <div className="brand-deco deco-1" />
                 <div className="brand-deco deco-2" />
@@ -67,8 +70,8 @@ function Login({ onLoginSuccess, onNavigate }) {
                         <div className="mobile-abbr">HCM·UTE</div>
                         <div className="mobile-school-name">ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT THÀNH PHỐ HỒ CHÍ MINH</div>
                         <div className="mobile-unit">
-                            <p>KHOA THỜI TRANG &amp; DU LỊCH</p>
-                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
+                            <p>{t('faculty')}</p>
+                            <p>{t('major')}</p>
                         </div>
                     </div>
 
@@ -159,18 +162,18 @@ function Login({ onLoginSuccess, onNavigate }) {
 
                 <div className="login-about">
                     <div className="about-divider" />
-                    <p className="about-product">
-                        <strong>PATECH</strong> - Pattern Analysis To Estimate Costing & Handling là sản phẩm đồ án Tốt nghiệp của Nhóm sinh viên ngành  {' '}
-                        <em>Công nghệ May.</em> <br />Khóa K22 - Khoa Thời trang &amp; Du lịch - Trường Đại học Công nghệ Kỹ thuật Thành Phố Hồ Chí Minh.
-                    </p>
-                    <p className="about-desc">
-                        Đề tài: <em>&quot;Nghiên cứu đề xuất công cụ hỗ trợ tính định mức dựa trên dữ liệu bộ mẫu&quot;</em> —
-                        hướng đến các doanh nghiệp may mặc vừa và nhỏ, <br />hỗ trợ rút ngắn thời gian tính toán định mức
-                        nguyên liệu từ bộ mẫu kỹ thuật và sản phẩm thực tế.
-                    </p>
+                    <p
+                        className="about-product"
+                        dangerouslySetInnerHTML={{ __html: t('about_project') }}
+                    />
+
+                    <p
+                        className="about-desc"
+                        dangerouslySetInnerHTML={{ __html: t('about_desc') }}
+                    />
                     <div className="about-contacts">
                         <div className="about-group">
-                            <span className="about-group-label">Sinh viên thực hiện</span>
+                            <span className="about-group-label">{t('about_students')}</span>
                             <a href="mailto:vyvy30032004@gmail.com" className="about-contact-item">
                                 Lê Trần Thúy Vy · vyvy30032004@gmail.com
                             </a>
@@ -179,13 +182,13 @@ function Login({ onLoginSuccess, onNavigate }) {
                             </a>
                         </div>
                         <div className="about-group">
-                            <span className="about-group-label">Giảng viên hướng dẫn</span>
+                            <span className="about-group-label">{t('about_supervisor')}</span>
                             <a href="mailto:thucoanh@hcmute.edu.vn" className="about-contact-item">
                                 ThS Tạ Vũ Thục Oanh · thucoanh@hcmute.edu.vn
                             </a>
                         </div>
                         <div className="about-group">
-                            <span className="about-group-label">Hỗ trợ kỹ thuật</span>
+                            <span className="about-group-label">{t('about_support')}</span>
                             <a href="mailto:nguyenvantrong3254@gmail.com" className="about-contact-item">
                                 Nguyễn Văn Trọng · nguyenvantrong3254@gmail.com
                             </a>

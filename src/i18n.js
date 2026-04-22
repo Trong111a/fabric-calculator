@@ -22,6 +22,17 @@ const resources = {
             "full_name": "Full Name",
             "full_name_placeholder": "Enter your full name",
 
+            "about_project": "<strong>PATECH</strong> – Pattern Analysis To Estimate Costing & Handling is a graduation project developed by a group of students majoring in <em>Garment Technology</em>,<br/>Class K22 – Faculty of Fashion & Tourism – Ho Chi Minh City University of Technology and Education.",
+            "about_desc": "Project Title: <em>&quot;Research and Proposal of a Supporting Tool for Material Consumption Calculation Based on Pattern Data&quot;</em> — aimed at small and medium-sized garment enterprises,helping to reduce the time required for calculating material consumption from technical patterns and actual products.",
+            "about_students": "Students",
+            "about_supervisor": "Supervisor",
+            "about_support": "Technical Support",
+
+            "faculty": "Faculty of Fashion and Tourism",
+            "major": "Major in Garment Technology",
+
+            "tagline": "Fabric Area Measurement<br/>Management System",
+
             // Forgot Password
             "forgot_title": "Forgot Password",
             "forgot_sub": "Enter your email to receive a reset link",
@@ -228,6 +239,16 @@ const resources = {
             "register_subtitle": "Tạo tài khoản để sử dụng hệ thống",
             "full_name": "Họ và tên",
             "full_name_placeholder": "Nhập họ và tên của bạn",
+            "about_project": "<strong>PATECH</strong> - Pattern Analysis To Estimate Costing & Handling là sản phẩm đồ án Tốt nghiệp của Nhóm sinh viên ngành <em>Công nghệ May.</em><br/>Khóa K22 - Khoa Thời trang & Du lịch - Trường Đại học Công nghệ Kỹ thuật Thành Phố Hồ Chí Minh.",
+            "about_desc": "Đề tài: <em>&quot;Nghiên cứu đề xuất công cụ hỗ trợ tính định mức dựa trên dữ liệu bộ mẫu&quot;</em> — hướng đến các doanh nghiệp may mặc vừa và nhỏ,<br/>hỗ trợ rút ngắn thời gian tính toán định mức nguyên liệu từ bộ mẫu kỹ thuật và sản phẩm thực tế.",
+            "about_students": "Sinh viên thực hiện",
+            "about_supervisor": "Giảng viên hướng dẫn",
+            "about_support": "Hỗ trợ kỹ thuật",
+
+            "faculty": "KHOA THỜI TRANG & DU LỊCH",
+            "major": "NGÀNH CÔNG NGHỆ MAY",
+
+            "tagline": "Hệ thống quản lý<br/>đo diện tích vải",
 
             // Forgot Password
             "forgot_title": "Quên Mật Khẩu",
