@@ -160,7 +160,7 @@ function Login({ onLoginSuccess, onNavigate }) {
                 <div className="login-about">
                     <div className="about-divider" />
                     <p className="about-product">
-                        <strong>PATECH</strong> là sản phẩm đồ án Tốt nghiệp của Nhóm sinh viên ngành{' '}
+                        <strong>PATECH</strong> - Pattern Analysis To Estimate Costing & Handling là sản phẩm của đồ án Tốt nghiệp của Nhóm sinh viên ngành{' '}
                         <em>Công nghệ May – Khóa K22</em>. <br />
                         Khoa Thời trang &amp; Du lịch, Trường Đại học Công nghệ Kỹ thuật Thành Phố Hồ Chí Minh.
                     </p>

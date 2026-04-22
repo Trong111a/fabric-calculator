@@ -11,7 +11,7 @@
     position: relative;
     width: 420px;
     flex-shrink: 0;
-    background: #0266a8;
+    background: #0065B3;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -42,14 +42,16 @@
     width: 170px;
     height: 170px;
     border-radius: 50%;
-    background: #fff;
+    /* background: #fff; */
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow:
+    /* box-shadow:
         0 0 0 6px rgba(255,255,255,0.15),
         0 0 0 12px rgba(255,255,255,0.07),
-        0 16px 48px rgba(0,0,0,0.35);
+        0 16px 48px rgba(0,0,0,0.35); */
+    box-shadow: none;
     animation: float 5s ease-in-out infinite;
     padding: 5px;
 }
@@ -284,7 +286,7 @@
     padding: 0.8rem 1.5rem;
     border: none;
     border-radius: 0.75rem;
-    background: #0266a8;
+    background: #0065B3;
     color: #fff;
     font-family: 'Be Vietnam Pro', sans-serif;
     font-size: 0.95rem;
@@ -354,7 +356,7 @@
         flex-wrap: nowrap;
         align-items: flex-start;
         gap: 0.75rem;
-        background: #0266a8;
+        background: #0065B3;
         margin: -2rem -1.5rem 1.75rem;
         padding: 1.5rem;
         border-bottom: none;

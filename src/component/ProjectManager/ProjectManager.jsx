@@ -115,7 +115,7 @@ function ProjectManager({ onBack }) {
             <main className="pm-main">
                 {projects.length === 0 ? (
                     <div className="pm-empty">
-                        <div className="pm-empty-icon"><Folder size={56} color="#c4b5fd" /></div>
+                        <div className="pm-empty-icon"><Folder size={56} color="white" /></div>
                         <h3 className="pm-empty-title">{t('empty_projects')}</h3>
                         <p className="pm-empty-text">{t('empty_projects_sub')}</p>
                         <button className="pm-empty-action" onClick={() => setShowCreate(true)}>

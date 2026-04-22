@@ -181,7 +181,7 @@ const resources = {
             "download_csv": "Download CSV",
 
             // ViewMain
-            "app_title": "PATEC",
+            "app_title": "PATECH",
             "cv_ready": "✓ Ready",
             "cv_loading": "⏳ Loading OpenCV...",
             "change_folder": "Change Folder",
@@ -388,7 +388,7 @@ const resources = {
             "download_csv": "Tải xuống CSV",
 
             // ViewMain
-            "app_title": "PATEC",
+            "app_title": "PATECH",
             "cv_ready": "✓ Sẵn sàng",
             "cv_loading": "⏳ Đang tải OpenCV...",
             "change_folder": "Đổi folder",

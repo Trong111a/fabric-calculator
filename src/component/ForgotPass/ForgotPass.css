@@ -12,7 +12,7 @@
     position: relative;
     width: 420px;
     flex-shrink: 0;
-    background: #0266a8;
+    background: #0065B3;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -163,7 +163,7 @@
 /* ── Submit button ── */
 .fp-submit-btn {
     width: 100%; padding: 0.8rem 1.5rem; border: none; border-radius: 0.75rem;
-    background: #0266a8;
+    background: #0065B3;
     color: #fff; font-family: 'Be Vietnam Pro', sans-serif; font-size: 0.95rem;
     font-weight: 600; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 0.5rem;
@@ -233,7 +233,7 @@
         flex-wrap: nowrap;
         align-items: flex-start;
         gap: 0.875rem;
-        background: #0266a8;
+        background: #0065B3;
         margin: -2rem -1.5rem 1.75rem;
         padding: 1.5rem;
         border-bottom: none;

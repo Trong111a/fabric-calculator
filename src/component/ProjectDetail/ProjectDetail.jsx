@@ -335,7 +335,7 @@ function ManualDrawPanel({ project, onSaved }) {
             {step === 'upload' && (
                 <div className="pd-upload-screen">
                     <div className="pd-upload-hero">
-                        <div className="pd-upload-hero-icon"><Pencil size={48} color="#6366f1" /></div>
+                        <div className="pd-upload-hero-icon"><Pencil size={48} color="white" /></div>
                         <h2>{t('manual_upload_title')}</h2>
                         <p dangerouslySetInnerHTML={{ __html: t('manual_upload_sub') }} />
                     </div>
@@ -1008,7 +1008,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
             {step === 'upload' && (
                 <div className="pd-upload-screen">
                     <div className="pd-upload-hero">
-                        <div className="pd-upload-hero-icon"><Ruler size={48} color="#6366f1" /></div>
+                        <div className="pd-upload-hero-icon"><Ruler size={48} color="white" /></div>
                         <h2>{t('scan_upload_title')}</h2>
                         <p dangerouslySetInnerHTML={{ __html: t('scan_upload_sub', { name: project.name }) }} />
                     </div>
@@ -1240,17 +1240,20 @@ function DownloadPanel({ project, measurements }) {
     const { t } = useTranslation();
 
     const downloadCSV = () => {
-        const headers = [t('col_name'), 'Diện tích (cm²)', 'Diện tích (m²)', t('col_quantity'), 'Tổng diện tích (cm²)', 'Tổng diện tích (m²)', 'Tỷ lệ (px/cm)', 'Số đỉnh', t('col_date')];
+        const headers = [t('col_name'), 'Diện tích (cm²)', 'Diện tích (m²)', t('col_quantity'), 'Tổng diện tích (cm²)', 'Tổng diện tích (m²)', t('col_date')];
+        // const headers = [t('col_name'), 'Diện tích (cm²)', 'Diện tích 1 chi tiết (m²)', t('col_quantity'), 'Tổng diện tích (cm²)', 'Tổng diện tích (m²)', 'Tỷ lệ (px/cm)', 'Số đỉnh', t('col_date')];
         const rows = measurements.map(m => {
             const area = Number(m.area_cm2); const qty = m.quantity || 1; const total = area * qty;
-            const pts = (() => { try { const p = typeof m.polygon_points === 'string' ? JSON.parse(m.polygon_points) : m.polygon_points; return Array.isArray(p) ? p.length : 0; } catch { return 0; } })();
+            // const pts = (() => { try { const p = typeof m.polygon_points === 'string' ? JSON.parse(m.polygon_points) : m.polygon_points; return Array.isArray(p) ? p.length : 0; } catch { return 0; } })();
             const date = new Date(m.created_at).toLocaleDateString('vi-VN');
-            return [m.name, area.toFixed(2), (area / 10000).toFixed(4), qty, total.toFixed(2), (total / 10000).toFixed(4), Number(m.pixels_per_cm).toFixed(2), pts, date];
+            return [m.name, area.toFixed(2), (area / 10000).toFixed(4), qty, total.toFixed(2), (total / 10000).toFixed(4), date];
+            // return [m.name, area.toFixed(2), (area / 10000).toFixed(4), qty, total.toFixed(2), (total / 10000).toFixed(4), Number(m.pixels_per_cm).toFixed(2), pts, date];
         });
         const totalArea = measurements.reduce((s, m) => s + Number(m.area_cm2) * (m.quantity || 1), 0);
         const totalQty = measurements.reduce((s, m) => s + (m.quantity || 1), 0);
         rows.push([]);
-        rows.push([t('grand_total'), '', '', totalQty, totalArea.toFixed(2), (totalArea / 10000).toFixed(4), '', '', '']);
+        rows.push([t('grand_total'), '', '', totalQty, totalArea.toFixed(2), (totalArea / 10000).toFixed(4), '']);
+        // rows.push([t('grand_total'), '', '', totalQty, totalArea.toFixed(2), (totalArea / 10000).toFixed(4), '', '', '']);
         const csvContent = [headers, ...rows]
             .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
             .join('\n');
@@ -1515,7 +1518,7 @@ export default function ProjectDetail({ project, onBack }) {
                                 <div className="pd-modal-card">
                                     <div className="pd-modal-card-label">{t('quantity')}</div>
                                     <div className="pd-modal-card-row">
-                                        <Hash size={16} color="#6366f1" />
+                                        <Hash size={16} color="#0065B3" />
                                         <div className="pd-modal-card-value" translate="no">{selected.quantity || 1}<em>{t('total_items')}</em></div>
                                     </div>
                                 </div>
@@ -1526,7 +1529,7 @@ export default function ProjectDetail({ project, onBack }) {
                                 <div className="pd-modal-card">
                                     <div className="pd-modal-card-label">{t('px_per_cm')}</div>
                                     <div className="pd-modal-card-row">
-                                        <Ruler size={15} color="#6366f1" />
+                                        <Ruler size={15} color="#0065B3" />
                                         <div className="pd-modal-card-value" style={{ fontSize: 17 }} translate="no">{Number(selected.pixels_per_cm).toFixed(2)}<em>px/cm</em></div>
                                     </div>
                                 </div>

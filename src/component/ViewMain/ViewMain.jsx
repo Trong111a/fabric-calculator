@@ -515,7 +515,7 @@ export default function ViewMain({ user, onLogout }) {
                 {step === 'upload' && (
                     <div className="vm-upload-screen">
                         <div className="vm-upload-hero" style={{ position: 'relative', zIndex: 1 }}>
-                            <div className="vm-upload-icon"><Ruler size={48} color="#6366f1" /></div>
+                            <div className="vm-upload-icon"><Ruler size={48} color="white" /></div>
                             <h2>{t('measure_title')}</h2>
                             <p>{t('measure_sub')}</p>
                         </div>
@@ -576,7 +576,7 @@ export default function ViewMain({ user, onLogout }) {
                                 onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}>−</button>
                             <span style={{
                                 minWidth: 50, textAlign: 'center', fontSize: 13, fontWeight: 600,
-                                background: '#ede9fe', color: '#4f46e5', borderRadius: 6, padding: '3px 8px'
+                                background: '#ede9fe', color: '#0065B3', borderRadius: 6, padding: '3px 8px'
                             }} translate="no">{Math.round(zoom * 100)}%</span>
                             <button className="vm-btn ghost" style={{ padding: '5px 12px', fontSize: 13 }}
                                 onClick={() => setZoom(z => Math.min(5, z + 0.25))}>+</button>
