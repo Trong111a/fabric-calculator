@@ -69,21 +69,23 @@ function ResetPassword({ onNavigate }) {
             </div>
 
             <div className="rsp-form-panel">
-                <div className="rsp-card">
-                    <div className="rsp-mobile-logo">
-                        <img src={logoHCMUTE} alt="HCM-UTE" className="rsp-mobile-logo-img" />
-                        <div>
-                            <div className="rsp-mobile-abbr">HCM·UTE</div>
-                            <div className="rsp-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
 
-                            <div className="rsp-mobile-unit">
-                                <p>KHOA THỜI TRANG &amp; DU LỊCH</p>
-                                <p>BỘ MÔN CÔNG NGHỆ MAY</p>
-                            </div>
+                <div className="rsp-mobile-logo">
+                    <img src={logoHCMUTE} alt="HCM-UTE" className="rsp-mobile-logo-img" />
+                    <div>
+                        <div className="rsp-mobile-abbr">HCM·UTE</div>
+                        <div className="rsp-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
+
+                        <div className="rsp-mobile-unit">
+                            <p>KHOA THỜI TRANG &amp; DU LỊCH</p>
+                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
                         </div>
-
-
                     </div>
+
+
+                </div>
+
+                <div className="rsp-card">
 
                     <button className="rsp-back-btn" onClick={() => onNavigate('login')}>
                         <ArrowLeft size={15} /> {t('back_to_login')}

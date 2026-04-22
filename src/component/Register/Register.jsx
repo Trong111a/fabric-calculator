@@ -62,20 +62,21 @@ function Register({ onNavigate }) {
             </div>
 
             <div className="rg-form-panel">
-                <div className="rg-card">
-                    <div className="rg-mobile-logo">
-                        <img src={logoHCMUTE} alt="HCM-UTE" className="rg-mobile-logo-img" />
-                        <div>
-                            <div className="rg-mobile-abbr">HCM·UTE</div>
-                            <div className="rg-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
+                <div className="rg-mobile-logo">
+                    <img src={logoHCMUTE} alt="HCM-UTE" className="rg-mobile-logo-img" />
+                    <div>
+                        <div className="rg-mobile-abbr">HCM·UTE</div>
+                        <div className="rg-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
 
-                            <div className="rg-mobile-unit">
-                                <p>KHOA THỜI TRANG  &amp; DU LỊCH</p>
-                                <p>BỘ MÔN CÔNG NGHỆ MAY</p>
-                            </div>
+                        <div className="rg-mobile-unit">
+                            <p>KHOA THỜI TRANG  &amp; DU LỊCH</p>
+                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
                         </div>
-
                     </div>
+
+                </div>
+
+                <div className="rg-card">
 
                     <button className="rg-back-btn" onClick={() => onNavigate('login')}>
                         <ArrowLeft size={15} /> {t('back_to_login')}

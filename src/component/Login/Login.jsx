@@ -60,22 +60,22 @@ function Login({ onLoginSuccess, onNavigate }) {
 
             {/* Right panel — form */}
             <div className="login-form-panel">
-                <div className="login-card">
-                    {/* Mobile logo */}
-                    <div className="mobile-logo">
-                        <img src={logoHCMUTE} alt="HCM-UTE" className="mobile-logo-img" />
-                        <div>
-                            <div className="mobile-abbr">HCM·UTE</div>
-                            <div className="mobile-school-name">ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT THÀNH PHỐ HỒ CHÍ MINH</div>
-
-                            <div className="mobile-unit">
-                                <p>KHOA THỜI TRANG &amp; DU LỊCH</p>
-                                <p>BỘ MÔN CÔNG NGHỆ MAY</p>
-                            </div>
+                {/* Mobile logo */}
+                <div className="mobile-logo">
+                    <img src={logoHCMUTE} alt="HCM-UTE" className="mobile-logo-img" />
+                    <div>
+                        <div className="mobile-abbr">HCM·UTE</div>
+                        <div className="mobile-school-name">ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT THÀNH PHỐ HỒ CHÍ MINH</div>
+                        <div className="mobile-unit">
+                            <p>KHOA THỜI TRANG &amp; DU LỊCH</p>
+                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
                         </div>
-
-
                     </div>
+
+
+                </div>
+
+                <div className="login-card">
 
                     <div className="form-header">
                         <h2 className="form-title">{t('login')}</h2>
@@ -160,7 +160,7 @@ function Login({ onLoginSuccess, onNavigate }) {
                 <div className="login-about">
                     <div className="about-divider" />
                     <p className="about-product">
-                        <strong>PATECH</strong> - Pattern Analysis To Estimate Costing & Handling là sản phẩm của đồ án Tốt nghiệp của Nhóm sinh viên ngành{' '}
+                        <strong>PATECH</strong> - Pattern Analysis To Estimate Costing & Handling là sản phẩm của đồ án Tốt nghiệp của Nhóm sinh viên<br/> ngành  {' '}
                         <em>Công nghệ May – Khóa K22</em>. <br />
                         Khoa Thời trang &amp; Du lịch, Trường Đại học Công nghệ Kỹ thuật Thành Phố Hồ Chí Minh.
                     </p>

@@ -1,158 +1,501 @@
 @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
 
-.rg-root { min-height: 100vh; display: flex; font-family: 'Be Vietnam Pro', sans-serif; background: #f4f6fb; }
+.rg-root {
+    min-height: 100vh;
+    display: flex;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background: #f4f6fb;
+}
+
+/* ═══════════════════════════════
+   LEFT BRAND PANEL
+═══════════════════════════════ */
 
 .rg-brand {
-    position: relative; width: 420px; flex-shrink: 0;
+    position: relative;
+    width: 420px;
+    flex-shrink: 0;
     background: #0065B3;
-    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
+
 .rg-brand-overlay {
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse at 20% 20%, rgba(255,255,255,0.07) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 80%, rgba(255,60,60,0.12) 0%, transparent 55%);
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 20% 20%, rgba(255,255,255,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(255,60,60,0.12) 0%, transparent 55%);
     pointer-events: none;
 }
-.rg-brand-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; padding: 3rem 2.5rem; text-align: center; }
-.rg-brand-logo-ring {
-    width: 170px; height: 170px; border-radius: 50%; background: #fff;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 0 6px rgba(255,255,255,0.15), 0 0 0 12px rgba(255,255,255,0.07), 0 16px 48px rgba(0,0,0,0.35);
-    animation: rg-float 5s ease-in-out infinite;
+
+.rg-brand-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 3rem 2.5rem;
+    text-align: center;
 }
-.rg-brand-logo-img { width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; }
-@keyframes rg-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-.rg-brand-name-block { display: flex; flex-direction: column; gap: 0.5rem; }
-.rg-brand-abbr { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.22em; color: rgba(255,255,255,0.6); text-transform: uppercase; }
-.rg-brand-name-vi { font-size: 1.35rem; font-weight: 700; color: #fff; line-height: 1.45; margin: 0; text-shadow: 0 2px 12px rgba(0,0,0,0.25); }
-.rg-brand-name-en { font-size: 0.78rem; font-weight: 400; color: rgba(255,255,255,0.65); line-height: 1.55; margin: 0; font-style: italic; }
-.rg-brand-divider { width: 48px; height: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent); border-radius: 2px; }
-.rg-brand-tagline { font-size: 0.82rem; font-weight: 500; color: rgba(255,255,255,0.55); letter-spacing: 0.04em; line-height: 1.6; margin: 0; text-transform: uppercase; }
-.rg-brand-deco { position: absolute; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); pointer-events: none; }
+
+.rg-brand-logo-ring {
+    width: 300px;
+    height: auto;
+    border-radius: 0;
+    margin-top: -70px;
+    background: transparent;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: rg-float 5s ease-in-out infinite;
+    padding: 0;
+}
+
+.rg-brand-logo-img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    background-color: transparent;
+}
+
+@keyframes rg-float {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-8px); }
+}
+
+.rg-brand-name-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.rg-brand-abbr {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+}
+
+.rg-brand-name-vi {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.45;
+    margin: 0;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.25);
+}
+
+.rg-brand-name-en {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.55;
+    margin: 0;
+    font-style: italic;
+}
+
+.rg-brand-unit-info {
+    margin: 0.5rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 0.8rem;
+}
+
+.rg-brand-faculty {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #ffffff;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.rg-brand-department {
+    font-weight: 400;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-top: 0.2rem;
+    text-transform: uppercase;
+}
+
+.rg-brand-divider {
+    width: 48px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+    border-radius: 2px;
+}
+
+.rg-brand-tagline {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.rg-brand-deco {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.08);
+    pointer-events: none;
+}
 .rg-deco-1 { width: 320px; height: 320px; top: -80px; left: -80px; }
 .rg-deco-2 { width: 220px; height: 220px; bottom: -60px; right: -60px; border-color: rgba(255,60,60,0.12); }
 .rg-deco-3 { width: 120px; height: 120px; top: 50%; right: -20px; transform: translateY(-50%); }
 
-.rg-form-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1.5rem; background: #f4f6fb; min-height: 100vh; }
+/* ═══════════════════════════════
+   RIGHT FORM PANEL
+═══════════════════════════════ */
+
+.rg-form-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    background: #f4f6fb;
+    min-height: 100vh;
+}
+
 .rg-card {
-    background: #fff; width: 100%; max-width: 420px; border-radius: 1.25rem;
+    background: #fff;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 1.25rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 32px rgba(0,55,100,0.1);
     padding: 2.5rem 2.25rem;
     animation: rg-slideUp 0.45s cubic-bezier(.22,.68,0,1.2) both;
 }
-@keyframes rg-slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+@keyframes rg-slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════
+   MOBILE LOGO — ẩn trên desktop
+═══════════════════════════════ */
 
 .rg-mobile-logo {
     display: none;
-    flex-wrap: nowrap;
-    align-items: flex-start;
-    gap: 0.75rem;
-    background: #0065B3;
-    margin: -2rem -1.5rem 1.75rem;
-    padding: 1.5rem;
-    padding-top: 3rem;
-    border-bottom: none;
-    position: relative;
 }
-.rg-mobile-logo-img {
-    width: 44px; height: 44px; flex-shrink: 0; object-fit: contain;
-    background: #fff;
-    border-radius: 50%;
-    padding: 4px;
-    margin-top: 2px;
-}
-.rg-mobile-abbr { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em; color: rgba(255,255,255,0.7); text-transform: uppercase; }
-.rg-mobile-school-name { font-size: 0.8rem; font-weight: 600; color: #fff; margin-top: 2px; line-height: 1.4; }
 
-.rg-mobile-unit {
-    width: 100%;
-    margin-top: 0.5rem;
+.rg-mobile-logo-img {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    object-fit: contain;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
 }
-.rg-mobile-unit p {
-    font-size: 10px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.75);
-    margin: 0;
-    line-height: 1.2;
+
+.rg-mobile-abbr {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
 }
 
-.rg-mobile-logo div {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    margin-left: 0;
-    min-width: 0;         
-    flex: 1;
+.rg-mobile-school-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.35;
+    margin-top: 3px;
 }
 
-.rg-back-btn { display: inline-flex; align-items: center; gap: 0.375rem; background: none; border: none; color: #64748b; font-size: 0.82rem; font-family: 'Be Vietnam Pro', sans-serif; font-weight: 500; cursor: pointer; padding: 0; margin-bottom: 1.5rem; transition: color 0.15s; }
-.rg-back-btn:hover { color: rgb(0, 85, 141); }
+.rg-mobile-unit {
+    margin-top: 5px;
+}
+
+.rg-mobile-unit p {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.65);
+    margin: 0;
+    line-height: 1.5;
+    text-transform: uppercase;
+    text-align: left;
+}
+
+.rg-mobile-logo > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
+}
+
+/* ═══════════════════════════════
+   FORM ELEMENTS
+═══════════════════════════════ */
+
+.rg-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 0.82rem;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 1.5rem;
+    transition: color 0.15s;
+}
+.rg-back-btn:hover { color: #00558d; }
 
 .rg-header { margin-bottom: 1.5rem; }
-.rg-title { font-size: 1.6rem; font-weight: 700; color: #0f172a; margin: 0 0 0.3rem; }
-.rg-subtitle { font-size: 0.85rem; color: #64748b; margin: 0; }
 
-.rg-error { display: flex; align-items: center; gap: 0.5rem; background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 0.6rem 0.875rem; border-radius: 0.625rem; font-size: 0.85rem; margin-bottom: 1.25rem; animation: rg-shake 0.35s ease; }
-.rg-error-dot { width: 6px; height: 6px; border-radius: 50%; background: #dc2626; flex-shrink: 0; }
-@keyframes rg-shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 60% { transform: translateX(5px); } }
+.rg-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.3rem;
+}
+
+.rg-subtitle {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.rg-error {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 0.6rem 0.875rem;
+    border-radius: 0.625rem;
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+    animation: rg-shake 0.35s ease;
+}
+
+.rg-error-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #dc2626;
+    flex-shrink: 0;
+}
+
+@keyframes rg-shake {
+    0%,100% { transform: translateX(0); }
+    20%     { transform: translateX(-5px); }
+    60%     { transform: translateX(5px); }
+}
 
 .rg-field-group { margin-bottom: 1rem; }
-.rg-field-label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 0.4rem; }
-.rg-field-wrap { display: flex; align-items: center; gap: 0.625rem; border: 1.5px solid #e2e8f0; border-radius: 0.75rem; padding: 0.65rem 0.875rem; background: #fafbfd; transition: border-color 0.18s, box-shadow 0.18s, background 0.18s; }
-.rg-field-wrap:focus-within { border-color: rgb(0, 85, 141); background: #fff; box-shadow: 0 0 0 3px rgba(0,85,141,0.1); }
+
+.rg-field-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.4rem;
+}
+
+.rg-field-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 0.65rem 0.875rem;
+    background: #fafbfd;
+    transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+
+.rg-field-wrap:focus-within {
+    border-color: #00558d;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0,85,141,0.1);
+}
+
 .rg-field-wrap.has-value { border-color: #93c5fd; background: #fff; }
+
 .rg-field-icon { color: #94a3b8; flex-shrink: 0; transition: color 0.18s; }
-.rg-field-wrap:focus-within .rg-field-icon { color: rgb(0, 85, 141); }
-.rg-field-input { flex: 1; border: none; outline: none; font-size: 0.95rem; font-family: 'Be Vietnam Pro', sans-serif; color: #0f172a; background: transparent; }
+.rg-field-wrap:focus-within .rg-field-icon { color: #00558d; }
+
+.rg-field-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.95rem;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    color: #0f172a;
+    background: transparent;
+}
 .rg-field-input::placeholder { color: #cbd5e1; }
 .rg-field-input:disabled { opacity: 0.55; }
-.rg-eye-btn { background: none; border: none; cursor: pointer; color: #94a3b8; padding: 2px; display: flex; align-items: center; transition: color 0.15s; }
-.rg-eye-btn:hover { color: rgb(0, 85, 141); }
 
-.rg-submit-btn { width: 100%; padding: 0.8rem 1.5rem; border: none; border-radius: 0.75rem; background: #0065B3;; color: #fff; font-family: 'Be Vietnam Pro', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s; box-shadow: 0 4px 14px rgba(0,85,141,0.38); letter-spacing: 0.02em; margin-top: 0.5rem; }
-.rg-submit-btn:hover:not(:disabled) { opacity: 0.93; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,85,141,0.45); }
+.rg-eye-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+}
+.rg-eye-btn:hover { color: #00558d; }
+
+.rg-submit-btn {
+    width: 100%;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    background: #0065B3;
+    color: #fff;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 14px rgba(0,85,141,0.38);
+    letter-spacing: 0.02em;
+    margin-top: 0.5rem;
+}
+
+.rg-submit-btn:hover:not(:disabled) {
+    opacity: 0.93;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0,85,141,0.45);
+}
 .rg-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-.rg-spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: rg-spin 0.7s linear infinite; }
+
+.rg-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(255,255,255,0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: rg-spin 0.7s linear infinite;
+}
 @keyframes rg-spin { to { transform: rotate(360deg); } }
 
-.rg-login-row { margin-top: 1.25rem; text-align: center; font-size: 0.85rem; color: #64748b; display: flex; align-items: center; justify-content: center; gap: 0.375rem; }
-.rg-login-link { background: none; border: none; color: rgb(0, 85, 141); font-weight: 600; cursor: pointer; font-family: 'Be Vietnam Pro', sans-serif; font-size: 0.85rem; padding: 0; transition: color 0.15s; }
+.rg-login-row {
+    margin-top: 1.25rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+}
+
+.rg-login-link {
+    background: none;
+    border: none;
+    color: #00558d;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 0.85rem;
+    padding: 0;
+    transition: color 0.15s;
+}
 .rg-login-link:hover { color: #dc2626; text-decoration: underline; }
 
-.rg-success-state { display: flex; flex-direction: column; align-items: center; gap: 1rem; text-align: center; padding: 1rem 0; }
-.rg-success-icon-wrap { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #d1fae5, #a7f3d0); display: flex; align-items: center; justify-content: center; color: #059669; }
-.rg-success-title { font-size: 1.3rem; font-weight: 700; color: #0f172a; margin: 0; }
-.rg-success-sub { font-size: 0.85rem; color: #64748b; margin: 0; }
+.rg-success-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+    padding: 1rem 0;
+}
 
-.rg-footer { margin-top: 1.75rem; font-size: 0.73rem; color: #94a3b8; text-align: center; }
+.rg-success-icon-wrap {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #059669;
+}
+
+.rg-success-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.rg-success-sub {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.rg-footer {
+    margin-top: 1.75rem;
+    font-size: 0.73rem;
+    color: #94a3b8;
+    text-align: center;
+}
+
+/* ═══════════════════════════════
+   MOBILE RESPONSIVE ≤ 768px
+═══════════════════════════════ */
 
 @media (max-width: 768px) {
     .rg-brand { display: none; }
-    .rg-mobile-logo { display: flex; }
-    .rg-form-panel { background: #fff; justify-content: flex-start; padding-top: 0; }
-    .rg-card { box-shadow: none; border-radius: 0; padding: 2rem 1.5rem; max-width: 100%; min-height: 100vh; }
-}
 
-.rg-brand-unit-info {
-    margin: 1.2rem 0;
-    padding: 0.8rem 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-}
+    .rg-form-panel {
+        background: #fff;
+        justify-content: flex-start;
+        align-items: stretch;
+        padding: 0;
+    }
 
-.rg-brand-faculty {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #ffffff;
-    margin: 0;
-    letter-spacing: 0.03em;
-}
+    .rg-mobile-logo {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+        background: #0065B3;
+        padding: 3rem 1.5rem 1.5rem;
+        width: 100%;
+    }
 
-.rg-brand-department {
-    font-size: 0.8rem;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.85);
-    margin-top: 0.3rem;
-    text-transform: uppercase;
+    .rg-mobile-logo-img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .rg-card {
+        box-shadow: none;
+        border-radius: 0;
+        padding: 2rem 1.5rem;
+        max-width: 100%;
+    }
+
+    .rg-footer {
+        padding: 0 1.5rem 2rem;
+        margin-top: 1rem;
+    }
 }

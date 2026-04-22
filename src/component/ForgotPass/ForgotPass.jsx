@@ -53,22 +53,21 @@ function ForgotPass({ onNavigate }) {
             </div>
 
             <div className="fp-form-panel">
-                <div className="fp-card">
-                    <div className="fp-mobile-logo">
-                        <img src={logoHCMUTE} alt="HCM-UTE" className="fp-mobile-logo-img" />
-                        <div>
-                            <div className="fp-mobile-abbr">HCM·UTE</div>
-                            <div className="fp-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
+                <div className="fp-mobile-logo">
+                    <img src={logoHCMUTE} alt="HCM-UTE" className="fp-mobile-logo-img" />
+                    <div>
+                        <div className="fp-mobile-abbr">HCM·UTE</div>
+                        <div className="fp-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
 
 
-                            <div className="fp-mobile-unit">
-                                <p>KHOA THỜI TRANG  &amp; DU LỊCH</p>
-                                <p>BỘ MÔN CÔNG NGHỆ MAY</p>
-                            </div>
+                        <div className="fp-mobile-unit">
+                            <p>KHOA THỜI TRANG  &amp; DU LỊCH</p>
+                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
                         </div>
-
                     </div>
 
+                </div>
+                <div className="fp-card">
                     <button className="fp-back-btn" onClick={() => onNavigate('login')}>
                         <ArrowLeft size={15} /> {t('back_to_login')}
                     </button>

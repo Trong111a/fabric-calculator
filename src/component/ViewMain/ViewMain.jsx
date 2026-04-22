@@ -130,6 +130,8 @@ export default function ViewMain({ user, onLogout }) {
             ctx.translate(rulerPos.x, rulerPos.y);
             ctx.rotate((rulerAngle * Math.PI) / 180);
             const rw = Math.max(28, W / 28);
+
+            // Thân thước
             ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 12;
             ctx.shadowOffsetX = 3; ctx.shadowOffsetY = 3;
             ctx.fillStyle = 'rgba(255,255,255,0.97)';
@@ -137,35 +139,58 @@ export default function ViewMain({ user, onLogout }) {
             ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
             ctx.strokeStyle = '#6366f1'; ctx.lineWidth = Math.max(2, W / 300);
             ctx.strokeRect(-rw / 2, 0, rw, rulerLength);
-            const ppc = rulerLength / 30; const fs = Math.max(10, W / 80);
+
+            const ppc = rulerLength / 30;
+            const fs = Math.max(10, W / 80);
+
+            // Vẽ text TRƯỚC, vạch SAU để text không bị đè
+            // i=0 → y=0 (núm/đầu thước), i=30 → y=rulerLength
             for (let i = 0; i <= 30; i++) {
-                const y = i * ppc; const major = i % 5 === 0;
-                ctx.strokeStyle = major ? '#4f46e5' : '#bbb';
-                ctx.lineWidth = major ? Math.max(1.5, W / 500) : 1;
-                ctx.beginPath();
-                ctx.moveTo(major ? -rw / 2 : -rw / 4, y);
-                ctx.lineTo(major ? rw / 2 : rw / 4, y);
-                ctx.stroke();
-                if (major && i > 0) {
-                    ctx.fillStyle = '#1e1b4b'; ctx.font = `bold ${fs}px Arial`;
-                    ctx.textAlign = 'center'; ctx.fillText(i, 0, y - fs * 0.3);
-                }
-                if (i === 0) {
+                const y = i * ppc;
+                const major = i % 5 === 0;
+
+                if (major) {
+                    ctx.save();
+                    ctx.translate(rw / 2 + fs * 1.2, y); // đặt text bên PHẢI thước
+                    ctx.rotate(-(rulerAngle * Math.PI) / 180);
                     ctx.fillStyle = '#1e1b4b';
                     ctx.font = `bold ${fs}px Arial`;
                     ctx.textAlign = 'center';
-                    ctx.fillText('0', 0, fs);
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(String(i), 0, 0);
+                    ctx.restore();
                 }
             }
+
+            // Vẽ vạch SAU text
+            for (let i = 0; i <= 30; i++) {
+                const y = i * ppc;
+                const major = i % 5 === 0;
+                ctx.strokeStyle = major ? '#4f46e5' : '#bbb';
+                ctx.lineWidth = major ? Math.max(1.5, W / 500) : 1;
+                ctx.beginPath();
+                ctx.moveTo(-rw / 2, y);
+                ctx.lineTo(major ? rw / 2 : rw / 4, y);
+                ctx.stroke();
+            }
+
+            // Núm tròn tại y=0 (đầu thước = số 0)
             const hr = Math.max(8, Math.min(16, 12 * displayScale));
             ctx.fillStyle = '#6366f1';
             ctx.shadowColor = 'rgba(99,102,241,0.55)'; ctx.shadowBlur = 16;
-            ctx.beginPath(); ctx.arc(0, rulerLength, hr, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(0, 0, hr, 0, Math.PI * 2); ctx.fill();
             ctx.shadowBlur = 0;
             ctx.strokeStyle = '#fff'; ctx.lineWidth = Math.max(2.5, W / 380); ctx.stroke();
-            ctx.fillStyle = '#fff'; ctx.font = `bold ${hr * 0.85}px Arial`;
+
+            ctx.save();
+            ctx.translate(0, 0);
+            ctx.rotate(-(rulerAngle * Math.PI) / 180);
+            ctx.fillStyle = '#fff';
+            ctx.font = `bold ${hr * 0.85}px Arial`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText('≡', 0, rulerLength); ctx.textBaseline = 'alphabetic';
+            ctx.fillText('≡', 0, 0);
+            ctx.restore();
+
             ctx.restore();
         }
 
