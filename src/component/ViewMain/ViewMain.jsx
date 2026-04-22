@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../services/api';
-import ProjectManager from '../ProjectManager/ProjectManager';
+// import ProjectManager from '../ProjectManager/ProjectManager';
 import './ViewMain.css';
 import backgroundImg from '../../assets/images/background.png';
 
@@ -36,7 +36,7 @@ function rgbToHsv(r, g, b) {
     return { h: Math.round(h * 180), s: Math.round(s * 255), v: Math.round(v * 255) };
 }
 
-export default function ViewMain({ user, onLogout }) {
+export default function ViewMain({ user, onLogout, onOpenProjects }) {
     const { t, i18n } = useTranslation();
     const [image, setImage] = useState(null);
     const [rawImageData, setRawImageData] = useState(null);
@@ -60,7 +60,7 @@ export default function ViewMain({ user, onLogout }) {
     const [pickedRgb, setPickedRgb] = useState(null);
 
     const [selectedProject, setSelectedProject] = useState(null);
-    const [showProjectManager, setShowProjectManager] = useState(false);
+    // const [showProjectManager, setShowProjectManager] = useState(false);
 
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [fileName, setFileName] = useState('');
@@ -465,14 +465,14 @@ export default function ViewMain({ user, onLogout }) {
     ];
     const stepIdx = STEPS.findIndex(s => s.key === step);
 
-    if (showProjectManager) {
-        return (
-            <ProjectManager
-                onSelectProject={p => { setSelectedProject(p); setShowProjectManager(false); }}
-                onBack={() => setShowProjectManager(false)}
-            />
-        );
-    }
+    // if (showProjectManager) {
+    //     return (
+    //         <ProjectManager
+    //             onSelectProject={p => { setSelectedProject(p); setShowProjectManager(false); }}
+    //             onBack={() => setShowProjectManager(false)}
+    //         />
+    //     );
+    // }
 
     const toggleLanguage = () => {
         const newLang = i18n.language === 'vi' ? 'en' : 'vi';
@@ -495,7 +495,7 @@ export default function ViewMain({ user, onLogout }) {
                     {selectedProject && (
                         <div className="vm-project-chip"><Folder size={13} /><span>{selectedProject.name}</span></div>
                     )}
-                    <button className="vm-folder-btn" onClick={() => setShowProjectManager(true)}>
+                    <button className="vm-folder-btn" onClick={onOpenProjects}>
                         <Folder size={15} /><span>{selectedProject ? t('change_folder') : t('folder')}</span>
                     </button>
                     <div className="vm-user-chip">
@@ -811,4 +811,5 @@ export default function ViewMain({ user, onLogout }) {
 ViewMain.propTypes = {
     user: PropTypes.shape({ name: PropTypes.string }),
     onLogout: PropTypes.func.isRequired,
+    onOpenProjects: PropTypes.func.isRequired,
 };

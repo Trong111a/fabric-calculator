@@ -3,18 +3,18 @@ import PropTypes from 'prop-types';
 import { Folder, Plus, Trash2, ArrowLeft, FolderOpen, Package, Layers, TrendingUp, X, Check, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../services/api';
-import ProjectDetail from '../ProjectDetail/ProjectDetail';
+// import ProjectDetail from '../ProjectDetail/ProjectDetail';
 import './ProjectManager.css';
 import backgroundImg from '../../assets/images/background.png';
 
-function ProjectManager({ onBack }) {
+function ProjectManager({ onBack, onOpenProject }) {
     const { t } = useTranslation();
     const [projects, setProjects] = useState([]);
     const [showCreate, setShowCreate] = useState(false);
     const [newProjectName, setNewProjectName] = useState('');
     const [loading, setLoading] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
-    const [openedProject, setOpenedProject] = useState(null);
+    // const [openedProject, setOpenedProject] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [editingName, setEditingName] = useState('');
 
@@ -41,9 +41,9 @@ function ProjectManager({ onBack }) {
         catch { alert(t('delete_failed')); } finally { setDeletingId(null); }
     };
 
-    if (openedProject) {
-        return <ProjectDetail project={openedProject} onBack={() => { setOpenedProject(null); loadProjects(); }} />;
-    }
+    // if (openedProject) {
+    //     return <ProjectDetail project={openedProject} onBack={() => { setOpenedProject(null); loadProjects(); }} />;
+    // }
 
     const totalArea = projects.reduce((sum, p) => sum + (Number(p.total_area_cm2) || 0), 0);
     const totalFiles = projects.reduce((sum, p) => sum + (Number(p.file_count) || 0), 0);
@@ -155,7 +155,7 @@ function ProjectManager({ onBack }) {
                             return (
                                 <div key={project.id}
                                     className={`pm-card${deletingId === project.id ? ' is-deleting' : ''}`}
-                                    onClick={() => { if (deletingId === project.id) return; setOpenedProject(project); }}
+                                    onClick={() => { if (deletingId === project.id) return; onOpenProject(project); }}
                                 >
                                     <div className="pm-card-strip" style={{ background: `hsl(${hue}, 70%, 55%)` }} />
                                     <div className="pm-card-icon-wrap" style={{ background: `hsl(${hue}, 70%, 96%)`, color: `hsl(${hue}, 60%, 45%)` }}>
@@ -219,5 +219,8 @@ function ProjectManager({ onBack }) {
     );
 }
 
-ProjectManager.propTypes = { onBack: PropTypes.func.isRequired };
+ProjectManager.propTypes = { 
+  onBack: PropTypes.func.isRequired,
+  onOpenProject: PropTypes.func.isRequired,
+};
 export default ProjectManager;
