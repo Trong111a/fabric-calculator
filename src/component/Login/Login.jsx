@@ -23,7 +23,8 @@ function Login({ onLoginSuccess, onNavigate }) {
             api.setToken(data.token);
             onLoginSuccess(data.user);
         } catch (err) {
-            setError(err.message || t('login_failed'));
+            const code = err.code || 'UNKNOWN_ERROR';
+            setError(t(`errors.${code}`, { defaultValue: t('login_failed') }));
         } finally {
             setLoading(false);
         }
@@ -164,7 +165,7 @@ function Login({ onLoginSuccess, onNavigate }) {
                     <div className="about-divider" />
                     <p
                         className="about-product"
-                        dangerouslySetInnerHTML={{ __html: t('about_project') }}
+                        dangerouslySetInnerHTML={{ __html: t('about_folder') }}
                     />
 
                     <p

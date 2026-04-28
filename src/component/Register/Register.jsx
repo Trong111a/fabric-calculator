@@ -15,12 +15,17 @@ function Register({ onNavigate }) {
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
     const handleRegister = async () => {
         setError('');
         if (!form.name || !form.email || !form.password) return setError(t('error_fill_all'));
-        if (form.password.length < 6) return setError(t('error_pw_short'));
+        if (!emailRegex.test(form.email)) return setError(t('error_email_invalid'));
+        if (form.password.length < 8) return setError(t('error_pw_short'));
+        if (!strongRegex.test(form.password)) return setError(t('error_pw_complex'));
         if (form.password !== form.confirmPassword) return setError(t('error_pw_mismatch'));
         setLoading(true);
         try {
@@ -28,7 +33,8 @@ function Register({ onNavigate }) {
             setSuccess(true);
             setTimeout(() => onNavigate('login'), 2000);
         } catch (err) {
-            setError(err.message || 'Error');
+            const code = err.code || 'UNKNOWN_ERROR';
+            setError(t(`errors.${code}`, { defaultValue: 'Error' }));
         } finally {
             setLoading(false);
         }
@@ -88,7 +94,7 @@ function Register({ onNavigate }) {
                                 <CheckCircle size={36} />
                             </div>
                             <h2 className="rg-success-title">{t('register_success')}</h2>
-                            <p className="rg-success-sub">Đang chuyển hướng đến trang đăng nhập...</p>
+                            <p className="rg-success-sub">{t('redirecting_login')}</p>
                         </div>
                     ) : (
                         <>

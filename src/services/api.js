@@ -53,7 +53,11 @@ class ApiService {
             throw new Error(`Server trả về không phải JSON (${res.status}): ${text.slice(0, 100)}`);
         }
 
-        if (!res.ok) throw new Error(data.error || 'Lỗi server');
+        if (!res.ok) {
+            const error = new Error(data.code || data.error || 'UNKNOWN_ERROR');
+            error.code = data.code;
+            throw error;
+        }
         return prefixImageUrls(data);
     }
 

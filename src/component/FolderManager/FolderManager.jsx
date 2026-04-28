@@ -31,7 +31,7 @@ function ProjectManager({ onBack, onOpenFolder }) {
         try {
             await api.createFolder({ name: newFolderName, description: '' });
             setNewFolderName(''); setShowCreate(false); loadFolders();
-        } catch { alert(t('create_folder') + ' failed'); } finally { setLoading(false); }
+        } catch { alert(t('create_folder_failed')); } finally { setLoading(false); }
     };
 
     const deleteFolder = async (id) => {
@@ -70,7 +70,7 @@ function ProjectManager({ onBack, onOpenFolder }) {
             loadFolders();
         } catch (err) {
             console.error('Rename error:', err);
-            alert('Lỗi: ' + err.message);
+            alert(t('update_error', { msg: err.message }));
         }
     };
 
@@ -187,10 +187,10 @@ function ProjectManager({ onBack, onOpenFolder }) {
                                     <div className="pm-card-actions">
                                         {editingId === folder.id ? (
                                             <>
-                                                <button className="pm-action-btn pm-action-save" onClick={e => confirmRename(e, folder.id)} title="Lưu">
+                                                <button className="pm-action-btn pm-action-save" onClick={e => confirmRename(e, folder.id)} title={t('save')}>
                                                     <Check size={14} />
                                                 </button>
-                                                <button className="pm-action-btn pm-action-cancel" onClick={cancelRename} title="Hủy">
+                                                <button className="pm-action-btn pm-action-cancel" onClick={cancelRename} title={t('cancel')}>
                                                     <X size={14} />
                                                 </button>
                                             </>

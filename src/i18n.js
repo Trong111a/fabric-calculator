@@ -21,6 +21,8 @@ const resources = {
             "register_subtitle": "Create an account to use the system",
             "full_name": "Full Name",
             "full_name_placeholder": "Enter your full name",
+            "redirecting_login": "Redirecting to login page...",
+            "error_email_invalid": "Invalid email format",
 
             "about_folder": "<strong>PATECH</strong> – Pattern Analysis To Estimate Costing & Handling is a graduation folder developed by a group of students majoring in <em>Garment Technology</em>,<br/>Class K22 – Faculty of Fashion & Tourism – Ho Chi Minh City University of Technology and Education.",
             "about_desc": "Project Title: <em>&quot;Research and Proposal of a Supporting Tool for Material Consumption Calculation Based on Pattern Data&quot;</em> — aimed at small and medium-sized garment enterprises,helping to reduce the time required for calculating material consumption from technical patterns and actual products.",
@@ -57,11 +59,12 @@ const resources = {
             "pw_strong": "Strong",
             "error_pw_complex": "Password must include uppercase, lowercase, number, and special character",
 
-            // Project Manager
+            // Folder Manager
             "folders": "Folders",
             "manage_folders": "Manage Folders",
             "create_folder": "Create folder",
             "creating_folder": "Creating...",
+            "create_folder_failed": "Create folder failed",
             "folder_name": "Folder Name",
             "folder_name_placeholder": "Enter folder name...",
             "delete_folder": "Delete Folder",
@@ -74,20 +77,21 @@ const resources = {
             "empty_folders_sub": "Create a folder to organize your patterns",
             "create_first_folder": "Create First Folder",
             "confirm_delete_folder": "Delete this folder?",
+            "rename": "Rename",
 
-            // Project Detail – header & tabs
+            // Folder Detail – header & tabs
             "back": "Back",
             "list_tab": "List ({{count}})",
             "scan_tab": "Auto Scan",
             "manual_tab": "Draw Polygon",
             "export_tab": "Export CSV",
 
-            // Project Detail – stats
+            // Folder Detail – stats
             "stat_details": "Details",
             "stat_quantity": "Total Quantity",
             "stat_total_area": "Total Area",
 
-            // Project Detail – list
+            // Folder Detail – list
             "loading": "Loading...",
             "folder_empty": "Empty Folder",
             "folder_empty_sub": "No details saved in this folder yet",
@@ -96,7 +100,7 @@ const resources = {
             "delete_confirm": "Delete this detail?",
             "edit_name_qty": "Edit name / quantity",
 
-            // Project Detail – edit modal
+            // Folder Detail – edit modal
             "edit_detail": "Edit Detail",
             "detail_name": "Detail Name",
             "detail_name_placeholder": "Detail name...",
@@ -111,7 +115,7 @@ const resources = {
             "saving": "Saving...",
             "save_to_folder": "Save to Folder",
 
-            // Project Detail – view modal
+            // FolderDetail – view modal
             "measured_at": "Measured at",
             "px_per_cm": "px/cm ratio",
             "vertices": "Vertices",
@@ -219,7 +223,37 @@ const resources = {
             "enter_detail_name": "Please enter detail name",
             "no_area": "No area yet",
             "link_invalid": "Link is invalid or has expired",
-            "reset_failed": "Reset failed, please try again"
+            "reset_failed": "Reset failed, please try again",
+
+            // Backend error codes
+            "errors": {
+                // Generic
+                "SERVER_ERROR": "A server error occurred. Please try again.",
+                "MISSING_DATA": "Please fill in all required fields.",
+                "NOT_FOUND": "The requested item was not found.",
+                "UNKNOWN_ERROR": "An unknown error occurred.",
+
+                // Auth – register
+                "EMAIL_ALREADY_EXISTS": "This email is already registered.",
+                "EMAIL_INVALID": "Invalid email format.",
+                "PASSWORD_WEAK": "Password must include uppercase, lowercase, number, and special character.",
+
+                // Auth – login
+                "INVALID_CREDENTIALS": "Incorrect email or password.",
+
+                // Auth – forgot/reset password
+                "RESET_EMAIL_SENT": "Password reset email sent. Check your inbox.",
+                "MISSING_EMAIL": "Please enter your email address.",
+                "TOKEN_INVALID_OR_EXPIRED": "This reset link is invalid or has expired. Please request a new one.",
+                "PASSWORD_TOO_SHORT": "Password must be at least 8 characters.",
+
+                // Measurements
+                "INVALID_QUANTITY": "Quantity must be a whole number greater than 0.",
+
+                // Projects
+                "DELETED": "Deleted successfully.",
+                "ADDED": "Added to folder successfully."
+            }
         }
     },
     vi: {
@@ -245,6 +279,8 @@ const resources = {
             "about_students": "Sinh viên thực hiện",
             "about_supervisor": "Giảng viên hướng dẫn",
             "about_support": "Hỗ trợ kỹ thuật",
+            "redirecting_login": "Đang chuyển hướng đến trang đăng nhập...",
+            "error_email_invalid": "Định dạng email không hợp lệ",
 
             "faculty": "KHOA THỜI TRANG & DU LỊCH",
             "major": "NGÀNH CÔNG NGHỆ MAY",
@@ -275,11 +311,12 @@ const resources = {
             "pw_strong": "Mạnh",
             "error_pw_complex": "Mật khẩu phải có chữ hoa, chữ thường, số và ký tự đặc biệt",
 
-            // Project Manager
+            // Folder Manager
             "folders": "Thư mục",
             "manage_folders": "Quản lý Thư mục",
             "create_folder": "Tạo thư mục",
             "creating_folder": "Đang tạo...",
+            "create_folder_failed": "Tạo thư mục thất bại",
             "folder_name": "Tên thư mục",
             "folder_name_placeholder": "Nhập tên thư mục...",
             "delete_folder": "Xóa thư mục",
@@ -292,20 +329,21 @@ const resources = {
             "empty_folders_sub": "Tạo thư mục để tổ chức các bản rập của bạn",
             "create_first_folder": "Tạo thư mục đầu tiên",
             "confirm_delete_folder": "Xóa thư mục này?",
+            "rename": "Đổi tên",
 
-            // Project Detail – header & tabs
+            // Folder Detail – header & tabs
             "back": "Quay lại",
             "list_tab": "Danh sách ({{count}})",
             "scan_tab": "Đo tự động",
             "manual_tab": "Vẽ polygon",
             "export_tab": "Xuất CSV",
 
-            // Project Detail – stats
+            // Folder Detail – stats
             "stat_details": "Số chi tiết",
             "stat_quantity": "Tổng số lượng",
             "stat_total_area": "Tổng diện tích",
 
-            // Project Detail – list
+            // Folder Detail – list
             "loading": "Đang tải...",
             "folder_empty": "Folder trống",
             "folder_empty_sub": "Chưa có chi tiết nào được lưu vào folder này",
@@ -314,7 +352,7 @@ const resources = {
             "delete_confirm": "Xóa chi tiết này?",
             "edit_name_qty": "Sửa tên / số lượng",
 
-            // Project Detail – edit modal
+            // Folder Detail – edit modal
             "edit_detail": "Sửa chi tiết",
             "detail_name": "Tên chi tiết",
             "detail_name_placeholder": "Tên chi tiết...",
@@ -329,7 +367,7 @@ const resources = {
             "saving": "Đang lưu...",
             "save_to_folder": "Lưu vào folder",
 
-            // Project Detail – view modal
+            // Folder Detail – view modal
             "measured_at": "Đo lúc:",
             "px_per_cm": "Tỷ lệ px/cm",
             "vertices": "Số đỉnh",
@@ -427,7 +465,7 @@ const resources = {
             "login_failed": "Đăng nhập thất bại",
             "register_success": "Đăng ký thành công!",
             "error_fill_all": "Vui lòng điền đầy đủ!",
-            "error_pw_short": "Mật khẩu ≥ 6 ký tự!",
+            "error_pw_short": "Mật khẩu ≥ 8 ký tự!",
             "error_pw_mismatch": "Mật khẩu xác nhận không khớp!",
             "delete_failed": "Xóa thất bại",
             "save_error": "Lỗi lưu: {{msg}}",
@@ -437,7 +475,37 @@ const resources = {
             "enter_detail_name": "Vui lòng nhập tên chi tiết",
             "no_area": "Chưa có diện tích",
             "link_invalid": "Link không hợp lệ hoặc đã hết hạn",
-            "reset_failed": "Đặt lại thất bại, thử lại sau"
+            "reset_failed": "Đặt lại thất bại, thử lại sau",
+
+            // Backend error codes
+            "errors": {
+                // Generic
+                "SERVER_ERROR": "Đã xảy ra lỗi máy chủ. Vui lòng thử lại.",
+                "MISSING_DATA": "Vui lòng điền đầy đủ thông tin bắt buộc.",
+                "NOT_FOUND": "Không tìm thấy dữ liệu yêu cầu.",
+                "UNKNOWN_ERROR": "Đã xảy ra lỗi không xác định.",
+
+                // Auth – register
+                "EMAIL_ALREADY_EXISTS": "Email này đã được đăng ký.",
+                "EMAIL_INVALID": "Định dạng email không hợp lệ.",
+                "PASSWORD_WEAK": "Mật khẩu phải có chữ hoa, chữ thường, số và ký tự đặc biệt.",
+
+                // Auth – login
+                "INVALID_CREDENTIALS": "Email hoặc mật khẩu không đúng.",
+
+                // Auth – forgot/reset password
+                "RESET_EMAIL_SENT": "Đã gửi email đặt lại mật khẩu. Kiểm tra hộp thư của bạn.",
+                "MISSING_EMAIL": "Vui lòng nhập địa chỉ email.",
+                "TOKEN_INVALID_OR_EXPIRED": "Link đặt lại không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu link mới.",
+                "PASSWORD_TOO_SHORT": "Mật khẩu phải có ít nhất 8 ký tự.",
+
+                // Measurements
+                "INVALID_QUANTITY": "Số lượng phải là số nguyên lớn hơn 0.",
+
+                // Projects
+                "DELETED": "Đã xóa thành công.",
+                "ADDED": "Đã thêm vào thư mục thành công."
+            }
         }
     }
 };

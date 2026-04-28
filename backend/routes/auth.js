@@ -16,6 +16,14 @@ router.post('/register', async (req, res) => {
         if (!email || !password || !name)
             return res.status(400).json({ code: 'MISSING_DATA' });
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email))
+            return res.status(400).json({ code: 'EMAIL_INVALID' });
+
+        const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        if (!strongRegex.test(password))
+            return res.status(400).json({ code: 'PASSWORD_WEAK' });
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await query(
             `INSERT INTO users (email, password_hash, name) 
@@ -28,8 +36,8 @@ router.post('/register', async (req, res) => {
         res.status(201).json({ user, token });
     } catch (err) {
         if (err.code === '23505')
-            return res.status(409).json({ code: 'EMAIL_ALREADY_EXISTS'  });
-        res.status(500).json({code: 'SERVER_ERROR' });
+            return res.status(409).json({ code: 'EMAIL_ALREADY_EXISTS' });
+        res.status(500).json({ code: 'SERVER_ERROR' });
     }
 });
 
@@ -44,7 +52,7 @@ router.post('/login', async (req, res) => {
         const user = result.rows[0];
         const isMatch = await bcrypt.compare(password, user.password_hash);
         if (!isMatch)
-            return res.status(401).json({code: 'INVALID_CREDENTIALS' });
+            return res.status(401).json({ code: 'INVALID_CREDENTIALS' });
 
         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
         await query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
@@ -65,7 +73,7 @@ router.get('/me', auth, (req, res) => {
 router.post('/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
-        if (!email) return res.status(400).json({code: 'MISSING_EMAIL' });
+        if (!email) return res.status(400).json({ code: 'MISSING_EMAIL' });
 
         const result = await query(
             'SELECT id, name FROM users WHERE email = $1 AND is_active = true',
@@ -73,7 +81,7 @@ router.post('/forgot-password', async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-           return res.json({ code: 'RESET_EMAIL_SENT' });
+            return res.json({ code: 'RESET_EMAIL_SENT' });
         }
 
         const user = result.rows[0];
@@ -212,7 +220,7 @@ router.post('/reset-password', async (req, res) => {
         );
 
         if (result.rows.length === 0)
-            return res.status(400).json({code: 'TOKEN_INVALID_OR_EXPIRED' });
+            return res.status(400).json({ code: 'TOKEN_INVALID_OR_EXPIRED' });
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await query(
