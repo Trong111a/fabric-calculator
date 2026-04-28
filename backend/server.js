@@ -43,7 +43,7 @@ app.use('/uploads', (req, res, next) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/measurements', measurementRoutes);
-app.use('/api/projects', projectRoutes);
+app.use('/api/folders', projectRoutes);
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', time: new Date().toISOString() });
@@ -60,5 +60,5 @@ app.listen(PORT, () => {
 });
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });

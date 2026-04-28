@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../services/api';
-import './ProjectDetail.css';
+import './FolderDetail.css';
 import backgroundImg from '../../assets/images/background.png';
 
 function calcArea(pts, ppc) {
@@ -40,7 +40,7 @@ function rgbToHsv(r, g, b) {
 /* ══════════════════════════════════════════════════════════
    MANUAL DRAW PANEL
 ══════════════════════════════════════════════════════════ */
-function ManualDrawPanel({ project, onSaved }) {
+function ManualDrawPanel({ folder, onSaved }) {
     const { t } = useTranslation();
     const [image, setImage] = useState(null);
     const [step, setStep] = useState('upload');
@@ -289,7 +289,7 @@ function ManualDrawPanel({ project, onSaved }) {
                 name: fileName.trim(), area_cm2: area, pixels_per_cm: pixelsPerCm,
                 polygon_points: points, image_width: image.width, image_height: image.height,
                 image_data: canvasRef.current.toDataURL('image/jpeg', 0.75),
-                quantity, project_id: project.id,
+                quantity, folder_id: folder.id,
             });
             setSavedMeasurements(prev => [...prev, { ...saved, name: fileName.trim(), quantity, area_cm2: area }]);
             setShowSaveModal(false); setStep('result'); onSaved?.();
@@ -559,7 +559,7 @@ function ManualDrawPanel({ project, onSaved }) {
                         <button className="pd-modal-x" onClick={() => setShowSaveModal(false)}><X size={18} /></button>
                         <h3>{t('save_detail_title')}</h3>
                         <p className="pd-qty-sub"
-                            dangerouslySetInnerHTML={{ __html: t('save_area_info', { area: (area / 10000).toFixed(4), folder: project.name }) }}
+                            dangerouslySetInnerHTML={{ __html: t('save_area_info', { area: (area / 10000).toFixed(4), folder: folder.name }) }}
                         />
                         <div className="pd-field-group">
                             <label className="pd-field-label">{t('detail_name_label')} <span style={{ color: '#ef4444' }}>*</span></label>
@@ -634,7 +634,7 @@ function ManualDrawPanel({ project, onSaved }) {
 /* ══════════════════════════════════════════════════════════
    SCAN PANEL
 ══════════════════════════════════════════════════════════ */
-function ScanPanel({ project, cvReady, onSaved }) {
+function ScanPanel({ folder, cvReady, onSaved }) {
     const { t } = useTranslation();
     const [image, setImage] = useState(null);
     const [rawImageData, setRawImageData] = useState(null);
@@ -966,7 +966,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                 name: fileName.trim(), area_cm2: area, pixels_per_cm: pixelsPerCm,
                 polygon_points: polygonPoints, image_width: image.width, image_height: image.height,
                 image_data: canvasRef.current.toDataURL('image/jpeg', 0.75),
-                quantity, project_id: project.id,
+                quantity, folder_id: folder.id,
             });
             setShowSaveModal(false); setStep('result'); onSaved?.();
         } catch (e) { alert(t('save_error', { msg: e.message })); } finally { setSaving(false); }
@@ -1018,7 +1018,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                     <div className="pd-upload-hero">
                         <div className="pd-upload-hero-icon"><Ruler size={48} color="white" /></div>
                         <h2>{t('scan_upload_title')}</h2>
-                        <p dangerouslySetInnerHTML={{ __html: t('scan_upload_sub', { name: project.name }) }} />
+                        <p dangerouslySetInnerHTML={{ __html: t('scan_upload_sub', { name: folder.name }) }} />
                     </div>
                     <input ref={uploadRef} type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
                     <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImageUpload} style={{ display: 'none' }} />
@@ -1052,7 +1052,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                                 {step === 'pick' && t('guide_pick_sub')}
                                 {step === 'scan' && (
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                                        <span translate="no">{t('ratio')}: {pixelsPerCm?.toFixed(2)} px/cm</span> · {project.name}
+                                        <span translate="no">{t('ratio')}: {pixelsPerCm?.toFixed(2)} px/cm</span> · {folder.name}
                                         {pickedRgb && (
                                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                                 · {t('pattern_color')}
@@ -1206,7 +1206,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
                         <button className="pd-modal-x" onClick={() => setShowSaveModal(false)}><X size={18} /></button>
                         <h3>{t('save_detail_title')}</h3>
                         <p className="pd-qty-sub"
-                            dangerouslySetInnerHTML={{ __html: t('save_area_info', { area: (area / 10000)?.toFixed(4), folder: project.name }) }}
+                            dangerouslySetInnerHTML={{ __html: t('save_area_info', { area: (area / 10000)?.toFixed(4), folder: folder.name }) }}
                         />
                         <div className="pd-field-group">
                             <label className="pd-field-label">{t('detail_name_label')} <span style={{ color: '#ef4444' }}>*</span></label>
@@ -1244,7 +1244,7 @@ function ScanPanel({ project, cvReady, onSaved }) {
 /* ══════════════════════════════════════════════════════════
    DOWNLOAD CSV
 ══════════════════════════════════════════════════════════ */
-function DownloadPanel({ project, measurements }) {
+function DownloadPanel({ folder, measurements }) {
     const { t } = useTranslation();
 
     const downloadCSV = () => {
@@ -1269,7 +1269,7 @@ function DownloadPanel({ project, measurements }) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${project.name}_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.csv`;
+        a.download = `${folder.name}_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.csv`;
         a.click(); URL.revokeObjectURL(url);
     };
 
@@ -1279,7 +1279,7 @@ function DownloadPanel({ project, measurements }) {
                 <span className="pd-guide-icon">📊</span>
                 <div>
                     <strong>{t('export_title')}</strong>
-                    <span dangerouslySetInnerHTML={{ __html: t('export_sub', { name: project.name }) }} />
+                    <span dangerouslySetInnerHTML={{ __html: t('export_sub', { name: folder.name }) }} />
                 </div>
             </div>
             <div className="pd-csv-preview">
@@ -1340,7 +1340,7 @@ function DownloadPanel({ project, measurements }) {
 /* ══════════════════════════════════════════════════════════
    PROJECT DETAIL — MAIN COMPONENT
 ══════════════════════════════════════════════════════════ */
-export default function ProjectDetail({ project, onBack }) {
+export default function ProjectDetail({ folder, onBack }) {
     const { t } = useTranslation();
     const [tab, setTab] = useState('list');
     const [measurements, setMeasurements] = useState([]);
@@ -1363,11 +1363,11 @@ export default function ProjectDetail({ project, onBack }) {
         } else check();
     }, []);
 
-    useEffect(() => { loadDetail(); }, [project.id]);
+    useEffect(() => { loadDetail(); }, [folder.id]);
 
     const loadDetail = async () => {
         setLoading(true);
-        try { const data = await api.getProject(project.id); setMeasurements(data.measurements || []); }
+        try { const data = await api.getFolder(folder.id); setMeasurements(data.measurements || []); }
         catch (err) { console.error(err); } finally { setLoading(false); }
     };
 
@@ -1416,7 +1416,7 @@ export default function ProjectDetail({ project, onBack }) {
                 <div className="pd-header-center">
                     <div className="pd-header-icon"><Folder size={22} color="#fff" /></div>
                     <div>
-                        <h1 className="pd-header-title">{project.name}</h1>
+                        <h1 className="pd-header-title">{folder.name}</h1>
                         <p className="pd-header-sub" translate="no">{measurements.length} {t('total_items')} · {(totalArea / 10000).toFixed(4)} m²</p>
                     </div>
                 </div>
@@ -1498,9 +1498,9 @@ export default function ProjectDetail({ project, onBack }) {
                 </>
             )}
 
-            {tab === 'scan' && <ScanPanel project={project} cvReady={cvReady} onSaved={() => { loadDetail(); setTab('list'); }} />}
-            {tab === 'manual' && <ManualDrawPanel project={project} cvReady={cvReady} onSaved={() => { loadDetail(); setTab('list'); }} />}
-            {tab === 'export' && <DownloadPanel project={project} measurements={measurements} />}
+            {tab === 'scan' && <ScanPanel folder={folder} cvReady={cvReady} onSaved={() => { loadDetail(); setTab('list'); }} />}
+            {tab === 'manual' && <ManualDrawPanel folder={folder} cvReady={cvReady} onSaved={() => { loadDetail(); setTab('list'); }} />}
+            {tab === 'export' && <DownloadPanel folder={folder} measurements={measurements} />}
 
             {selected && (
                 <div className="pd-modal-bg" onClick={() => setSelected(null)}>
@@ -1600,20 +1600,20 @@ export default function ProjectDetail({ project, onBack }) {
 }
 
 ScanPanel.propTypes = {
-    project: PropTypes.shape({ id: PropTypes.string.isRequired, name: PropTypes.string.isRequired }).isRequired,
+    folder: PropTypes.shape({ id: PropTypes.string.isRequired, name: PropTypes.string.isRequired }).isRequired,
     cvReady: PropTypes.bool.isRequired,
     onSaved: PropTypes.func,
 };
 ManualDrawPanel.propTypes = {
-    project: PropTypes.shape({ id: PropTypes.string.isRequired, name: PropTypes.string.isRequired }).isRequired,
+    folder: PropTypes.shape({ id: PropTypes.string.isRequired, name: PropTypes.string.isRequired }).isRequired,
     cvReady: PropTypes.bool,
     onSaved: PropTypes.func,
 };
 DownloadPanel.propTypes = {
-    project: PropTypes.shape({ name: PropTypes.string.isRequired }).isRequired,
+    folder: PropTypes.shape({ name: PropTypes.string.isRequired }).isRequired,
     measurements: PropTypes.array.isRequired,
 };
 ProjectDetail.propTypes = {
-    project: PropTypes.shape({ id: PropTypes.string.isRequired, name: PropTypes.string.isRequired }).isRequired,
+    folder: PropTypes.shape({ id: PropTypes.string.isRequired, name: PropTypes.string.isRequired }).isRequired,
     onBack: PropTypes.func.isRequired,
 };

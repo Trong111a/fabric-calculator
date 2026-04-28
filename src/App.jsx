@@ -4,14 +4,14 @@ import Register from './component/Register/Register';
 import ForgotPass from './component/ForgotPass/ForgotPass';
 import ResetPassword from './component/ResetPassword/ResetPassword';
 import ViewMain from './component/ViewMain/ViewMain';
-import ProjectManager from './component/ProjectManager/ProjectManager';
-import ProjectDetail from './component/ProjectDetail/ProjectDetail';
+import FolderManager from './component/FolderManager/FolderManager';
+import FolderDetail from './component/FolderDetail/FolderDetail';
 import { api } from './services/api';
 
 export default function App() {
   const [page, setPage] = useState(null);
   const [user, setUser] = useState(null);
-  const [openedProject, setOpenedProject] = useState(null);
+  const [openedFolder, setOpenedFolder] = useState(null);
 
   useEffect(() => {
     const path = window.location.pathname;
@@ -28,18 +28,18 @@ export default function App() {
       api.getMe()
         .then(data => {
           setUser(data.user);
-          if (path === '/projects') {
-            setPage('projects');
-          } else if (path.startsWith('/projects/')) {
-            const projectId = path.split('/projects/')[1];
-            api.getProject(projectId)
-              .then(projectData => {
-                setOpenedProject(projectData);
-                setPage('project-detail');
+          if (path === '/folders') {
+            setPage('folders');
+          } else if (path.startsWith('/folders/')) {
+            const folderId = path.split('/folders/')[1];
+            api.getFolder(folderId)
+              .then(folderData => {
+                setOpenedFolder(folderData);
+                setPage('folder-detail');
               })
               .catch(() => {
-                setPage('projects');
-                window.history.replaceState({}, '', '/projects');
+                setPage('folders');
+                window.history.replaceState({}, '', '/folders');
               });
           } else {
             setPage('main');
@@ -63,11 +63,11 @@ export default function App() {
       register: '/register',
       forgot: '/forgot',
       main: '/app',
-      projects: '/projects',
+      folders: '/folders',
       'reset-password': '/reset-password',
     };
     window.history.pushState({}, '', routes[p] || '/');
-    if (data) setOpenedProject(data);
+    if (data) setOpenedFolder(data);
     setPage(p);
   };
 
@@ -80,24 +80,24 @@ export default function App() {
   const logout = () => {
     api.clearToken();
     setUser(null);
-    setOpenedProject(null);
+    setOpenedFolder(null);
     window.history.pushState({}, '', '/');
     setPage('login');
   };
 
-  const openProject = (project) => {
-    window.history.pushState({}, '', `/projects/${project.id}`);
-    setOpenedProject(project);
-    setPage('project-detail');
+  const openFolder = (folder) => {
+    window.history.pushState({}, '', `/folders/${folder.id}`);
+    setOpenedFolder(folder);
+    setPage('folder-detail');
   };
 
-  const closeProject = () => {
-    window.history.pushState({}, '', '/projects');
-    setOpenedProject(null);
-    setPage('projects');
+  const closeFolder = () => {
+    window.history.pushState({}, '', '/folders');
+    setOpenedFolder(null);
+    setPage('folders');
   };
 
-  const closeProjects = () => {
+  const closeFolders = () => {
     window.history.pushState({}, '', '/app');
     setPage('main');
   };
@@ -116,8 +116,8 @@ export default function App() {
   if (page === 'register') return <Register onNavigate={nav} />;
   if (page === 'forgot') return <ForgotPass onNavigate={nav} />;
   if (page === 'reset-password') return <ResetPassword onNavigate={nav} />;
-  if (page === 'main') return <ViewMain user={user} onLogout={logout} onOpenProjects={() => nav('projects')} />;
-  if (page === 'projects') return <ProjectManager onBack={closeProjects} onOpenProject={openProject} />;
-  if (page === 'project-detail') return <ProjectDetail project={openedProject} onBack={closeProject} />;
+  if (page === 'main') return <ViewMain user={user} onLogout={logout} onOpenFolders={() => nav('folders')} />;
+  if (page === 'folders') return <FolderManager onBack={closeFolders} onOpenFolder={openFolder} />;
+  if (page === 'folder-detail') return <FolderDetail folder={openedFolder} onBack={closeFolder} />;
   return null;
 }

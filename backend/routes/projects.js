@@ -21,13 +21,18 @@ router.get('/', auth, async (req, res) => {
         );
         res.json(result.rows);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Get projects error:', error);
+        res.status(500).json({ code: 'SERVER_ERROR' });
     }
 });
 
 router.post('/', auth, async (req, res) => {
     try {
         const { name, description } = req.body;
+
+        if (!name)
+            return res.status(400).json({ code: 'MISSING_DATA' });
+
         const result = await query(
             `INSERT INTO projects (user_id, name, description) 
              VALUES ($1, $2, $3) 
@@ -36,7 +41,8 @@ router.post('/', auth, async (req, res) => {
         );
         res.status(201).json(result.rows[0]);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Create project error:', error);
+        res.status(500).json({ code: 'SERVER_ERROR' });
     }
 });
 
@@ -54,9 +60,8 @@ router.get('/:id', auth, async (req, res) => {
             [req.params.id, req.user.id]
         );
 
-        if (projectResult.rows.length === 0) {
-            return res.status(404).json({ error: 'Không tìm thấy dự án' });
-        }
+        if (projectResult.rows.length === 0)
+            return res.status(404).json({ code: 'NOT_FOUND' });
 
         const measurementsResult = await query(
             `SELECT m.* 
@@ -72,13 +77,18 @@ router.get('/:id', auth, async (req, res) => {
             measurements: measurementsResult.rows
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Get project error:', error);
+        res.status(500).json({ code: 'SERVER_ERROR' });
     }
 });
 
 router.put('/:id', auth, async (req, res) => {
     try {
         const { name, description } = req.body;
+
+        if (!name && description == null)
+            return res.status(400).json({ code: 'MISSING_DATA' });
+
         const result = await query(
             `UPDATE projects 
              SET name = COALESCE($1, name),
@@ -87,18 +97,23 @@ router.put('/:id', auth, async (req, res) => {
              RETURNING *`,
             [name, description, req.params.id, req.user.id]
         );
+
         if (result.rows.length === 0)
-            return res.status(404).json({ error: 'Không tìm thấy dự án' });
+            return res.status(404).json({ code: 'NOT_FOUND' });
+
         res.json(result.rows[0]);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Update project error:', error);
+        res.status(500).json({ code: 'SERVER_ERROR' });
     }
 });
-
 
 router.post('/:id/measurements', auth, async (req, res) => {
     try {
         const { measurement_id } = req.body;
+
+        if (!measurement_id)
+            return res.status(400).json({ code: 'MISSING_DATA' });
 
         await query(
             `INSERT INTO project_measurements (project_id, measurement_id) 
@@ -107,21 +122,27 @@ router.post('/:id/measurements', auth, async (req, res) => {
             [req.params.id, measurement_id]
         );
 
-        res.json({ message: 'Đã thêm vào dự án' });
+        res.json({ code: 'ADDED' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Add measurement to project error:', error);
+        res.status(500).json({ code: 'SERVER_ERROR' });
     }
 });
 
 router.delete('/:id', auth, async (req, res) => {
     try {
-        await query(
-            `UPDATE projects SET status = 'deleted' WHERE id = $1 AND user_id = $2`,
+        const result = await query(
+            `UPDATE projects SET status = 'deleted' WHERE id = $1 AND user_id = $2 RETURNING id`,
             [req.params.id, req.user.id]
         );
-        res.json({ message: 'Đã xóa dự án' });
+
+        if (result.rows.length === 0)
+            return res.status(404).json({ code: 'NOT_FOUND' });
+
+        res.json({ code: 'DELETED' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Delete project error:', error);
+        res.status(500).json({ code: 'SERVER_ERROR' });
     }
 });
 

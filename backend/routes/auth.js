@@ -14,7 +14,7 @@ router.post('/register', async (req, res) => {
     try {
         const { email, password, name } = req.body;
         if (!email || !password || !name)
-            return res.status(400).json({ error: 'Thiếu thông tin' });
+            return res.status(400).json({ code: 'MISSING_DATA' });
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await query(
@@ -28,8 +28,8 @@ router.post('/register', async (req, res) => {
         res.status(201).json({ user, token });
     } catch (err) {
         if (err.code === '23505')
-            return res.status(409).json({ error: 'Email đã tồn tại' });
-        res.status(500).json({ error: err.message });
+            return res.status(409).json({ code: 'EMAIL_ALREADY_EXISTS'  });
+        res.status(500).json({code: 'SERVER_ERROR' });
     }
 });
 
@@ -39,12 +39,12 @@ router.post('/login', async (req, res) => {
         const result = await query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
 
         if (result.rows.length === 0)
-            return res.status(401).json({ error: 'Sai email hoặc mật khẩu' });
+            return res.status(401).json({ code: 'INVALID_CREDENTIALS' });
 
         const user = result.rows[0];
         const isMatch = await bcrypt.compare(password, user.password_hash);
         if (!isMatch)
-            return res.status(401).json({ error: 'Sai email hoặc mật khẩu' });
+            return res.status(401).json({code: 'INVALID_CREDENTIALS' });
 
         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
         await query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
@@ -54,7 +54,7 @@ router.post('/login', async (req, res) => {
             token
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ code: 'SERVER_ERROR' });
     }
 });
 
@@ -65,7 +65,7 @@ router.get('/me', auth, (req, res) => {
 router.post('/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
-        if (!email) return res.status(400).json({ error: 'Thiếu email' });
+        if (!email) return res.status(400).json({code: 'MISSING_EMAIL' });
 
         const result = await query(
             'SELECT id, name FROM users WHERE email = $1 AND is_active = true',
@@ -73,7 +73,7 @@ router.post('/forgot-password', async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Email chưa được đăng ký' });
+           return res.json({ code: 'RESET_EMAIL_SENT' });
         }
 
         const user = result.rows[0];
@@ -88,7 +88,7 @@ router.post('/forgot-password', async (req, res) => {
         const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
         await sgMail.send({
-            from: `"Fabric Calculator" <${process.env.EMAIL_USER}>`,
+            from: `"PATECH" <${process.env.EMAIL_USER}>`,
             to: email,
             subject: 'Đặt lại mật khẩu',
             html: `
@@ -110,7 +110,7 @@ router.post('/forgot-password', async (req, res) => {
                                 Đặt lại mật khẩu
                             </h1>
                             <p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:13px;font-family:Arial,sans-serif;">
-                                Fabric Area Calculator
+                                PATECH
                             </p>
                         </td>
                     </tr>
@@ -188,10 +188,10 @@ router.post('/forgot-password', async (req, res) => {
 `,
         });
 
-        res.json({ message: 'Nếu email tồn tại, link đặt lại đã được gửi' });
+        res.json({ code: 'RESET_EMAIL_SENT' });
     } catch (error) {
         console.error('Forgot password error:', error);
-        res.status(500).json({ error: 'Lỗi server, thử lại sau' });
+        res.status(500).json({ code: 'SERVER_ERROR' });
     }
 });
 
@@ -199,9 +199,9 @@ router.post('/reset-password', async (req, res) => {
     try {
         const { token, newPassword } = req.body;
         if (!token || !newPassword)
-            return res.status(400).json({ error: 'Thiếu token hoặc mật khẩu mới' });
-        if (newPassword.length < 6)
-            return res.status(400).json({ error: 'Mật khẩu phải có ít nhất 6 ký tự' });
+            return res.status(400).json({ code: 'MISSING_DATA' });
+        if (newPassword.length < 8)
+            return res.status(400).json({ code: 'PASSWORD_TOO_SHORT' });
 
         const result = await query(
             `SELECT id FROM users 
@@ -212,7 +212,7 @@ router.post('/reset-password', async (req, res) => {
         );
 
         if (result.rows.length === 0)
-            return res.status(400).json({ error: 'Link đã hết hạn hoặc không hợp lệ' });
+            return res.status(400).json({code: 'TOKEN_INVALID_OR_EXPIRED' });
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await query(
@@ -222,10 +222,10 @@ router.post('/reset-password', async (req, res) => {
             [hashedPassword, result.rows[0].id]
         );
 
-        res.json({ message: 'Đặt lại mật khẩu thành công' });
+        res.json({ code: 'RESET_SUCCESS' });
     } catch (error) {
         console.error('Reset password error:', error);
-        res.status(500).json({ error: 'Lỗi server' });
+        res.status(500).json({ code: 'SERVER_ERROR' });
     }
 });
 

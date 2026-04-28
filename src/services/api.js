@@ -42,7 +42,7 @@ class ApiService {
             body: options.body ? JSON.stringify(options.body) : undefined
         });
 
-        const text = await res.text(); 
+        const text = await res.text();
         console.log('Response status:', res.status);
         console.log('Response body:', text);
 
@@ -77,17 +77,17 @@ class ApiService {
         method: 'DELETE'
     });
 
-    getProjects = () => this.request('/projects');
+    getFolders = () => this.request('/folders');
 
-    createProject = (data) => this.request('/projects', { method: 'POST', body: data });
+    createFolder = (data) => this.request('/folders', { method: 'POST', body: data });
 
-    getProject = (id) => this.request(`/projects/${id}`);
+    getFolder = (id) => this.request(`/folders/${id}`);
 
-    addToProject = (projectId, measurementId) => this.request(`/projects/${projectId}/measurements`, {
+    addToFolder = (projectId, measurementId) => this.request(`/folders/${projectId}/measurements`, {
         method: 'POST', body: { measurement_id: measurementId }
     });
 
-    deleteProject = (id) => this.request(`/projects/${id}`, { method: 'DELETE' });
+    deleteFolder = (id) => this.request(`/folders/${id}`, { method: 'DELETE' });
 
     forgotPassword = (email) => this.request('/auth/forgot-password', {
         method: 'POST',
@@ -104,7 +104,7 @@ class ApiService {
         body: data
     });
 
-    updateProject = (id, data) => this.request(`/projects/${id}`, {
+    updateFolder = (id, data) => this.request(`/folders/${id}`, {
         method: 'PUT',
         body: data
     });

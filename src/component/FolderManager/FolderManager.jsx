@@ -4,70 +4,70 @@ import { Folder, Plus, Trash2, ArrowLeft, FolderOpen, Package, Layers, TrendingU
 import { useTranslation } from 'react-i18next';
 import { api } from '../../services/api';
 // import ProjectDetail from '../ProjectDetail/ProjectDetail';
-import './ProjectManager.css';
+import './FolderManager.css';
 import backgroundImg from '../../assets/images/background.png';
 
-function ProjectManager({ onBack, onOpenProject }) {
+function ProjectManager({ onBack, onOpenFolder }) {
     const { t } = useTranslation();
-    const [projects, setProjects] = useState([]);
+    const [folders, setFolders] = useState([]);
     const [showCreate, setShowCreate] = useState(false);
-    const [newProjectName, setNewProjectName] = useState('');
+    const [newFolderName, setNewFolderName] = useState('');
     const [loading, setLoading] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
     // const [openedProject, setOpenedProject] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [editingName, setEditingName] = useState('');
 
-    useEffect(() => { loadProjects(); }, []);
+    useEffect(() => { loadFolders(); }, []);
 
-    const loadProjects = async () => {
-        try { const data = await api.getProjects(); setProjects(data); }
+    const loadFolders = async () => {
+        try { const data = await api.getFolders(); setFolders(data); }
         catch (err) { console.error(err); }
     };
 
-    const createProject = async () => {
-        if (!newProjectName.trim()) return;
+    const createFolder = async () => {
+        if (!newFolderName.trim()) return;
         setLoading(true);
         try {
-            await api.createProject({ name: newProjectName, description: '' });
-            setNewProjectName(''); setShowCreate(false); loadProjects();
-        } catch { alert(t('create_project') + ' failed'); } finally { setLoading(false); }
+            await api.createFolder({ name: newFolderName, description: '' });
+            setNewFolderName(''); setShowCreate(false); loadFolders();
+        } catch { alert(t('create_folder') + ' failed'); } finally { setLoading(false); }
     };
 
-    const deleteProject = async (id) => {
-        if (!confirm(t('confirm_delete_project'))) return;
+    const deleteFolder = async (id) => {
+        if (!confirm(t('confirm_delete_folder'))) return;
         setDeletingId(id);
-        try { await api.deleteProject(id); loadProjects(); }
+        try { await api.deleteFolder(id); loadFolders(); }
         catch { alert(t('delete_failed')); } finally { setDeletingId(null); }
     };
 
     // if (openedProject) {
-    //     return <ProjectDetail project={openedProject} onBack={() => { setOpenedProject(null); loadProjects(); }} />;
+    //     return <ProjectDetail folder={openedProject} onBack={() => { setOpenedProject(null); loadProjects(); }} />;
     // }
 
-    const totalArea = projects.reduce((sum, p) => sum + (Number(p.total_area_cm2) || 0), 0);
-    const totalFiles = projects.reduce((sum, p) => sum + (Number(p.file_count) || 0), 0);
-    const totalQty = projects.reduce((sum, p) => sum + (Number(p.total_quantity) || 0), 0);
+    const totalArea = folders.reduce((sum, p) => sum + (Number(p.total_area_cm2) || 0), 0);
+    const totalFiles = folders.reduce((sum, p) => sum + (Number(p.file_count) || 0), 0);
+    const totalQty = folders.reduce((sum, p) => sum + (Number(p.total_quantity) || 0), 0);
 
     const stats = [
-        { icon: <Layers size={16} />, label: t('total_projects'), value: projects.length },
+        { icon: <Layers size={16} />, label: t('total_folders'), value: folders.length },
         { icon: <Package size={16} />, label: t('total_details'), value: totalQty },
         { icon: <TrendingUp size={16} />, label: t('total_area'), value: `${(totalArea / 10000).toFixed(3)} m²` },
     ];
 
-    const startRename = (e, project) => {
+    const startRename = (e, folder) => {
         e.stopPropagation();
-        setEditingId(project.id);
-        setEditingName(project.name);
+        setEditingId(folder.id);
+        setEditingName(folder.name);
     };
 
     const confirmRename = async (e, id) => {
         e.stopPropagation();
         if (!editingName.trim()) return;
         try {
-            await api.updateProject(id, { name: editingName.trim() });
+            await api.updateFolder(id, { name: editingName.trim() });
             setEditingId(null);
-            loadProjects();
+            loadFolders();
         } catch (err) {
             console.error('Rename error:', err);
             alert('Lỗi: ' + err.message);
@@ -91,12 +91,12 @@ function ProjectManager({ onBack, onOpenProject }) {
                 <div className="pm-header-center">
                     <div className="pm-header-icon"><FolderOpen size={22} color="#fff" /></div>
                     <div>
-                        <h1 className="pm-header-title">{t('manage_projects')}</h1>
-                        <p className="pm-header-sub">{projects.length} {t('projects')} · {totalFiles} {t('files')}</p>
+                        <h1 className="pm-header-title">{t('manage_folders')}</h1>
+                        <p className="pm-header-sub">{folders.length} {t('folders')} · {totalFiles} {t('files')}</p>
                     </div>
                 </div>
                 <button className="pm-create-btn" onClick={() => setShowCreate(true)}>
-                    <Plus size={18} /><span>{t('create_project')}</span>
+                    <Plus size={18} /><span>{t('create_folder')}</span>
                 </button>
             </header>
 
@@ -116,22 +116,22 @@ function ProjectManager({ onBack, onOpenProject }) {
                 <div className="pm-create-form-wrap">
                     <div className="pm-create-form">
                         <div className="pm-create-form-header">
-                            <h3 className="pm-create-form-title">{t('create_project')}</h3>
+                            <h3 className="pm-create-form-title">{t('create_folder')}</h3>
                             <button className="pm-close-btn" onClick={() => setShowCreate(false)}><X size={18} /></button>
                         </div>
                         <div className="pm-input-row">
                             <div className="pm-input-wrap">
                                 <Folder size={16} className="pm-input-icon" />
                                 <input className="pm-input" type="text"
-                                    placeholder={t('project_name_placeholder')}
-                                    value={newProjectName}
-                                    onChange={e => setNewProjectName(e.target.value)}
-                                    onKeyDown={e => e.key === 'Enter' && createProject()}
+                                    placeholder={t('folder_name_placeholder')}
+                                    value={newFolderName}
+                                    onChange={e => setNewFolderName(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && createFolder()}
                                     autoFocus />
                             </div>
-                            <button className="pm-confirm-btn" onClick={createProject} disabled={loading || !newProjectName.trim()}>
+                            <button className="pm-confirm-btn" onClick={createFolder} disabled={loading || !newFolderName.trim()}>
                                 {loading ? '...' : <Check size={18} />}
-                                <span>{loading ? t('creating_project') : t('create_project')}</span>
+                                <span>{loading ? t('creating_folder') : t('create_folder')}</span>
                             </button>
                         </div>
                     </div>
@@ -139,29 +139,29 @@ function ProjectManager({ onBack, onOpenProject }) {
             )}
 
             <main className="pm-main">
-                {projects.length === 0 ? (
+                {folders.length === 0 ? (
                     <div className="pm-empty">
                         <div className="pm-empty-icon"><Folder size={56} color="white" /></div>
-                        <h3 className="pm-empty-title">{t('empty_projects')}</h3>
-                        <p className="pm-empty-text">{t('empty_projects_sub')}</p>
+                        <h3 className="pm-empty-title">{t('empty_folders')}</h3>
+                        <p className="pm-empty-text">{t('empty_folders_sub')}</p>
                         <button className="pm-empty-action" onClick={() => setShowCreate(true)}>
-                            <Plus size={16} /> {t('create_first_project')}
+                            <Plus size={16} /> {t('create_first_folder')}
                         </button>
                     </div>
                 ) : (
                     <div className="pm-grid">
-                        {projects.map((project, idx) => {
+                        {folders.map((folder, idx) => {
                             const hue = (idx * 47) % 360;
                             return (
-                                <div key={project.id}
-                                    className={`pm-card${deletingId === project.id ? ' is-deleting' : ''}`}
-                                    onClick={() => { if (deletingId === project.id) return; onOpenProject(project); }}
+                                <div key={folder.id}
+                                    className={`pm-card${deletingId === folder.id ? ' is-deleting' : ''}`}
+                                    onClick={() => { if (deletingId === folder.id) return; onOpenFolder(folder); }}
                                 >
                                     <div className="pm-card-strip" style={{ background: `hsl(${hue}, 70%, 55%)` }} />
                                     <div className="pm-card-icon-wrap" style={{ background: `hsl(${hue}, 70%, 96%)`, color: `hsl(${hue}, 60%, 45%)` }}>
                                         <Folder size={32} />
                                     </div>
-                                    {editingId === project.id ? (
+                                    {editingId === folder.id ? (
                                         <input
                                             className="pm-card-title-input"
                                             value={editingName}
@@ -169,25 +169,25 @@ function ProjectManager({ onBack, onOpenProject }) {
                                             onClick={e => e.stopPropagation()}
                                             onChange={e => setEditingName(e.target.value)}
                                             onKeyDown={e => {
-                                                if (e.key === 'Enter') confirmRename(e, project.id);
+                                                if (e.key === 'Enter') confirmRename(e, folder.id);
                                                 if (e.key === 'Escape') cancelRename(e);
                                             }}
                                         />
                                     ) : (
-                                        <h3 className="pm-card-title">{project.name}</h3>
+                                        <h3 className="pm-card-title">{folder.name}</h3>
                                     )}
                                     <div className="pm-card-meta">
-                                        <div className="pm-meta-row"><span className="pm-meta-dot" /><span className="pm-meta-text">{project.file_count || 0} {t('files')}</span></div>
-                                        <div className="pm-meta-row"><span className="pm-meta-dot" /><span className="pm-meta-text">{project.total_quantity || 0} {t('total_items')}</span></div>
+                                        <div className="pm-meta-row"><span className="pm-meta-dot" /><span className="pm-meta-text">{folder.file_count || 0} {t('files')}</span></div>
+                                        <div className="pm-meta-row"><span className="pm-meta-dot" /><span className="pm-meta-text">{folder.total_quantity || 0} {t('total_items')}</span></div>
                                     </div>
                                     <div className="pm-card-area">
-                                        <span className="pm-area-value">{((Number(project.total_area_cm2) || 0) / 10000).toFixed(4)}</span>
+                                        <span className="pm-area-value">{((Number(folder.total_area_cm2) || 0) / 10000).toFixed(4)}</span>
                                         <span className="pm-area-unit">m²</span>
                                     </div>
                                     <div className="pm-card-actions">
-                                        {editingId === project.id ? (
+                                        {editingId === folder.id ? (
                                             <>
-                                                <button className="pm-action-btn pm-action-save" onClick={e => confirmRename(e, project.id)} title="Lưu">
+                                                <button className="pm-action-btn pm-action-save" onClick={e => confirmRename(e, folder.id)} title="Lưu">
                                                     <Check size={14} />
                                                 </button>
                                                 <button className="pm-action-btn pm-action-cancel" onClick={cancelRename} title="Hủy">
@@ -197,13 +197,13 @@ function ProjectManager({ onBack, onOpenProject }) {
                                         ) : (
                                             <>
                                                 <button className="pm-action-btn pm-action-edit"
-                                                    onClick={e => startRename(e, project)}
+                                                    onClick={e => startRename(e, folder)}
                                                     title={t('rename')}>
                                                     <Pencil size={14} />
                                                 </button>
                                                 <button className="pm-action-btn pm-action-delete"
-                                                    onClick={e => { e.stopPropagation(); deleteProject(project.id); }}
-                                                    title={t('delete_project')}>
+                                                    onClick={e => { e.stopPropagation(); deleteFolder(folder.id); }}
+                                                    title={t('delete_folder')}>
                                                     <Trash2 size={14} />
                                                 </button>
                                             </>
@@ -219,8 +219,8 @@ function ProjectManager({ onBack, onOpenProject }) {
     );
 }
 
-ProjectManager.propTypes = { 
-  onBack: PropTypes.func.isRequired,
-  onOpenProject: PropTypes.func.isRequired,
+ProjectManager.propTypes = {
+    onBack: PropTypes.func.isRequired,
+    onOpenFolder: PropTypes.func.isRequired,
 };
 export default ProjectManager;

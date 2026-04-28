@@ -15,6 +15,7 @@ function ResetPassword({ onNavigate }) {
     const [showCf, setShowCf] = useState(false);
     const [status, setStatus] = useState('idle');
     const [errorMsg, setErrorMsg] = useState('');
+    const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -25,9 +26,28 @@ function ResetPassword({ onNavigate }) {
 
     const handleReset = async () => {
         if (!password || !confirm) return;
-        if (password.length < 6) { setErrorMsg(t('error_pw_short')); setStatus('error'); return; }
-        if (password !== confirm) { setErrorMsg(t('error_pw_mismatch')); setStatus('error'); return; }
-        setStatus('loading'); setErrorMsg('');
+
+        if (password.length < 8) {
+            setErrorMsg(t('error_pw_short'));
+            setStatus('error');
+            return;
+        }
+
+        if (!strongRegex.test(password)) {
+            setErrorMsg(t('error_pw_complex'));
+            setStatus('error');
+            return;
+        }
+
+        if (password !== confirm) {
+            setErrorMsg(t('error_pw_mismatch'));
+            setStatus('error');
+            return;
+        }
+
+        setStatus('loading');
+        setErrorMsg('');
+
         try {
             await api.resetPassword(token, password);
             setStatus('success');
@@ -37,7 +57,8 @@ function ResetPassword({ onNavigate }) {
         }
     };
 
-    const strengthLevel = password.length === 0 ? 0 : password.length < 6 ? 1 : password.length < 10 ? 2 : 3;
+
+    const strengthLevel = password.length === 0 ? 0 : password.length < 8 ? 1 : password.length < 12 ? 2 : 3;
     const strengthLabel = ['', t('pw_too_short'), t('pw_medium'), t('pw_strong')][strengthLevel];
     const strengthClass = ['', 'weak', 'medium', 'strong'][strengthLevel];
 

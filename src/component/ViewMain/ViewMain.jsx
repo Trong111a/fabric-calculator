@@ -36,7 +36,7 @@ function rgbToHsv(r, g, b) {
     return { h: Math.round(h * 180), s: Math.round(s * 255), v: Math.round(v * 255) };
 }
 
-export default function ViewMain({ user, onLogout, onOpenProjects }) {
+export default function ViewMain({ user, onLogout, onOpenFolders }) {
     const { t, i18n } = useTranslation();
     const [image, setImage] = useState(null);
     const [rawImageData, setRawImageData] = useState(null);
@@ -495,7 +495,7 @@ export default function ViewMain({ user, onLogout, onOpenProjects }) {
                     {selectedProject && (
                         <div className="vm-project-chip"><Folder size={13} /><span>{selectedProject.name}</span></div>
                     )}
-                    <button className="vm-folder-btn" onClick={onOpenProjects}>
+                    <button className="vm-folder-btn" onClick={onOpenFolders}>
                         <Folder size={15} /><span>{selectedProject ? t('change_folder') : t('folder')}</span>
                     </button>
                     <div className="vm-user-chip">
@@ -811,5 +811,5 @@ export default function ViewMain({ user, onLogout, onOpenProjects }) {
 ViewMain.propTypes = {
     user: PropTypes.shape({ name: PropTypes.string }),
     onLogout: PropTypes.func.isRequired,
-    onOpenProjects: PropTypes.func.isRequired,
+    onOpenFolders: PropTypes.func.isRequired,
 };

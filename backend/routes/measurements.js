@@ -16,7 +16,8 @@ router.get('/', auth, async (req, res) => {
         );
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Get measurements error:', err);
+        res.status(500).json({ code: 'SERVER_ERROR' });
     }
 });
 
@@ -33,6 +34,12 @@ router.post('/', auth, async (req, res) => {
             quantity = 1,
             project_id
         } = req.body;
+
+        if (!name || area_cm2 == null || !pixels_per_cm || !polygon_points)
+            return res.status(400).json({ code: 'MISSING_DATA' });
+
+        if (quantity < 1 || !Number.isInteger(Number(quantity)))
+            return res.status(400).json({ code: 'INVALID_QUANTITY' });
 
         let imageUrl = null;
         let thumbnailUrl = null;
@@ -79,26 +86,21 @@ router.post('/', auth, async (req, res) => {
 
         res.status(201).json(measurement);
     } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-router.delete('/:id', auth, async (req, res) => {
-    try {
-        await query(
-            'DELETE FROM measurements WHERE id = $1 AND user_id = $2',
-            [req.params.id, req.user.id]
-        );
-        res.json({ message: 'Đã xóa' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Create measurement error:', err);
+        res.status(500).json({ code: 'SERVER_ERROR' });
     }
 });
 
 router.put('/:id', auth, async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, quantity } = req.body;  // bỏ area_cm2, không cho sửa diện tích
+        const { name, quantity } = req.body;
+
+        if (!name && quantity == null)
+            return res.status(400).json({ code: 'MISSING_DATA' });
+
+        if (quantity != null && (quantity < 1 || !Number.isInteger(Number(quantity))))
+            return res.status(400).json({ code: 'INVALID_QUANTITY' });
 
         const result = await query(
             `UPDATE measurements 
@@ -110,13 +112,30 @@ router.put('/:id', auth, async (req, res) => {
             [name, quantity, id, req.user.id]
         );
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Không tìm thấy hoặc không có quyền' });
-        }
+        if (result.rows.length === 0)
+            return res.status(404).json({ code: 'NOT_FOUND' });
 
         res.json(result.rows[0]);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Update measurement error:', err);
+        res.status(500).json({ code: 'SERVER_ERROR' });
+    }
+});
+
+router.delete('/:id', auth, async (req, res) => {
+    try {
+        const result = await query(
+            'DELETE FROM measurements WHERE id = $1 AND user_id = $2 RETURNING id',
+            [req.params.id, req.user.id]
+        );
+
+        if (result.rows.length === 0)
+            return res.status(404).json({ code: 'NOT_FOUND' });
+
+        res.json({ code: 'DELETED' });
+    } catch (err) {
+        console.error('Delete measurement error:', err);
+        res.status(500).json({ code: 'SERVER_ERROR' });
     }
 });
 
