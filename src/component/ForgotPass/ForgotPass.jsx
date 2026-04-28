@@ -11,17 +11,26 @@ function ForgotPass({ onNavigate }) {
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState('idle');
     const [errorMsg, setErrorMsg] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 
     const handleSend = async () => {
         if (!email.trim()) return;
+        if (!emailRegex.test(email.trim())) {
+            setEmailError(t('error_email_invalid'));
+            return;
+        }
+        setEmailError('');
         setStatus('loading');
         setErrorMsg('');
         try {
             await api.forgotPassword(email.trim());
             setStatus('success');
         } catch (err) {
+            const code = err.code || 'UNKNOWN_ERROR';
+            setErrorMsg(t(`errors.${code}`, { defaultValue: t('reset_failed') }));
             setStatus('error');
-            setErrorMsg(err.message || t('reset_failed'));
         }
     };
 
@@ -103,18 +112,21 @@ function ForgotPass({ onNavigate }) {
 
                             <div className="fp-field-group">
                                 <label className="fp-field-label">{t('email')}</label>
-                                <div className={`fp-field-wrap ${email ? 'has-value' : ''}`}>
+                                <div className={`fp-field-wrap ${email ? 'has-value' : ''} ${emailError ? 'has-error' : ''}`}>
                                     <Mail size={16} className="fp-field-icon" />
                                     <input
                                         type="email"
                                         className="fp-field-input"
                                         placeholder="example@hcmute.edu.vn"
                                         value={email}
-                                        onChange={e => setEmail(e.target.value)}
+                                        onChange={e => { setEmail(e.target.value); setEmailError(''); }}
                                         disabled={status === 'loading'}
                                         onKeyDown={e => e.key === 'Enter' && handleSend()}
                                     />
                                 </div>
+                                {emailError && (
+                                    <p className="fp-field-error">{emailError}</p>
+                                )}
                             </div>
 
                             <button

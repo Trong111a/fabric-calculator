@@ -52,8 +52,8 @@ function ResetPassword({ onNavigate }) {
             await api.resetPassword(token, password);
             setStatus('success');
         } catch (err) {
-            setStatus('error');
-            setErrorMsg(err.message || t('reset_failed'));
+            const code = err.code || 'UNKNOWN_ERROR';
+            setErrorMsg(t(`errors.${code}`, { defaultValue: t('reset_failed') }));
         }
     };
 

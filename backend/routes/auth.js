@@ -81,7 +81,7 @@ router.post('/forgot-password', async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.json({ code: 'RESET_EMAIL_SENT' });
+            return res.status(404).json({ code: 'EMAIL_NOT_REGISTERED' });
         }
 
         const user = result.rows[0];
@@ -113,7 +113,7 @@ router.post('/forgot-password', async (req, res) => {
                     
                     <!-- Header -->
                     <tr>
-                        <td style="background:#6366f1;padding:28px 32px;text-align:center;">
+                        <td style="background:#0065B3;padding:28px 32px;text-align:center;">
                             <h1 style="margin:0;color:#ffffff;font-size:20px;font-family:Arial,sans-serif;font-weight:700;">
                                 Đặt lại mật khẩu
                             </h1>
@@ -131,7 +131,7 @@ router.post('/forgot-password', async (req, res) => {
                             </p>
                             <p style="margin:0 0 24px;color:#6b7280;font-size:14px;font-family:Arial,sans-serif;line-height:1.6;">
                                 Bạn đã yêu cầu đặt lại mật khẩu. Nhấn nút bên dưới để tiếp tục.
-                                Link có hiệu lực trong <strong style="color:#6366f1;">1 giờ</strong>.
+                                Link có hiệu lực trong <strong style="color:#0065B3;">1 giờ</strong>.
                             </p>
 
                             <!-- Button -->
@@ -140,12 +140,12 @@ router.post('/forgot-password', async (req, res) => {
                                     <td align="center" style="padding:8px 0 28px;">
                                         <table cellpadding="0" cellspacing="0" border="0">
                                             <tr>
-                                                <td align="center" bgcolor="#6366f1"
+                                                <td align="center" bgcolor="#0065B3"
                                                     style="border-radius:8px;">
                                                     <a href="${resetUrl}" target="_blank"
                                                        style="display:inline-block;
                                                               padding:15px 40px;
-                                                              background-color:#6366f1;
+                                                              background-color:#0065B3;
                                                               color:#ffffff;
                                                               font-size:15px;
                                                               font-weight:700;
@@ -170,7 +170,7 @@ router.post('/forgot-password', async (req, res) => {
                                             Nếu nút không hoạt động, copy link này vào trình duyệt:
                                         </p>
                                         <p style="margin:0;font-size:11px;font-family:Arial,sans-serif;word-break:break-all;">
-                                            <a href="${resetUrl}" style="color:#6366f1;">${resetUrl}</a>
+                                            <a href="${resetUrl}" style="color:#0065B3;">${resetUrl}</a>
                                         </p>
                                     </td>
                                 </tr>

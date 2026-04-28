@@ -213,7 +213,7 @@ const resources = {
             "login_failed": "Login failed",
             "register_success": "Registration successful!",
             "error_fill_all": "Please fill in all fields!",
-            "error_pw_short": "Password must be at least 6 characters",
+            "error_pw_short": "Password must be at least 8 characters",
             "error_pw_mismatch": "Passwords do not match",
             "delete_failed": "Delete failed",
             "save_error": "Save error: {{msg}}",
@@ -235,6 +235,7 @@ const resources = {
 
                 // Auth – register
                 "EMAIL_ALREADY_EXISTS": "This email is already registered.",
+                "EMAIL_NOT_REGISTERED": "This email is not registered.",
                 "EMAIL_INVALID": "Invalid email format.",
                 "PASSWORD_WEAK": "Password must include uppercase, lowercase, number, and special character.",
 
@@ -487,6 +488,7 @@ const resources = {
 
                 // Auth – register
                 "EMAIL_ALREADY_EXISTS": "Email này đã được đăng ký.",
+                "EMAIL_NOT_REGISTERED": "Email này chưa được đăng ký.",
                 "EMAIL_INVALID": "Định dạng email không hợp lệ.",
                 "PASSWORD_WEAK": "Mật khẩu phải có chữ hoa, chữ thường, số và ký tự đặc biệt.",
 
@@ -515,7 +517,7 @@ i18n
     .use(initReactI18next)
     .init({
         resources,
-        lng: 'vi',
+        // lng: 'vi',
         fallbackLng: 'vi',
         debug: false,
         interpolation: {
