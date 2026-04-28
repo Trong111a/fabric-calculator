@@ -7,7 +7,7 @@ import './ResetPassword.css';
 import logoHCMUTE from '../../assets/images/hcmute-logo.png';
 
 function ResetPassword({ onNavigate }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [token, setToken] = useState('');
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
@@ -23,6 +23,12 @@ function ResetPassword({ onNavigate }) {
         if (tk) setToken(tk);
         else { setStatus('error'); setErrorMsg(t('link_invalid')); }
     }, [t]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const lang = params.get('lang');
+        if (lang) i18n.changeLanguage(lang);
+    }, [i18n]);
 
     const handleReset = async () => {
         if (!password || !confirm) return;
@@ -72,17 +78,17 @@ function ResetPassword({ onNavigate }) {
                     </div>
                     <div className="rsp-brand-name-block">
                         <span className="rsp-brand-abbr">HCM·UTE</span>
-                        <h1 className="rsp-brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />TP.HCM</h1>
+                        <h1 className="rsp-brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />THÀNH PHỐ HỒ CHÍ MINH</h1>
                         <p className="rsp-brand-name-en">Ho Chi Minh City University<br />of Technology and Education</p>
                     </div>
 
                     <div className="rsp-brand-unit-info">
-                        <p className="rsp-brand-faculty">KHOA THỜI TRANG &amp; DU LỊCH</p>
-                        <p className="rsp-brand-department">BỘ MÔN CÔNG NGHỆ MAY</p>
+                        <p className="rsp-brand-faculty">{t('faculty')}</p>
+                        <p className="rsp-brand-department">{t('major')}</p>
                     </div>
 
                     <div className="rsp-brand-divider" />
-                    <p className="rsp-brand-tagline">Hệ thống quản lý<br />đo diện tích vải</p>
+                    <p className="rsp-brand-tagline" dangerouslySetInnerHTML={{ __html: t('tagline') }} />
                 </div>
                 <div className="rsp-brand-deco rsp-deco-1" />
                 <div className="rsp-brand-deco rsp-deco-2" />
@@ -95,11 +101,11 @@ function ResetPassword({ onNavigate }) {
                     <img src={logoHCMUTE} alt="HCM-UTE" className="rsp-mobile-logo-img" />
                     <div>
                         <div className="rsp-mobile-abbr">HCM·UTE</div>
-                        <div className="rsp-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
+                        <div className="rsp-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT THÀNH PHỐ HỒ CHÍ MINH</div>
 
                         <div className="rsp-mobile-unit">
-                            <p>KHOA THỜI TRANG &amp; DU LỊCH</p>
-                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
+                            <p>{t('faculty')}</p>
+                            <p>{t('major')}</p>
                         </div>
                     </div>
 

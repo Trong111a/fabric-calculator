@@ -93,9 +93,9 @@ class ApiService {
 
     deleteFolder = (id) => this.request(`/folders/${id}`, { method: 'DELETE' });
 
-    forgotPassword = (email) => this.request('/auth/forgot-password', {
+    forgotPassword = (email,  lang = 'vi') => this.request('/auth/forgot-password', {
         method: 'POST',
-        body: { email }
+        body: { email, lang }
     });
 
     resetPassword = (token, newPassword) => this.request('/auth/reset-password', {

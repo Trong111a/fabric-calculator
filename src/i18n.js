@@ -47,7 +47,7 @@ const resources = {
             // Reset Password
             "reset_title": "Set New Password",
             "reset_sub": "Enter your new password",
-            "new_password_placeholder": "New password (at least 6 characters)",
+            "new_password_placeholder": "New password (at least 8 characters)",
             "confirm_password_placeholder": "Confirm password",
             "resetting": "Processing...",
             "reset_btn": "Reset Password",
@@ -300,7 +300,7 @@ const resources = {
             // Reset Password
             "reset_title": "Đặt mật khẩu mới",
             "reset_sub": "Nhập mật khẩu mới cho tài khoản của bạn",
-            "new_password_placeholder": "Mật khẩu mới (ít nhất 6 ký tự)",
+            "new_password_placeholder": "Mật khẩu mới (ít nhất 8 ký tự)",
             "confirm_password_placeholder": "Xác nhận mật khẩu",
             "resetting": "Đang xử lý...",
             "reset_btn": "Đặt lại mật khẩu",

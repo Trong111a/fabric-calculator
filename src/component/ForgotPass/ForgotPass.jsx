@@ -7,7 +7,7 @@ import './ForgotPass.css';
 import logoHCMUTE from '../../assets/images/hcmute-logo.png';
 
 function ForgotPass({ onNavigate }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState('idle');
     const [errorMsg, setErrorMsg] = useState('');
@@ -25,7 +25,7 @@ function ForgotPass({ onNavigate }) {
         setStatus('loading');
         setErrorMsg('');
         try {
-            await api.forgotPassword(email.trim());
+           await api.forgotPassword(email.trim(), i18n.language);
             setStatus('success');
         } catch (err) {
             const code = err.code || 'UNKNOWN_ERROR';
@@ -44,17 +44,17 @@ function ForgotPass({ onNavigate }) {
                     </div>
                     <div className="fp-brand-name-block">
                         <span className="fp-brand-abbr">HCM·UTE</span>
-                        <h1 className="fp-brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />TP.HCM</h1>
+                        <h1 className="fp-brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />THÀNH PHỐ HỒ CHÍ MINH</h1>
                         <p className="fp-brand-name-en">Ho Chi Minh City University<br />of Technology and Education</p>
                     </div>
 
                     <div className="fp-brand-unit-info">
-                        <p className="fp-brand-faculty">KHOA THỜI TRANG &amp; DU LỊCH</p>
-                        <p className="fp-brand-department">BỘ MÔN CÔNG NGHỆ MAY</p>
+                        <p className="fp-brand-faculty">{t('faculty')}</p>
+                        <p className="fp-brand-department">{t('major')}</p>
                     </div>
-
                     <div className="fp-brand-divider" />
-                    <p className="fp-brand-tagline">Hệ thống quản lý<br />đo diện tích vải</p>
+                    <p className="fp-brand-tagline" dangerouslySetInnerHTML={{ __html: t('tagline') }} />
+
                 </div>
                 <div className="fp-brand-deco fp-deco-1" />
                 <div className="fp-brand-deco fp-deco-2" />
@@ -66,12 +66,12 @@ function ForgotPass({ onNavigate }) {
                     <img src={logoHCMUTE} alt="HCM-UTE" className="fp-mobile-logo-img" />
                     <div>
                         <div className="fp-mobile-abbr">HCM·UTE</div>
-                        <div className="fp-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
+                        <div className="fp-mobile-school-name">ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT THÀNH PHỐ HỒ CHÍ MINH</div>
 
 
                         <div className="fp-mobile-unit">
-                            <p>KHOA THỜI TRANG  &amp; DU LỊCH</p>
-                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
+                            <p>{t('faculty')}</p>
+                            <p>{t('major')}</p>
                         </div>
                     </div>
 
@@ -125,7 +125,7 @@ function ForgotPass({ onNavigate }) {
                                     />
                                 </div>
                                 {emailError && (
-                                    <p className="fp-field-error">{emailError}</p>
+                                    <div className="fp-field-error">{emailError}</div>
                                 )}
                             </div>
 

@@ -50,17 +50,17 @@ function Register({ onNavigate }) {
                     </div>
                     <div className="rg-brand-name-block">
                         <span className="rg-brand-abbr">HCM·UTE</span>
-                        <h1 className="rg-brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />TP.HCM</h1>
+                        <h1 className="rg-brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />THÀNH PHỐ HỒ CHÍ MINH</h1>
                         <p className="rg-brand-name-en">Ho Chi Minh City University<br />of Technology and Education</p>
                     </div>
 
                     <div className="rg-brand-unit-info">
-                        <p className="rg-brand-faculty">KHOA THỜI TRANG &amp; DU LỊCH</p>
-                        <p className="brand-department">BỘ MÔN CÔNG NGHỆ MAY</p>
+                        <p className="rg-brand-faculty">{t('faculty')}</p>
+                        <p className="brand-department">{t('major')}</p>
                     </div>
 
                     <div className="rg-brand-divider" />
-                    <p className="rg-brand-tagline">Hệ thống quản lý<br />đo diện tích vải</p>
+                    <p className="rg-brand-tagline" dangerouslySetInnerHTML={{ __html: t('tagline') }} />
                 </div>
                 <div className="rg-brand-deco rg-deco-1" />
                 <div className="rg-brand-deco rg-deco-2" />
@@ -72,11 +72,11 @@ function Register({ onNavigate }) {
                     <img src={logoHCMUTE} alt="HCM-UTE" className="rg-mobile-logo-img" />
                     <div>
                         <div className="rg-mobile-abbr">HCM·UTE</div>
-                        <div className="rg-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT TP.HCM</div>
+                        <div className="rg-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT THÀNH PHỐ HỒ CHÍ MINH</div>
 
                         <div className="rg-mobile-unit">
-                            <p>KHOA THỜI TRANG  &amp; DU LỊCH</p>
-                            <p>BỘ MÔN CÔNG NGHỆ MAY</p>
+                            <p>{t('faculty')}</p>
+                            <p>{t('major')}</p>
                         </div>
                     </div>
 

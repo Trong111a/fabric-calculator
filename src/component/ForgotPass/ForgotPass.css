@@ -472,3 +472,30 @@
         margin-top: 1rem;
     }
 }
+
+.fp-field-wrap.has-error {
+    border-color: #fca5a5;
+    background: #fff5f5;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+}
+
+.fp-field-wrap.has-error .fp-field-icon {
+    color: #f87171;
+}
+
+.fp-field-error {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #dc2626;
+    padding-left: 0.25rem;
+    animation: fp-shake 0.35s ease;
+}
+
+.fp-field-error::before {
+    content: '⚠';
+    font-size: 0.75rem;
+}

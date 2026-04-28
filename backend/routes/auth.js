@@ -72,7 +72,7 @@ router.get('/me', auth, (req, res) => {
 
 router.post('/forgot-password', async (req, res) => {
     try {
-        const { email } = req.body;
+        const { email, lang } = req.body;
         if (!email) return res.status(400).json({ code: 'MISSING_EMAIL' });
 
         const result = await query(
@@ -93,7 +93,7 @@ router.post('/forgot-password', async (req, res) => {
             [resetToken, resetExpires, user.id]
         );
 
-        const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+        const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&lang=${lang || 'vi'}`;
 
         await sgMail.send({
             from: `"PATECH" <${process.env.EMAIL_USER}>`,
