@@ -32,7 +32,7 @@ router.post('/', auth, async (req, res) => {
             image_height,
             image_data,
             quantity = 1,
-            project_id
+            folder_id
         } = req.body;
 
         if (!name || area_cm2 == null || !pixels_per_cm || !polygon_points)
@@ -76,11 +76,11 @@ router.post('/', auth, async (req, res) => {
         );
 
         const measurement = result.rows[0];
-        if (project_id) {
+        if (folder_id) {
             await query(
                 `INSERT INTO project_measurements (project_id, measurement_id) 
                  VALUES ($1, $2)`,
-                [project_id, measurement.id]
+                [folder_id, measurement.id]
             );
         }
 
