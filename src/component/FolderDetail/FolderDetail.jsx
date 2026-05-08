@@ -13,22 +13,12 @@ import backgroundImg from '../../assets/images/background.png';
 
 function calcArea(pts, ppc) {
     if (!pts || pts.length < 3 || !ppc) return 0;
-
     let s = 0;
     for (let i = 0; i < pts.length; i++) {
         const j = (i + 1) % pts.length;
         s += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
     }
-
-    const areaPx = Math.abs(s) / 2;
-    const areaCm2 = areaPx / (ppc * ppc);
-
-    console.log(`🔍 Debug Area:
-    - Pixels: ${areaPx.toFixed(0)} px²
-    - PPC: ${ppc.toFixed(3)} px/cm
-    - Area: ${areaCm2.toFixed(1)} cm² = ${(areaCm2 / 10000).toFixed(4)} m²`);
-
-    return areaCm2;
+    return Math.abs(s) / 2 / (ppc * ppc);
 }
 
 function rgbToHsv(r, g, b) {
