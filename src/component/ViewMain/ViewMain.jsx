@@ -418,7 +418,7 @@ export default function ViewMain({ user, onLogout, onOpenFolders }) {
             if (!best) throw new Error(t('no_pattern_found'));
 
             const pe = cv.arcLength(best, true); const ap = new cv.Mat();
-            cv.approxPolyDP(best, ap, 0.001 * pe, true);
+            cv.approxPolyDP(best, ap, 0.002 * pe, true);
             let pts = [];
             for (let i = 0; i < ap.rows; i++) pts.push({ x: ap.data32S[i * 2], y: ap.data32S[i * 2 + 1] });
             if (pts.length < 4) {
