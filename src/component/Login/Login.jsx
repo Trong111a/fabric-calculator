@@ -41,9 +41,11 @@ function Login({ onLoginSuccess, onNavigate }) {
                         <img src={logoHCMUTE} alt="HCM-UTE Logo" className="brand-logo-img" />
                     </div>
                     <div className="brand-name-block">
-                        <span className="brand-abbr">HCM·UTE</span>
-                        <h1 className="brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />THÀNH PHỐ HỒ CHÍ MINH</h1>
-                        <p className="brand-name-en">Ho Chi Minh City University<br />of Technology and Engineering</p>
+                        {/* <span className="brand-abbr">HCM·UTE</span> */}
+                        {/* <h1 className="brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />THÀNH PHỐ HỒ CHÍ MINH</h1> */}
+                        <h1 className="brand-name-vi">{t('school_name')}</h1>
+                        <span className="brand-abbr">{t('school_abbr')}</span>
+                        {/* <p className="brand-name-en">Ho Chi Minh City University<br />of Technology and Engineering</p> */}
                     </div>
 
                     <div className="brand-unit-info">
@@ -68,15 +70,13 @@ function Login({ onLoginSuccess, onNavigate }) {
                 <div className="mobile-logo">
                     <img src={logoHCMUTE} alt="HCM-UTE" className="mobile-logo-img" />
                     <div>
-                        <div className="mobile-abbr">HCM·UTE</div>
-                        <div className="mobile-school-name">ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT THÀNH PHỐ HỒ CHÍ MINH</div>
+                        <div className="mobile-abbr">{t('school_abbr')}</div>
+                        <div className="mobile-school-name">{t('school_name')}</div>
                         <div className="mobile-unit">
                             <p>{t('faculty')}</p>
                             <p>{t('major')}</p>
                         </div>
                     </div>
-
-
                 </div>
 
                 <div className="login-card">
@@ -172,26 +172,27 @@ function Login({ onLoginSuccess, onNavigate }) {
                         className="about-desc"
                         dangerouslySetInnerHTML={{ __html: t('about_desc') }}
                     />
+
                     <div className="about-contacts">
                         <div className="about-group">
                             <span className="about-group-label">{t('about_students')}</span>
                             <a href="mailto:vyvy30032004@gmail.com" className="about-contact-item">
-                                Lê Trần Thúy Vy · vyvy30032004@gmail.com
+                                {t('student_1')} · vyvy30032004@gmail.com
                             </a>
                             <a href="mailto:tranthu221004@gmail.com" className="about-contact-item">
-                                Trần Minh Thư · tranthu221004@gmail.com
+                                {t('student_2')} · tranthu221004@gmail.com
                             </a>
                         </div>
                         <div className="about-group">
                             <span className="about-group-label">{t('about_supervisor')}</span>
                             <a href="mailto:thucoanh@hcmute.edu.vn" className="about-contact-item">
-                                ThS Tạ Vũ Thục Oanh · thucoanh@hcmute.edu.vn
+                                {t('supervisor')} · thucoanh@hcmute.edu.vn
                             </a>
                         </div>
                         <div className="about-group">
                             <span className="about-group-label">{t('about_support')}</span>
                             <a href="mailto:nguyenvantrong3254@gmail.com" className="about-contact-item">
-                                Nguyễn Văn Trọng · nguyenvantrong3254@gmail.com
+                                {t('tech_support')} · nguyenvantrong3254@gmail.com
                             </a>
                         </div>
                     </div>

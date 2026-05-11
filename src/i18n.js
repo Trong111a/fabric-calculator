@@ -225,6 +225,16 @@ const resources = {
             "link_invalid": "Link is invalid or has expired",
             "reset_failed": "Reset failed, please try again",
 
+            "student_1": "Le Tran Thuy Vy",
+            "student_2": "Tran Minh Thu",
+            "supervisor": "M.Sc Ta Vu Thuc Oanh",
+            "tech_support": "Nguyen Van Trong",
+
+            "school_name": "HO CHI MINH CITY UNIVERSITY OF TECHNOLOGY AND ENGINEERING",
+            "school_abbr": "HCM·UTE",
+
+            "delete_all_points": "Delete All Points",
+
             // Backend error codes
             "errors": {
                 // Generic
@@ -477,6 +487,17 @@ const resources = {
             "no_area": "Chưa có diện tích",
             "link_invalid": "Link không hợp lệ hoặc đã hết hạn",
             "reset_failed": "Đặt lại thất bại, thử lại sau",
+
+            "student_1": "Lê Trần Thúy Vy",
+            "student_2": "Trần Minh Thư",
+            "supervisor": "ThS Tạ Vũ Thục Oanh",
+            "tech_support": "Nguyễn Văn Trọng",
+
+            "school_name": "TRƯỜNG ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT THÀNH PHỐ HỒ CHÍ MINH",
+            "school_abbr": "HCM·UTE",
+
+            "delete_all_points": "Xóa tất cả điểm",
+
 
             // Backend error codes
             "errors": {

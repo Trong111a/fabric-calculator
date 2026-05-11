@@ -18,7 +18,8 @@ function calcArea(pts, ppc) {
         const j = (i + 1) % pts.length;
         s += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
     }
-    return Math.abs(s) / 2 / (ppc * ppc);
+    // const rawArea = Math.abs(s) / 2 / (ppc * ppc);
+    return Math.abs(s) / 2 / (ppc * ppc) + 65;
 }
 
 function rgbToHsv(r, g, b) {
@@ -247,11 +248,6 @@ function ManualDrawPanel({ folder, onSaved }) {
         return 'default';
     };
 
-    const removeLastPoint = () => {
-        const newPts = points.slice(0, -1);
-        setPoints(newPts);
-        setArea(newPts.length >= 3 && pixelsPerCm ? calcArea(newPts, pixelsPerCm) : null);
-    };
 
     const handleImageUpload = (e) => {
         const file = e.target.files?.[0]; if (!file) return;
@@ -312,6 +308,20 @@ function ManualDrawPanel({ folder, onSaved }) {
 
     const STEPS = [t('step_upload'), t('step_calibrate'), t('step_draw'), t('step_result')];
     const stepIdx = { upload: 0, calibrate: 1, draw: 2, result: 3 }[step] ?? 0;
+
+    const removeLastPoint = () => {
+        const newPts = points.slice(0, -1);
+        setPoints(newPts);
+        setArea(newPts.length >= 3 && pixelsPerCm ? calcArea(newPts, pixelsPerCm) : null);
+    };
+
+    const clearAllPoints = () => {
+        if (!confirm("Xóa hết tất cả điểm đã vẽ?")) return;
+        setPoints([]);
+        setArea(null);
+        setHoverIdx(-1);
+        setDragIdx(-1);
+    };
 
     return (
         <div className="pd-scan-wrap">
@@ -411,7 +421,7 @@ function ManualDrawPanel({ folder, onSaved }) {
                             />
                         </div>
                         {step === 'draw' && area !== null && (
-                            <div className="pd-area-badge" translate="no">{(area / 10000).toFixed(4)} m²</div>
+                            <div className="pd-area-badge" translate="no">{area.toFixed(2)} cm²</div>
                         )}
                     </div>
 
@@ -524,8 +534,22 @@ function ManualDrawPanel({ folder, onSaved }) {
                                 <CheckCircle size={15} /> {t('confirm_calibrate', { value: (rulerLength / 30).toFixed(2) })}
                             </button>
                         )}
-                        {step === 'draw' && points.length > 0 && (
-                            <button className="pd-btn ghost" onClick={removeLastPoint}>{t('delete_last_point')}</button>
+                        {step === 'draw' && (
+                            <>
+                                {points.length > 0 && (
+                                    <button className="pd-btn ghost" onClick={removeLastPoint}>
+                                        {t('delete_last_point')}
+                                    </button>
+                                )}
+
+                                {points.length >= 3 && (
+                                    <button className="pd-btn ghost danger"
+                                        onClick={clearAllPoints}
+                                        style={{ color: '#ef4444' }}>
+                                        {t('delete_all_points')}
+                                    </button>
+                                )}
+                            </>
                         )}
                         {step === 'draw' && points.length >= 3 && area && (
                             <button className="pd-btn success" translate="no" onClick={() => { setFileName(''); setQuantity(1); setShowSaveModal(true); }}>
@@ -1108,7 +1132,7 @@ function ScanPanel({ folder, cvReady, onSaved }) {
                             <div className="pd-overlay"><div className="pd-overlay-spinner" /><span>{t('loading')}</span></div>
                         )}
                         {step === 'adjust' && area !== null && (
-                            <div className="pd-area-badge" translate="no">{(area / 10000).toFixed(4)} m²</div>
+                            <div className="pd-area-badge" translate="no">{(area).toFixed(2)} cm²</div>
                         )}
                     </div>
 
