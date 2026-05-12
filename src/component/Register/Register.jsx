@@ -49,9 +49,11 @@ function Register({ onNavigate }) {
                         <img src={logoHCMUTE} alt="HCM-UTE" className="rg-brand-logo-img" />
                     </div>
                     <div className="rg-brand-name-block">
-                        <span className="rg-brand-abbr">HCM·UTE</span>
+                        {/* <span className="rg-brand-abbr">HCM·UTE</span>
                         <h1 className="rg-brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />THÀNH PHỐ HỒ CHÍ MINH</h1>
-                        <p className="rg-brand-name-en">Ho Chi Minh City University<br />of Technology and Education</p>
+                        <p className="rg-brand-name-en">Ho Chi Minh City University<br />of Technology and Education</p> */}
+                        <h1 className="rg-brand-name-vi">{t('school_name')}</h1>
+                        <span className="rg-brand-abbr">{t('school_abbr')}</span>
                     </div>
 
                     <div className="rg-brand-unit-info">
@@ -71,8 +73,8 @@ function Register({ onNavigate }) {
                 <div className="rg-mobile-logo">
                     <img src={logoHCMUTE} alt="HCM-UTE" className="rg-mobile-logo-img" />
                     <div>
-                        <div className="rg-mobile-abbr">HCM·UTE</div>
-                        <div className="rg-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT THÀNH PHỐ HỒ CHÍ MINH</div>
+                        <div className="rg-mobile-abbr">{t('school_abbr')}</div>
+                        <div className="rg-mobile-school-name">{t('school_name')}</div>
 
                         <div className="rg-mobile-unit">
                             <p>{t('faculty')}</p>

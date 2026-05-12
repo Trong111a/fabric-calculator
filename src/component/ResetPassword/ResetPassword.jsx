@@ -77,9 +77,11 @@ function ResetPassword({ onNavigate }) {
                         <img src={logoHCMUTE} alt="HCM-UTE" className="rsp-brand-logo-img" />
                     </div>
                     <div className="rsp-brand-name-block">
-                        <span className="rsp-brand-abbr">HCM·UTE</span>
+                        {/* <span className="rsp-brand-abbr">HCM·UTE</span>
                         <h1 className="rsp-brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />THÀNH PHỐ HỒ CHÍ MINH</h1>
-                        <p className="rsp-brand-name-en">Ho Chi Minh City University<br />of Technology and Education</p>
+                        <p className="rsp-brand-name-en">Ho Chi Minh City University<br />of Technology and Education</p> */}
+                        <h1 className="rsp-brand-name-vi">{t('school_name')}</h1>
+                        <span className="rsp-brand-abbr">{t('school_abbr')}</span>
                     </div>
 
                     <div className="rsp-brand-unit-info">
@@ -100,8 +102,8 @@ function ResetPassword({ onNavigate }) {
                 <div className="rsp-mobile-logo">
                     <img src={logoHCMUTE} alt="HCM-UTE" className="rsp-mobile-logo-img" />
                     <div>
-                        <div className="rsp-mobile-abbr">HCM·UTE</div>
-                        <div className="rsp-mobile-school-name">ĐH CÔNG NGHỆ KỸ THUẬT THÀNH PHỐ HỒ CHÍ MINH</div>
+                        <div className="rsp-mobile-abbr">{t('school_abbr')}</div>
+                        <div className="rsp-mobile-school-name">{t('school_name')}</div>
 
                         <div className="rsp-mobile-unit">
                             <p>{t('faculty')}</p>

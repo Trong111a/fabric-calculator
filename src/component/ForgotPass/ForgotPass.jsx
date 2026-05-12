@@ -43,9 +43,11 @@ function ForgotPass({ onNavigate }) {
                         <img src={logoHCMUTE} alt="HCM-UTE" className="fp-brand-logo-img" />
                     </div>
                     <div className="fp-brand-name-block">
-                        <span className="fp-brand-abbr">HCM·UTE</span>
-                        <h1 className="fp-brand-name-vi">TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />THÀNH PHỐ HỒ CHÍ MINH</h1>
-                        <p className="fp-brand-name-en">Ho Chi Minh City University<br />of Technology and Education</p>
+                        {/* <span className="fp-brand-abbr">HCM·UTE</span>
+                        <h1 className="fp-brand-name-vi"> TRƯỜNG ĐẠI HỌC<br />CÔNG NGHỆ KỸ THUẬT<br />THÀNH PHỐ HỒ CHÍ MINH</h1>
+                        <p className="fp-brand-name-en">Ho Chi Minh City University<br />of Technology and Education</p> */}
+                        <h1 className="fp-brand-name-vi">{t('school_name')}</h1>
+                        <span className="fp-brand-abbr">{t('school_abbr')}</span>
                     </div>
 
                     <div className="fp-brand-unit-info">
@@ -65,8 +67,8 @@ function ForgotPass({ onNavigate }) {
                 <div className="fp-mobile-logo">
                     <img src={logoHCMUTE} alt="HCM-UTE" className="fp-mobile-logo-img" />
                     <div>
-                        <div className="fp-mobile-abbr">HCM·UTE</div>
-                        <div className="fp-mobile-school-name">ĐẠI HỌC CÔNG NGHỆ KỸ THUẬT THÀNH PHỐ HỒ CHÍ MINH</div>
+                        <div className="fp-mobile-abbr">{t('school_abbr')}</div>
+                        <div className="fp-mobile-school-name">{t('school_name')}</div>
 
 
                         <div className="fp-mobile-unit">
