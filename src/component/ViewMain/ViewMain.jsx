@@ -633,7 +633,7 @@ export default function ViewMain({ user, onLogout, onOpenFolders }) {
                                 <div className="vm-overlay"><div className="vm-spinner" /><span>{t('loading')}</span></div>
                             )}
                             {step === 'adjust' && area !== null && (
-                                <div className="vm-area-badge" translate="no">{(area / 10000).toFixed(4)} m²</div>
+                                <div className="vm-area-badge" translate="no">{area.toFixed(2)} cm²</div>
                             )}
                         </div>
 
