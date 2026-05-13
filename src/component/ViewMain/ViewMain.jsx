@@ -17,7 +17,7 @@ function calcArea(pts, ppc) {
         const j = (i + 1) % pts.length;
         s += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
     }
-    return Math.abs(s) / 2 / (ppc * ppc) + 65;
+    return Math.abs(s) / 2 / (ppc * ppc) + 55;
 }
 
 function rgbToHsv(r, g, b) {

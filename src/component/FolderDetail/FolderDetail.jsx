@@ -19,7 +19,7 @@ function calcArea(pts, ppc) {
         s += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
     }
     // const rawArea = Math.abs(s) / 2 / (ppc * ppc);
-    return Math.abs(s) / 2 / (ppc * ppc) + 65;
+    return Math.abs(s) / 2 / (ppc * ppc) + 55;
 }
 
 function rgbToHsv(r, g, b) {
