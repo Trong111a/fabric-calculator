@@ -10,6 +10,16 @@ import { api } from '../../services/api';
 import './ViewMain.css';
 import backgroundImg from '../../assets/images/background.png';
 
+// function calcArea(pts, ppc) {
+//     if (!pts.length || !ppc) return 0;
+//     let s = 0;
+//     for (let i = 0; i < pts.length; i++) {
+//         const j = (i + 1) % pts.length;
+//         s += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
+//     }
+//     return Math.abs(s) / 2 / (ppc * ppc) + 60;
+// }
+
 function calcArea(pts, ppc) {
     if (!pts.length || !ppc) return 0;
     let s = 0;
@@ -17,7 +27,7 @@ function calcArea(pts, ppc) {
         const j = (i + 1) % pts.length;
         s += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
     }
-    return Math.abs(s) / 2 / (ppc * ppc) + 60;
+    return Math.abs(s) / 2 / (ppc * ppc) * 1.03 + 5;
 }
 
 function rgbToHsv(r, g, b) {
