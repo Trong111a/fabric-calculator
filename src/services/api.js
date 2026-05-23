@@ -1,6 +1,9 @@
 const API_URL = 'https://fabric-calculator-production.up.railway.app/api';
 const BASE_URL = 'https://fabric-calculator-production.up.railway.app';
 
+// const API_URL = 'http://localhost:5000/api';
+// const BASE_URL = 'http://localhost:5000';
+
 const prefixImageUrls = (data) => {
     if (!data) return data;
     if (Array.isArray(data)) return data.map(prefixImageUrls);
@@ -93,7 +96,7 @@ class ApiService {
 
     deleteFolder = (id) => this.request(`/folders/${id}`, { method: 'DELETE' });
 
-    forgotPassword = (email,  lang = 'vi') => this.request('/auth/forgot-password', {
+    forgotPassword = (email, lang = 'vi') => this.request('/auth/forgot-password', {
         method: 'POST',
         body: { email, lang }
     });
@@ -112,6 +115,15 @@ class ApiService {
         method: 'PUT',
         body: data
     });
+
+    getFabricCalc = (projectId) =>
+        this.request(`/fabric-calculations/${projectId}`);
+
+    saveFabricCalc = (projectId, data) =>
+        this.request(`/fabric-calculations/${projectId}`, {
+            method: 'POST',
+            body: data
+        });
 }
 
 export const api = new ApiService();

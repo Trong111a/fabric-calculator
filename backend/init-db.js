@@ -70,6 +70,23 @@ const initDatabase = async () => {
             )
         `);
 
+        await pool.query(`
+    CREATE TABLE IF NOT EXISTS fabric_calculations (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        kho_vai DECIMAL(5,2) NOT NULL DEFAULT 1.5,
+        hao_phi_norm DECIMAL(5,2) NOT NULL DEFAULT 3,
+        norm_result DECIMAL(12,6),
+        order_qty INTEGER,
+        hao_phi_vai DECIMAL(5,2) NOT NULL DEFAULT 3,
+        fabric_result DECIMAL(12,6),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(project_id)
+    )
+`);
+
         const bcrypt = require('bcryptjs');
         const hashedPassword = await bcrypt.hash('admin123', 10);
         await pool.query(`

@@ -11,17 +11,6 @@ import { api } from '../../services/api';
 import './FolderDetail.css';
 import backgroundImg from '../../assets/images/background.png';
 
-// function calcArea(pts, ppc) {
-//     if (!pts || pts.length < 3 || !ppc) return 0;
-//     let s = 0;
-//     for (let i = 0; i < pts.length; i++) {
-//         const j = (i + 1) % pts.length;
-//         s += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
-//     }
-//     // const rawArea = Math.abs(s) / 2 / (ppc * ppc);
-//     return Math.abs(s) / 2 / (ppc * ppc) + 60;
-// }
-
 function calcArea(pts, ppc) {
     if (!pts || pts.length < 3 || !ppc) return 0;
     let s = 0;
@@ -258,7 +247,6 @@ function ManualDrawPanel({ folder, onSaved }) {
         return 'default';
     };
 
-
     const handleImageUpload = (e) => {
         const file = e.target.files?.[0]; if (!file) return;
         const reader = new FileReader();
@@ -326,7 +314,7 @@ function ManualDrawPanel({ folder, onSaved }) {
     };
 
     const clearAllPoints = () => {
-        if (!confirm("Xóa hết tất cả điểm đã vẽ?")) return;
+        if (!confirm(t('delete_all_points') + '?')) return;
         setPoints([]);
         setArea(null);
         setHoverIdx(-1);
@@ -551,11 +539,10 @@ function ManualDrawPanel({ folder, onSaved }) {
                                         {t('delete_last_point')}
                                     </button>
                                 )}
-
                                 {points.length >= 3 && (
-                                    <button className="pd-btn ghost danger"
+                                    <button className="pd-btn ghost"
                                         onClick={clearAllPoints}
-                                        style={{ color: '#ef4444' }}>
+                                        style={{ color: '#ef4444', borderColor: '#fca5a5' }}>
                                         {t('delete_all_points')}
                                     </button>
                                 )}
@@ -1105,7 +1092,6 @@ function ScanPanel({ folder, cvReady, onSaved }) {
                         </div>
                     </div>
 
-                    {/* Zoom controls */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 13, color: '#6b7280', fontWeight: 500 }}>{t('zoom_label')}</span>
                         <button className="pd-btn ghost" style={{ padding: '5px 12px', fontSize: 13 }}
@@ -1276,26 +1262,397 @@ function ScanPanel({ folder, cvReady, onSaved }) {
 }
 
 /* ══════════════════════════════════════════════════════════
+   FABRIC CALC SECTION
+══════════════════════════════════════════════════════════ */
+function FabricCalcSection({ measurements, folderId, onCalcChange }) {
+    const { t } = useTranslation();
+    const [khoVai, setKhoVai] = useState(1.5);
+    const [haoPhiNorm, setHaoPhiNorm] = useState(3);
+    const [normResult, setNormResult] = useState(null);
+    const [orderQty, setOrderQty] = useState('');
+    const [haoPhiVai, setHaoPhiVai] = useState(3);
+    const [fabricResult, setFabricResult] = useState(null);
+    const [open, setOpen] = useState(false);
+    const [loadingCalc, setLoadingCalc] = useState(false);
+    const [savingCalc, setSavingCalc] = useState(false);
+    const [lastSaved, setLastSaved] = useState(null);
+
+    const totalAreaM2 = measurements.reduce(
+        (s, m) => s + Number(m.area_cm2) * (m.quantity || 1), 0
+    ) / 10000;
+
+    useEffect(() => {
+        if (!folderId) return;
+        setLoadingCalc(true);
+        api.getFabricCalc(folderId)
+            .then(data => {
+                if (!data) return;
+                setKhoVai(Number(data.kho_vai) || 1.5);
+                setHaoPhiNorm(Number(data.hao_phi_norm) || 3);
+                setHaoPhiVai(Number(data.hao_phi_vai) || 3);
+                if (data.norm_result) setNormResult(Number(data.norm_result));
+                if (data.order_qty) setOrderQty(String(data.order_qty));
+                if (data.fabric_result) setFabricResult(Number(data.fabric_result));
+                setLastSaved(data.updated_at);
+
+                onCalcChange?.({
+                    khoVai: Number(data.kho_vai) || 1.5,
+                    haoPhiNorm: Number(data.hao_phi_norm) || 3,
+                    normResult: data.norm_result ? Number(data.norm_result) : null,
+                    orderQty: data.order_qty ? String(data.order_qty) : '',
+                    haoPhiVai: Number(data.hao_phi_vai) || 3,
+                    fabricResult: data.fabric_result ? Number(data.fabric_result) : null,
+                });
+            })
+            .catch(() => { })
+            .finally(() => setLoadingCalc(false));
+    }, [folderId]);
+
+    const saveToDb = async (patch = {}) => {
+        if (!folderId) return;
+        setSavingCalc(true);
+        try {
+            const kv = 'khoVai' in patch ? patch.khoVai : khoVai;
+            const hn = 'haoPhiNorm' in patch ? patch.haoPhiNorm : haoPhiNorm;
+            const nr = 'normResult' in patch ? patch.normResult : normResult;
+            const oq = 'orderQty' in patch ? patch.orderQty : orderQty;
+            const hv = 'haoPhiVai' in patch ? patch.haoPhiVai : haoPhiVai;
+            const fr = 'fabricResult' in patch ? patch.fabricResult : fabricResult;
+
+            const data = await api.saveFabricCalc(folderId, {
+                kho_vai: kv,
+                hao_phi_norm: hn,
+                norm_result: nr ?? null,
+                order_qty: oq ? parseInt(oq) : null,
+                hao_phi_vai: hv,
+                fabric_result: fr ?? null,
+            });
+            setLastSaved(data.updated_at);
+        } catch (e) {
+            console.error('Save fabric calc error:', e);
+            alert('Lưu thất bại: ' + e.message);
+        } finally {
+            setSavingCalc(false);
+        }
+    };
+
+    const calcNorm = async () => {
+        if (!measurements.length) return;
+        const norm = (totalAreaM2 * (1 + haoPhiNorm / 100)) / khoVai;
+        setNormResult(norm);
+        setFabricResult(null);
+        onCalcChange?.({ khoVai, haoPhiNorm, normResult: norm, orderQty, haoPhiVai, fabricResult: null });
+        await saveToDb({ normResult: norm, fabricResult: null });
+    };
+
+    const calcFabric = async () => {
+        const qty = parseInt(orderQty);
+        if (!normResult || !qty || qty <= 0) return;
+        const fabric = qty * normResult * (1 + haoPhiVai / 100);
+        setFabricResult(fabric);
+        onCalcChange?.({ khoVai, haoPhiNorm, normResult, orderQty, haoPhiVai, fabricResult: fabric });
+        await saveToDb({ fabricResult: fabric, orderQty });
+    };
+
+    const handleReset = async () => {
+        if (!confirm(t('reset_calc_confirm'))) return;
+        setNormResult(null);
+        setFabricResult(null);
+        setOrderQty('');
+        setKhoVai(1.5);
+        setHaoPhiNorm(3);
+        setHaoPhiVai(3);
+        setLastSaved(null);
+        onCalcChange?.(null);
+        await saveToDb({ normResult: null, fabricResult: null, orderQty: null, khoVai: 1.5, haoPhiNorm: 3, haoPhiVai: 3 });
+    };
+
+    const PresetBtn = ({ value, active, onClick, label }) => (
+        <button onClick={onClick} style={{
+            padding: '6px 10px', borderRadius: 7, fontSize: 13, cursor: 'pointer',
+            border: active ? '2px solid #0065b3' : '1.5px solid #d1d5db',
+            background: active ? '#dbeafe' : '#fff',
+            color: active ? '#0065b3' : '#374151',
+            fontWeight: active ? 700 : 500, transition: 'all .15s', whiteSpace: 'nowrap',
+        }}>{label ?? value}</button>
+    );
+
+    return (
+        <div style={{
+            marginBottom: 12, background: 'rgba(255,255,255,0.95)',
+            borderRadius: 14, border: '1.5px solid #bfdbfe',
+            overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,101,179,0.08)',
+        }}>
+            {/* Header */}
+            <button onClick={() => setOpen(o => !o)} style={{
+                width: '100%', display: 'flex', alignItems: 'center',
+                justifyContent: 'space-between', padding: '13px 16px',
+                background: 'none', border: 'none',
+                borderBottom: open ? '1px solid #bfdbfe' : 'none',
+                cursor: 'pointer', gap: 8,
+            }}>
+                <span style={{
+                    fontWeight: 700, fontSize: 14, color: '#0065b3',
+                    display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
+                }}>
+                    🧮 {t('calc_fabric_title')}
+                    {loadingCalc && <span style={{ fontSize: 11, color: '#9ca3af' }}>⏳</span>}
+                    {savingCalc && <span style={{ fontSize: 11, color: '#9ca3af' }}>💾...</span>}
+                    {lastSaved && !savingCalc && (
+                        <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 400 }}>
+                            · {t('calc_saved_at', {
+                                time: new Date(lastSaved).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+                            })}
+                        </span>
+                    )}
+                    {normResult !== null && (
+                        <span style={{
+                            fontSize: 11, background: '#dbeafe', color: '#0065b3',
+                            borderRadius: 20, padding: '2px 8px', fontWeight: 700, whiteSpace: 'nowrap',
+                        }} translate="no">📐 {normResult.toFixed(3)} m</span>
+                    )}
+                    {fabricResult !== null && (
+                        <span style={{
+                            fontSize: 11, background: '#fef9c3', color: '#b45309',
+                            borderRadius: 20, padding: '2px 8px', fontWeight: 700, whiteSpace: 'nowrap',
+                        }} translate="no">🧵 {fabricResult.toFixed(2)} m</span>
+                    )}
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {(normResult !== null || fabricResult !== null) && (
+                        <button
+                            onClick={e => { e.stopPropagation(); handleReset(); }}
+                            style={{
+                                padding: '4px 10px', borderRadius: 6, fontSize: 12,
+                                border: '1px solid #ef4444', background: '#fff',
+                                color: '#ef4444', cursor: 'pointer', fontWeight: 600,
+                            }}
+                        >
+                            🗑 {t('reset_calc')}
+                        </button>
+                    )}
+                    <span style={{
+                        fontSize: 16, color: '#0065b3', flexShrink: 0,
+                        transform: open ? 'rotate(180deg)' : 'none',
+                        transition: 'transform .2s', display: 'inline-block',
+                    }}>⌄</span>
+                </div>
+            </button>
+
+            {open && (
+                <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+                    {/* BLOCK 1: ĐỊNH MỨC */}
+                    <div style={{ background: '#f0f7ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 14px' }}>
+                        <div style={{
+                            fontSize: 11, color: '#0065b3', fontWeight: 600, marginBottom: 12,
+                            lineHeight: 1.5, background: '#dbeafe', borderRadius: 6, padding: '6px 10px',
+                        }}>
+                            📐 {t('formula_norm')}
+                        </div>
+
+                        <div style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            marginBottom: 12, padding: '8px 10px',
+                            background: '#fff', borderRadius: 8, border: '1px solid #e0e7ff',
+                        }}>
+                            <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>{t('total_area_input')}</span>
+                            <span style={{ fontSize: 15, fontWeight: 700, color: '#0065b3', fontFamily: 'DM Mono, monospace' }} translate="no">
+                                {totalAreaM2.toFixed(4)} m²
+                            </span>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                            <div style={{ flex: '1 1 140px', minWidth: 0 }}>
+                                <label style={{ fontSize: 12, color: '#374151', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                                    {t('fabric_width')}
+                                </label>
+                                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
+                                    {[1.3, 1.4, 1.5, 1.6].map(v => (
+                                        <PresetBtn key={v} value={v} active={khoVai === v}
+                                            onClick={() => setKhoVai(v)} label={`${v}m`} />
+                                    ))}
+                                    <input type="number" min="0.1" step="0.1" value={khoVai}
+                                        onChange={e => setKhoVai(parseFloat(e.target.value) || 1.5)}
+                                        style={{ width: 60, padding: '6px 6px', borderRadius: 7, border: '1.5px solid #d1d5db', fontSize: 13, textAlign: 'center', fontFamily: 'DM Mono, monospace' }} />
+                                </div>
+                            </div>
+                            <div style={{ flex: '1 1 140px', minWidth: 0 }}>
+                                <label style={{ fontSize: 12, color: '#374151', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                                    {t('waste_pct')}
+                                </label>
+                                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
+                                    {[2, 3, 4, 5].map(v => (
+                                        <PresetBtn key={v} value={v} active={haoPhiNorm === v}
+                                            onClick={() => setHaoPhiNorm(v)} label={`${v}%`} />
+                                    ))}
+                                    <input type="number" min="0" max="100" step="0.5" value={haoPhiNorm}
+                                        onChange={e => setHaoPhiNorm(parseFloat(e.target.value) || 0)}
+                                        style={{ width: 52, padding: '6px 4px', borderRadius: 7, border: '1.5px solid #d1d5db', fontSize: 13, textAlign: 'center', fontFamily: 'DM Mono, monospace' }} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {normResult !== null && (
+                            <div style={{
+                                marginTop: 12, padding: '12px 14px', borderRadius: 9,
+                                background: 'linear-gradient(135deg, #0065b3 0%, #1d4ed8 100%)',
+                                color: '#fff', display: 'flex', alignItems: 'center',
+                                justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
+                            }}>
+                                <div>
+                                    <div style={{ fontSize: 11, opacity: .85, marginBottom: 2 }}>{t('norm_result_label')}</div>
+                                    <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'DM Mono, monospace', letterSpacing: '-0.5px' }} translate="no">
+                                        {normResult.toFixed(3)}<span style={{ fontSize: 15, fontWeight: 500, marginLeft: 4 }}>m</span>
+                                    </div>
+                                </div>
+                                <div style={{ fontSize: 11, opacity: .8, lineHeight: 1.8, textAlign: 'right' }}>
+                                    <div translate="no">{totalAreaM2.toFixed(4)} m² × (1 + {haoPhiNorm}%)</div>
+                                    <div translate="no">÷ {khoVai} m = {normResult.toFixed(3)} m</div>
+                                </div>
+                            </div>
+                        )}
+
+                        <button className="pd-btn primary" onClick={calcNorm}
+                            disabled={!measurements.length || savingCalc}
+                            style={{ marginTop: 10, width: '100%', justifyContent: 'center', fontSize: 14 }}>
+                            📐 {t('btn_calc_norm')}
+                        </button>
+                    </div>
+
+                    {/* BLOCK 2: SỐ LƯỢNG VẢI */}
+                    {normResult !== null && (
+                        <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '12px 14px' }}>
+                            <div style={{
+                                fontSize: 11, color: '#92400e', fontWeight: 600, marginBottom: 12,
+                                lineHeight: 1.5, background: '#fef9c3', borderRadius: 6, padding: '6px 10px',
+                            }}>
+                                🧵 {t('formula_fabric')}
+                            </div>
+
+                            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                                <div style={{ flex: '1 1 140px', minWidth: 0 }}>
+                                    <label style={{ fontSize: 12, color: '#374151', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                                        {t('order_qty_label')}
+                                    </label>
+                                    <input className="pd-field-input" type="number" min="1" inputMode="numeric"
+                                        value={orderQty} onChange={e => setOrderQty(e.target.value)}
+                                        placeholder={t('order_qty_placeholder')}
+                                        style={{ width: '100%', boxSizing: 'border-box' }} />
+                                </div>
+                                <div style={{ flex: '1 1 120px', minWidth: 0 }}>
+                                    <label style={{ fontSize: 12, color: '#374151', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                                        {t('norm_avg_label')}
+                                    </label>
+                                    <input type="text" readOnly value={`${normResult.toFixed(3)} m`} translate="no"
+                                        style={{
+                                            width: '100%', boxSizing: 'border-box', padding: '10px 12px',
+                                            borderRadius: 8, border: '1.5px solid #d1d5db', background: '#f3f4f6',
+                                            color: '#0065b3', fontWeight: 700, fontSize: 13, fontFamily: 'DM Mono, monospace',
+                                        }} />
+                                </div>
+                            </div>
+
+                            <div style={{ marginTop: 12 }}>
+                                <label style={{ fontSize: 12, color: '#374151', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                                    {t('waste_pct2')}
+                                </label>
+                                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
+                                    {[2, 3, 4, 5].map(v => (
+                                        <button key={v} onClick={() => setHaoPhiVai(v)} style={{
+                                            padding: '6px 10px', borderRadius: 7, fontSize: 13, cursor: 'pointer',
+                                            border: haoPhiVai === v ? '2px solid #d97706' : '1.5px solid #d1d5db',
+                                            background: haoPhiVai === v ? '#fef9c3' : '#fff',
+                                            color: haoPhiVai === v ? '#b45309' : '#374151',
+                                            fontWeight: haoPhiVai === v ? 700 : 500, transition: 'all .15s',
+                                        }}>{v}%</button>
+                                    ))}
+                                    <input type="number" min="0" max="100" step="0.5" value={haoPhiVai}
+                                        onChange={e => setHaoPhiVai(parseFloat(e.target.value) || 0)}
+                                        style={{ width: 52, padding: '6px 4px', borderRadius: 7, border: '1.5px solid #d1d5db', fontSize: 13, textAlign: 'center', fontFamily: 'DM Mono, monospace' }} />
+                                </div>
+                            </div>
+
+                            {fabricResult !== null && (
+                                <div style={{
+                                    marginTop: 12, padding: '12px 14px', borderRadius: 9,
+                                    background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)',
+                                    color: '#fff', display: 'flex', alignItems: 'center',
+                                    justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
+                                }}>
+                                    <div>
+                                        <div style={{ fontSize: 11, opacity: .9, marginBottom: 2 }}>{t('fabric_result_label')}</div>
+                                        <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'DM Mono, monospace', letterSpacing: '-0.5px' }} translate="no">
+                                            {fabricResult.toFixed(2)}<span style={{ fontSize: 15, fontWeight: 500, marginLeft: 4 }}>m</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ fontSize: 11, opacity: .9, lineHeight: 1.8, textAlign: 'right' }}>
+                                        <div translate="no">{orderQty} × {normResult.toFixed(3)} m</div>
+                                        <div translate="no">× (1 + {haoPhiVai}%) = {fabricResult.toFixed(2)} m</div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <button className="pd-btn" onClick={calcFabric}
+                                disabled={!orderQty || parseInt(orderQty) <= 0 || savingCalc}
+                                style={{
+                                    marginTop: 10, width: '100%', justifyContent: 'center', fontSize: 14,
+                                    background: (!orderQty || parseInt(orderQty) <= 0) ? '#e5e7eb' : 'linear-gradient(135deg, #d97706, #f59e0b)',
+                                    color: (!orderQty || parseInt(orderQty) <= 0) ? '#9ca3af' : '#fff',
+                                    border: 'none',
+                                    cursor: (!orderQty || parseInt(orderQty) <= 0) ? 'not-allowed' : 'pointer',
+                                    boxShadow: (!orderQty || parseInt(orderQty) <= 0) ? 'none' : '0 3px 10px rgba(217,119,6,0.3)',
+                                }}>
+                                🧵 {t('btn_calc_fabric')}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
+
+FabricCalcSection.propTypes = {
+    measurements: PropTypes.array.isRequired,
+    folderId: PropTypes.string,
+    onCalcChange: PropTypes.func,
+};
+
+/* ══════════════════════════════════════════════════════════
    DOWNLOAD CSV
 ══════════════════════════════════════════════════════════ */
-function DownloadPanel({ folder, measurements }) {
+function DownloadPanel({ folder, measurements, fabricCalcData }) {
     const { t } = useTranslation();
 
     const downloadCSV = () => {
-        const headers = [t('col_name'), 'Diện tích (cm²)', 'Diện tích (m²)', t('col_quantity'), 'Tổng diện tích (cm²)', 'Tổng diện tích (m²)', t('col_date')];
-        // const headers = [t('col_name'), 'Diện tích (cm²)', 'Diện tích 1 chi tiết (m²)', t('col_quantity'), 'Tổng diện tích (cm²)', 'Tổng diện tích (m²)', 'Tỷ lệ (px/cm)', 'Số đỉnh', t('col_date')];
+        const headers = [t('col_name'), t('area_cm2'), t('area_m2'), t('col_quantity'), t('col_total_area_cm2'), t('col_total_area_m2'), t('col_date')];
         const rows = measurements.map(m => {
             const area = Number(m.area_cm2); const qty = m.quantity || 1; const total = area * qty;
-            // const pts = (() => { try { const p = typeof m.polygon_points === 'string' ? JSON.parse(m.polygon_points) : m.polygon_points; return Array.isArray(p) ? p.length : 0; } catch { return 0; } })();
-            const date = new Date(m.created_at).toLocaleDateString('vi-VN');
+            const date = new Date(m.created_at).toLocaleDateString();
             return [m.name, area.toFixed(2), (area / 10000).toFixed(4), qty, total.toFixed(2), (total / 10000).toFixed(4), date];
-            // return [m.name, area.toFixed(2), (area / 10000).toFixed(4), qty, total.toFixed(2), (total / 10000).toFixed(4), Number(m.pixels_per_cm).toFixed(2), pts, date];
         });
         const totalArea = measurements.reduce((s, m) => s + Number(m.area_cm2) * (m.quantity || 1), 0);
         const totalQty = measurements.reduce((s, m) => s + (m.quantity || 1), 0);
         rows.push([]);
         rows.push([t('grand_total'), '', '', totalQty, totalArea.toFixed(2), (totalArea / 10000).toFixed(4), '']);
-        // rows.push([t('grand_total'), '', '', totalQty, totalArea.toFixed(2), (totalArea / 10000).toFixed(4), '', '', '']);
+
+        // === SECTION ĐỊNH MỨC ===
+        if (fabricCalcData) {
+            const norm = fabricCalcData.normResult ?? fabricCalcData.norm_result;
+            const fabric = fabricCalcData.fabricResult ?? fabricCalcData.fabric_result;
+            const qty = fabricCalcData.orderQty ?? fabricCalcData.order_qty;
+            rows.push([]);
+            rows.push(['─── ' + t('export_calc_params') + ' ───', '', '', '', '', '', '']);
+            rows.push([t('export_fabric_width'), fabricCalcData.khoVai ?? fabricCalcData.kho_vai ?? '', 'm', '', '', '', '']);
+            rows.push([t('export_waste_norm'), (fabricCalcData.haoPhiNorm ?? fabricCalcData.hao_phi_norm ?? '') + '%', '', '', '', '', '']);
+            if (norm) rows.push([t('export_fabric_norm'), Number(norm).toFixed(4), 'm/sp', '', '', '', '']);
+            if (qty) rows.push([t('export_order_qty'), qty, 'sp', '', '', '', '']);
+            if (fabricCalcData.haoPhiVai ?? fabricCalcData.hao_phi_vai)
+                rows.push([t('export_waste_fab'), (fabricCalcData.haoPhiVai ?? fabricCalcData.hao_phi_vai) + '%', '', '', '', '', '']);
+            if (fabric) rows.push([t('export_fabric_needed'), Number(fabric).toFixed(2), 'm', '', '', '', '']);
+        }
+
         const csvContent = [headers, ...rows]
             .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
             .join('\n');
@@ -1303,7 +1660,7 @@ function DownloadPanel({ folder, measurements }) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${folder.name}_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.csv`;
+        a.download = `${folder.name}_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
         a.click(); URL.revokeObjectURL(url);
     };
 
@@ -1343,7 +1700,7 @@ function DownloadPanel({ folder, measurements }) {
                                         <td translate="no">{area.toFixed(2)} cm²</td>
                                         <td>{qty}</td>
                                         <td translate="no">{(area * qty / 10000).toFixed(4)} m²</td>
-                                        <td>{new Date(m.created_at).toLocaleDateString('vi-VN')}</td>
+                                        <td>{new Date(m.created_at).toLocaleDateString()}</td>
                                     </tr>
                                 );
                             })}
@@ -1361,6 +1718,30 @@ function DownloadPanel({ folder, measurements }) {
                         )}
                     </table>
                 </div>
+
+                {/* Preview thông số định mức nếu có */}
+                {fabricCalcData && (fabricCalcData.normResult ?? fabricCalcData.norm_result) && (
+                    <div style={{
+                        margin: '0 20px 16px', padding: '12px 16px',
+                        background: '#f0f7ff', borderRadius: 10,
+                        border: '1px solid #bfdbfe', fontSize: 13,
+                    }}>
+                        <div style={{ fontWeight: 700, color: '#0065b3', marginBottom: 8 }}>
+                            📐 {t('export_calc_params')}
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 24px', color: '#374151' }}>
+                            <span>{t('export_fabric_width')}: <strong translate="no">{fabricCalcData.khoVai ?? fabricCalcData.kho_vai}m</strong></span>
+                            <span>{t('export_waste_norm')}: <strong translate="no">{fabricCalcData.haoPhiNorm ?? fabricCalcData.hao_phi_norm}%</strong></span>
+                            <span>{t('export_fabric_norm')}: <strong style={{ color: '#0065b3' }} translate="no">{Number(fabricCalcData.normResult ?? fabricCalcData.norm_result).toFixed(4)}m</strong></span>
+                            {(fabricCalcData.orderQty ?? fabricCalcData.order_qty) && (
+                                <span>{t('export_order_qty')}: <strong translate="no">{fabricCalcData.orderQty ?? fabricCalcData.order_qty}</strong></span>
+                            )}
+                            {(fabricCalcData.fabricResult ?? fabricCalcData.fabric_result) && (
+                                <span>{t('export_fabric_needed')}: <strong style={{ color: '#d97706' }} translate="no">{Number(fabricCalcData.fabricResult ?? fabricCalcData.fabric_result).toFixed(2)}m</strong></span>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
             <div className="pd-actions">
                 <button className="pd-btn primary" onClick={downloadCSV} disabled={measurements.length === 0}>
@@ -1382,6 +1763,7 @@ export default function ProjectDetail({ folder, onBack }) {
     const [selected, setSelected] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
     const [cvReady, setCvReady] = useState(false);
+    const [fabricCalcData, setFabricCalcData] = useState(null);
 
     const [editingId, setEditingId] = useState(null);
     const [editName, setEditName] = useState('');
@@ -1416,7 +1798,7 @@ export default function ProjectDetail({ folder, onBack }) {
         } catch { alert(t('delete_failed')); } finally { setDeletingId(null); }
     };
 
-    const fmt = d => new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const fmt = d => new Date(d).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric' });
     const totalArea = measurements.reduce((s, m) => s + (Number(m.area_cm2) * (m.quantity || 1)), 0);
     const totalQty = measurements.reduce((s, m) => s + (m.quantity || 1), 0);
 
@@ -1458,9 +1840,9 @@ export default function ProjectDetail({ folder, onBack }) {
             </header>
 
             <div className="pd-tabs">
-                {TABS.map(t => (
-                    <button key={t.key} className={`pd-tab${tab === t.key ? ' active' : ''}`} onClick={() => setTab(t.key)}>
-                        {t.icon} {t.label}
+                {TABS.map(tb => (
+                    <button key={tb.key} className={`pd-tab${tab === tb.key ? ' active' : ''}`} onClick={() => setTab(tb.key)}>
+                        {tb.icon} {tb.label}
                     </button>
                 ))}
             </div>
@@ -1482,6 +1864,15 @@ export default function ProjectDetail({ folder, onBack }) {
                             </div>
                         ))}
                     </div>
+
+                    <div style={{ padding: '0 16px' }}>
+                        <FabricCalcSection
+                            measurements={measurements}
+                            folderId={folder.id}
+                            onCalcChange={setFabricCalcData}
+                        />
+                    </div>
+
                     <main className="pd-main">
                         {loading ? (
                             <div className="pd-loading"><div className="pd-spinner" /> {t('loading')}</div>
@@ -1534,7 +1925,13 @@ export default function ProjectDetail({ folder, onBack }) {
 
             {tab === 'scan' && <ScanPanel folder={folder} cvReady={cvReady} onSaved={() => { loadDetail(); setTab('list'); }} />}
             {tab === 'manual' && <ManualDrawPanel folder={folder} cvReady={cvReady} onSaved={() => { loadDetail(); setTab('list'); }} />}
-            {tab === 'export' && <DownloadPanel folder={folder} measurements={measurements} />}
+            {tab === 'export' && (
+                <DownloadPanel
+                    folder={folder}
+                    measurements={measurements}
+                    fabricCalcData={fabricCalcData}
+                />
+            )}
 
             {selected && (
                 <div className="pd-modal-bg" onClick={() => setSelected(null)}>
@@ -1646,6 +2043,7 @@ ManualDrawPanel.propTypes = {
 DownloadPanel.propTypes = {
     folder: PropTypes.shape({ name: PropTypes.string.isRequired }).isRequired,
     measurements: PropTypes.array.isRequired,
+    fabricCalcData: PropTypes.object,
 };
 ProjectDetail.propTypes = {
     folder: PropTypes.shape({ id: PropTypes.string.isRequired, name: PropTypes.string.isRequired }).isRequired,

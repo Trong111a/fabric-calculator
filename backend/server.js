@@ -8,6 +8,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const measurementRoutes = require('./routes/measurements');
 const projectRoutes = require('./routes/projects');
+const fabricCalcRouter = require('./routes/fabricCalculations');
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use('/uploads', (req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/measurements', measurementRoutes);
 app.use('/api/folders', projectRoutes);
+app.use('/api/fabric-calculations', fabricCalcRouter);
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', time: new Date().toISOString() });

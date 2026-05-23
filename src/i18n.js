@@ -187,6 +187,10 @@ const resources = {
             "export_title": "Export CSV Data",
             "export_sub": "Download all details from folder <b>{{name}}</b> as Excel/CSV",
             "preview_title": "Data Preview",
+            "area_cm2": "Area (cm²)",
+            "area_m2": "Area (m²)",
+            "col_total_area_cm2": "Total Area (cm²)",
+            "col_total_area_m2": "Total Area (m²)",
             "col_name": "Detail Name",
             "col_area_one": "Area (1 detail)",
             "col_quantity": "Quantity",
@@ -234,6 +238,36 @@ const resources = {
             "school_abbr": "HCM·UTE",
 
             "delete_all_points": "Delete All Points",
+
+            "calc_fabric_title": "Fabric Norm & Quantity Calculator",
+            "fabric_width": "Fabric Width (m)",
+            "waste_pct": "% Waste",
+            "btn_calc_norm": "Calculate Norm",
+            "norm_result_label": "Fabric Norm per Product",
+            "norm_detail": "Total area: {{area}} m² · Width: {{width}}m · Waste: {{pct}}%",
+            "order_qty_label": "Order Quantity (pieces)",
+            "order_qty_placeholder": "Enter quantity...",
+            "norm_avg_label": "Avg. Norm (m) — auto",
+            "waste_pct2": "% Loss",
+            "btn_calc_fabric": "Calculate Fabric Needed",
+            "fabric_result_label": "Fabric Needed",
+            "fabric_detail": "Qty: {{qty}} pcs · Norm: {{norm}}m · Loss: {{pct}}%",
+            "formula_norm": "Fabric length = Total area × (1 + %Waste) ÷ Fabric width",
+            "formula_fabric": "Fabric needed = Order qty × Norm × (1 + %Loss)",
+            "total_area_input": "Total pattern area",
+            "reset_calc": "Reset calculation",
+            "reset_calc_confirm": "Clear all calculation data and start over?",
+            "calc_saved_at": "saved at {{time}}",
+
+            // Export CSV — fabric calc section
+            "export_calc_params": "Calculation Parameters",
+            "export_fabric_norm": "Fabric Norm (m/piece)",
+            "export_order_qty": "Order Quantity (pieces)",
+            "export_fabric_needed": "Fabric Needed (m)",
+            "export_waste_norm": "Cutting Waste %",
+            "export_waste_fab": "Production Loss %",
+            "export_fabric_width": "Fabric Width (m)",
+
 
             // Backend error codes
             "errors": {
@@ -451,9 +485,11 @@ const resources = {
             "export_sub": "Tải toàn bộ chi tiết trong folder <b>{{name}}</b> ra file Excel/CSV",
             "preview_title": "Xem trước dữ liệu",
             "col_name": "Tên chi tiết",
-            "col_area_one": "DT 1 chi tiết",
+            "area_cm2": "Diện tích (cm²)",
+            "area_m2": "Diện tích (m²)",
             "col_quantity": "Số lượng",
-            "col_total_area": "Tổng diện tích",
+            "col_total_area_cm2": "Tổng diện tích (cm²)",
+            "col_total_area_m2": "Tổng diện tích (m²)",
             "col_date": "Ngày đo",
             "no_data": "Chưa có dữ liệu",
             "grand_total": "Tổng cộng",
@@ -497,6 +533,35 @@ const resources = {
             "school_abbr": "HCM·UTE",
 
             "delete_all_points": "Xóa tất cả điểm",
+
+            "calc_fabric_title": "Tính định mức & số lượng vải",
+            "fabric_width": "Khổ vải (m)",
+            "waste_pct": "% Hao phí",
+            "btn_calc_norm": "Tính định mức",
+            "norm_result_label": "Định mức vải trên một sản phẩm",
+            "norm_detail": "Tổng DT: {{area}} m² · Khổ: {{width}}m · Hao phí: {{pct}}%",
+            "order_qty_label": "Số lượng đơn hàng (sản phẩm)",
+            "order_qty_placeholder": "Nhập số lượng...",
+            "norm_avg_label": "Định mức TB (m) — tự động",
+            "waste_pct2": "% Hao hụt",
+            "btn_calc_fabric": "Tính số lượng vải cần",
+            "fabric_result_label": "Số lượng vải cần",
+            "fabric_detail": "SL: {{qty}} sp · Định mức: {{norm}}m · Hao hụt: {{pct}}%",
+            "formula_norm": "Chiều dài vải sơ bộ = Tổng DT × (1 + %Hao phí) ÷ Khổ vải",
+            "formula_fabric": "Số lượng vải = SL đơn hàng × Định mức × (1 + %Hao hụt)",
+            "total_area_input": "Tổng diện tích các chi tiết",
+            "reset_calc": "Xóa dữ liệu tính",
+            "reset_calc_confirm": "Xóa toàn bộ dữ liệu định mức và tính lại từ đầu?",
+            "calc_saved_at": "đã lưu lúc {{time}}",
+
+            // Export CSV — fabric calc section  
+            "export_calc_params": "Thông số tính toán",
+            "export_fabric_norm": "Định mức vải (m/sản phẩm)",
+            "export_order_qty": "Số lượng đơn hàng (sản phẩm)",
+            "export_fabric_needed": "Tổng vải cần dùng (m)",
+            "export_waste_norm": "% Hao phí cắt may",
+            "export_waste_fab": "% Hao hụt sản xuất",
+            "export_fabric_width": "Khổ vải (m)",
 
 
             // Backend error codes
