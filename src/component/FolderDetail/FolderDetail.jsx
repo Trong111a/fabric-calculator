@@ -1413,7 +1413,8 @@ function FabricCalcSection({ measurements, folderId, onCalcChange }) {
                     )}
                     {fabricResult !== null && (
                         <span style={{
-                            fontSize: 11, background: '#fef9c3', color: '#b45309',
+                            // fontSize: 11, background: '#fef9c3', color: '#b45309',
+                            fontSize: 11, background: '#dbeafe', color: '#0065b3',
                             borderRadius: 20, padding: '2px 8px', fontWeight: 700, whiteSpace: 'nowrap',
                         }} translate="no">🧵 {fabricResult.toFixed(2)} m</span>
                     )}
@@ -1522,10 +1523,10 @@ function FabricCalcSection({ measurements, folderId, onCalcChange }) {
 
                     {/* BLOCK 2: SỐ LƯỢNG VẢI */}
                     {normResult !== null && (
-                        <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '12px 14px' }}>
+                        <div style={{ background: '#f0f7ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 14px' }}>
                             <div style={{
-                                fontSize: 11, color: '#92400e', fontWeight: 600, marginBottom: 12,
-                                lineHeight: 1.5, background: '#fef9c3', borderRadius: 6, padding: '6px 10px',
+                                fontSize: 11, color: '#0065b3', fontWeight: 600, marginBottom: 12,
+                                lineHeight: 1.5, background: '#dbeafe', borderRadius: 6, padding: '6px 10px',
                             }}>
                                 🧵 {t('formula_fabric')}
                             </div>
@@ -1561,9 +1562,9 @@ function FabricCalcSection({ measurements, folderId, onCalcChange }) {
                                     {[2, 3, 4, 5].map(v => (
                                         <button key={v} onClick={() => setHaoPhiVai(v)} style={{
                                             padding: '6px 10px', borderRadius: 7, fontSize: 13, cursor: 'pointer',
-                                            border: haoPhiVai === v ? '2px solid #d97706' : '1.5px solid #d1d5db',
-                                            background: haoPhiVai === v ? '#fef9c3' : '#fff',
-                                            color: haoPhiVai === v ? '#b45309' : '#374151',
+                                            border: haoPhiVai === v ? '2px solid #2563eb' : '1.5px solid #d1d5db',
+                                            background: haoPhiVai === v ? '#dbeafe' : '#fff',
+                                            color: haoPhiVai === v ? '#1d4ed8' : '#374151',
                                             fontWeight: haoPhiVai === v ? 700 : 500, transition: 'all .15s',
                                         }}>{v}%</button>
                                     ))}
@@ -1576,7 +1577,7 @@ function FabricCalcSection({ measurements, folderId, onCalcChange }) {
                             {fabricResult !== null && (
                                 <div style={{
                                     marginTop: 12, padding: '12px 14px', borderRadius: 9,
-                                    background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)',
+                                    background: 'linear-gradient(135deg, #0065b3 0%, #1d4ed8 100%)',
                                     color: '#fff', display: 'flex', alignItems: 'center',
                                     justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
                                 }}>
@@ -1597,11 +1598,11 @@ function FabricCalcSection({ measurements, folderId, onCalcChange }) {
                                 disabled={!orderQty || parseInt(orderQty) <= 0 || savingCalc}
                                 style={{
                                     marginTop: 10, width: '100%', justifyContent: 'center', fontSize: 14,
-                                    background: (!orderQty || parseInt(orderQty) <= 0) ? '#e5e7eb' : 'linear-gradient(135deg, #d97706, #f59e0b)',
+                                    background: (!orderQty || parseInt(orderQty) <= 0) ? '#e5e7eb' : 'linear-gradient(135deg, #0065b3, #1d4ed8)',
                                     color: (!orderQty || parseInt(orderQty) <= 0) ? '#9ca3af' : '#fff',
                                     border: 'none',
                                     cursor: (!orderQty || parseInt(orderQty) <= 0) ? 'not-allowed' : 'pointer',
-                                    boxShadow: (!orderQty || parseInt(orderQty) <= 0) ? 'none' : '0 3px 10px rgba(217,119,6,0.3)',
+                                    boxShadow: (!orderQty || parseInt(orderQty) <= 0) ? 'none' : '0 3px 10px rgba(0,101,179,0.3)',
                                 }}>
                                 🧵 {t('btn_calc_fabric')}
                             </button>
