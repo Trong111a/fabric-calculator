@@ -2147,8 +2147,12 @@ export default function ProjectDetail({ folder, onBack }) {
 
             <div className="pd-tabs">
                 {TABS.map(tb => (
-                    <button key={tb.key} className={`pd-tab${tab === tb.key ? ' active' : ''}`} onClick={() => setTab(tb.key)}>
-                        {tb.icon} {tb.label}
+                    <button key={tb.key}
+                        className={`pd-tab${tab === tb.key ? ' active' : ''}`}
+                        onClick={() => setTab(tb.key)}
+                    >
+                        <span className="pd-tab-icon">{tb.icon}</span>
+                        {tb.label}
                     </button>
                 ))}
             </div>

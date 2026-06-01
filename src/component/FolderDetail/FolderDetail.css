@@ -63,21 +63,31 @@
     display: flex;
     background: #fff;
     border-bottom: 1px solid #e8eaf0;
-    padding: 0 28px;
-    gap: 4px;
+    padding: 0;
+    gap: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
 }
+.pd-tabs::-webkit-scrollbar { display: none; }
+
 .pd-tab {
-    display: flex; align-items: center; gap: 7px;
-    padding: 13px 18px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 11px 14px;
     background: none;
     border: none;
     border-bottom: 2.5px solid transparent;
     color: #9ca3af;
-    font-size: 14px; font-weight: 600;
+    font-size: 13px;
+    font-weight: 600;
     font-family: inherit;
     cursor: pointer;
     transition: color 0.15s, border-color 0.15s;
     margin-bottom: -1px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 .pd-tab:hover { color: #0065B3; }
 .pd-tab.active {
@@ -689,4 +699,44 @@
     color: #0065B3;
     border-top: 2px solid #c7d2fe;
     border-bottom: none;
+}
+
+@media (max-width: 768px) {
+    .pd-tabs { padding: 0 4px; }
+
+    .pd-tab { padding: 10px 12px; font-size: 12px; gap: 4px; }
+
+    .pd-stats-bar {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 12px 16px;
+    }
+    .pd-stat-item {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 10px 8px;
+        gap: 6px;
+        min-width: 0;
+    }
+    .pd-stat-value { font-size: 16px; }
+    .pd-stat-label { font-size: 10px; }
+    .pd-stat-icon { width: 28px; height: 28px; }
+}
+
+@media (max-width: 480px) {
+    .pd-tab svg { display: none; } /* ẩn icon nếu quá chật */
+    .pd-tab { padding: 10px 10px; font-size: 11px; }
+
+    .pd-stats-bar {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        padding: 10px 12px;
+    }
+    .pd-stat-value { font-size: 14px; }
+}
+
+@media (max-width: 400px) {
+    .pd-tab-icon { display: none; }
 }
