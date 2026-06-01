@@ -24,7 +24,8 @@ router.get('/:projectId', auth, async (req, res) => {
 // POST /api/fabric-calculations/:projectId (upsert)
 router.post('/:projectId', auth, async (req, res) => {
     try {
-        const { kho_vai, hao_phi_norm, norm_result, order_qty, hao_phi_vai, fabric_result } = req.body;
+        const { kho_vai, hao_phi_norm, norm_result, order_qty, hao_phi_vai, fabric_result, btp_pct, bien_vai, area_source, norm_result_scan, fabric_result_scan, 
+        norm_result_polygon, fabric_result_polygon } = req.body;
 
         // Kiểm tra project thuộc user
         const proj = await query(
@@ -36,8 +37,8 @@ router.post('/:projectId', auth, async (req, res) => {
 
         const result = await query(
             `INSERT INTO fabric_calculations 
-                (project_id, user_id, kho_vai, hao_phi_norm, norm_result, order_qty, hao_phi_vai, fabric_result)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                (project_id, user_id, kho_vai, hao_phi_norm, norm_result, order_qty, hao_phi_vai, fabric_result, btp_pct, bien_vai, area_source, norm_result_scan, fabric_result_scan, norm_result_polygon, fabric_result_polygon)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
              ON CONFLICT (project_id) DO UPDATE SET
                 kho_vai = EXCLUDED.kho_vai,
                 hao_phi_norm = EXCLUDED.hao_phi_norm,
@@ -45,10 +46,18 @@ router.post('/:projectId', auth, async (req, res) => {
                 order_qty = EXCLUDED.order_qty,
                 hao_phi_vai = EXCLUDED.hao_phi_vai,
                 fabric_result = EXCLUDED.fabric_result,
+                btp_pct = EXCLUDED.btp_pct,
+                bien_vai = EXCLUDED.bien_vai,
+                area_source = EXCLUDED.area_source,
+                norm_result_scan = EXCLUDED.norm_result_scan,
+                fabric_result_scan = EXCLUDED.fabric_result_scan,
+                norm_result_polygon = EXCLUDED.norm_result_polygon,
+                fabric_result_polygon = EXCLUDED.fabric_result_polygon,
                 updated_at = CURRENT_TIMESTAMP
              RETURNING *`,
             [req.params.projectId, req.user.id, kho_vai, hao_phi_norm,
-             norm_result?? null, order_qty ?? null, hao_phi_vai, fabric_result ?? null]
+             norm_result?? null, order_qty ?? null, hao_phi_vai, fabric_result ?? null, btp_pct ?? null, bien_vai ?? null, area_source ?? 'scan', 
+             norm_result_scan ?? null, fabric_result_scan ?? null, norm_result_polygon ?? null, fabric_result_polygon ?? null]
         );
         res.json(result.rows[0]);
     } catch (err) {

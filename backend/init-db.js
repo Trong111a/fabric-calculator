@@ -52,6 +52,10 @@ const initDatabase = async () => {
         `);
 
         await pool.query(`
+    ALTER TABLE measurements
+    ADD COLUMN IF NOT EXISTS source VARCHAR(20) DEFAULT 'scan'
+`);
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS projects (
                 id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                 user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -87,6 +91,28 @@ const initDatabase = async () => {
     )
 `);
 
+        await pool.query(`
+    ALTER TABLE fabric_calculations
+    ADD COLUMN IF NOT EXISTS btp_pct DECIMAL(5,2)
+`);
+
+        await pool.query(`
+    ALTER TABLE fabric_calculations
+    ADD COLUMN IF NOT EXISTS bien_vai DECIMAL(5,2) NOT NULL DEFAULT 1.5
+`);
+
+        await pool.query(`
+    ALTER TABLE fabric_calculations
+    ADD COLUMN IF NOT EXISTS area_source VARCHAR(20) DEFAULT 'scan'
+`);
+
+        await pool.query(`
+    ALTER TABLE fabric_calculations
+ADD COLUMN IF NOT EXISTS norm_result_scan DECIMAL(12,6),
+ADD COLUMN IF NOT EXISTS fabric_result_scan DECIMAL(12,6),
+ADD COLUMN IF NOT EXISTS norm_result_polygon DECIMAL(12,6),
+ADD COLUMN IF NOT EXISTS fabric_result_polygon DECIMAL(12,6);
+`);
         const bcrypt = require('bcryptjs');
         const hashedPassword = await bcrypt.hash('admin123', 10);
         await pool.query(`

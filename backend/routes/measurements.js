@@ -32,7 +32,8 @@ router.post('/', auth, async (req, res) => {
             image_height,
             image_data,
             quantity = 1,
-            folder_id
+            folder_id,
+            source = 'scan' 
         } = req.body;
 
         if (!name || area_cm2 == null || !pixels_per_cm || !polygon_points)
@@ -65,13 +66,13 @@ router.post('/', auth, async (req, res) => {
         const result = await query(
             `INSERT INTO measurements (
                 user_id, name, image_url, thumbnail_url, area_cm2,
-                pixels_per_cm, polygon_points, image_width, image_height, quantity
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                pixels_per_cm, polygon_points, image_width, image_height, quantity, source
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             RETURNING *`,
             [
                 req.user.id, name, imageUrl, thumbnailUrl, area_cm2,
                 pixels_per_cm, JSON.stringify(polygon_points),
-                image_width, image_height, quantity
+                image_width, image_height, quantity, source
             ]
         );
 

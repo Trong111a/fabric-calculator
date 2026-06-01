@@ -655,7 +655,7 @@ export default function ViewMain({ user, onLogout, onOpenFolders }) {
                                         <input type="range" min="100" max={image.height}
                                             value={rulerLength} onChange={e => setRulerLength(Number(e.target.value))} />
                                         <div className="vm-badges">
-                                            <span className="vm-badge" translate="no">{Math.round(rulerLength)} px = 30cm</span>
+                                            <span className="vm-badge" translate="no">30cm = {Math.round(rulerLength)} px</span>
                                             <span className="vm-badge accent" translate="no">{(rulerLength / 30).toFixed(2)} px/cm</span>
                                         </div>
                                     </div>

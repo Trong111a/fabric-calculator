@@ -283,7 +283,7 @@ function ManualDrawPanel({ folder, onSaved }) {
                 name: fileName.trim(), area_cm2: area, pixels_per_cm: pixelsPerCm,
                 polygon_points: points, image_width: image.width, image_height: image.height,
                 image_data: canvasRef.current.toDataURL('image/jpeg', 0.75),
-                quantity, folder_id: folder.id,
+                quantity, folder_id: folder.id, source: 'polygon',
             });
             setSavedMeasurements(prev => [...prev, { ...saved, name: fileName.trim(), quantity, area_cm2: area }]);
             setShowSaveModal(false); setStep('result'); onSaved?.();
@@ -429,9 +429,9 @@ function ManualDrawPanel({ folder, onSaved }) {
                                 <label>{t('ruler_length')}</label>
                                 <div className="pd-slider-row">
                                     <input type="range" min="100" max={image.height}
-                                        value={rulerLength} onChange={e => setRulerLength(Number(e.target.value))} />
+                                        value={rulerLength} onChange={e => setRulerLength(Number(e.target.value))} />s
                                     <div className="pd-badges">
-                                        <span className="pd-badge" translate="no">{Math.round(rulerLength)} px = 30cm</span>
+                                        <span className="pd-badge" translate="no">30cm = {Math.round(rulerLength)} px</span>
                                         <span className="pd-badge accent" translate="no">{(rulerLength / 30).toFixed(2)} px/cm</span>
                                     </div>
                                 </div>
@@ -1140,7 +1140,7 @@ function ScanPanel({ folder, cvReady, onSaved }) {
                                     <input type="range" min="100" max={image.height}
                                         value={rulerLength} onChange={e => setRulerLength(Number(e.target.value))} />
                                     <div className="pd-badges">
-                                        <span className="pd-badge" translate="no">{Math.round(rulerLength)} px</span>
+                                        <span className="pd-badge" translate="no">30cm = {Math.round(rulerLength)} px</span>
                                         <span className="pd-badge accent" translate="no">{(rulerLength / 30).toFixed(1)} px/cm</span>
                                     </div>
                                 </div>
@@ -1264,22 +1264,54 @@ function ScanPanel({ folder, cvReady, onSaved }) {
 /* ══════════════════════════════════════════════════════════
    FABRIC CALC SECTION
 ══════════════════════════════════════════════════════════ */
-function FabricCalcSection({ measurements, folderId, onCalcChange }) {
+function FabricCalcSection({ measurements, totalAreaCm2, scanAreaCm2, polygonBtpCm2,
+    folderId, onCalcChange, btpPct, onBtpPctChange }) {
     const { t } = useTranslation();
     const [khoVai, setKhoVai] = useState(1.5);
+    const [bienVai, setBienVai] = useState(1.5);
     const [haoPhiNorm, setHaoPhiNorm] = useState(3);
-    const [normResult, setNormResult] = useState(null);
+    // const [normResult, setNormResult] = useState(null);
     const [orderQty, setOrderQty] = useState('');
     const [haoPhiVai, setHaoPhiVai] = useState(3);
-    const [fabricResult, setFabricResult] = useState(null);
+    // const [fabricResult, setFabricResult] = useState(null);
     const [open, setOpen] = useState(false);
     const [loadingCalc, setLoadingCalc] = useState(false);
     const [savingCalc, setSavingCalc] = useState(false);
     const [lastSaved, setLastSaved] = useState(null);
+    const [areaSource, setAreaSource] = useState('scan');
 
-    const totalAreaM2 = measurements.reduce(
-        (s, m) => s + Number(m.area_cm2) * (m.quantity || 1), 0
+    const [calcBySource, setCalcBySource] = useState({
+        scan: { normResult: null, fabricResult: null },
+        polygon: { normResult: null, fabricResult: null },
+    });
+
+    const normResult = calcBySource[areaSource]?.normResult ?? null;
+    const fabricResult = calcBySource[areaSource]?.fabricResult ?? null;
+
+    const setNormResult = (val) => setCalcBySource(prev => ({
+        ...prev, [areaSource]: { ...prev[areaSource], normResult: val }
+    }));
+    const setFabricResult = (val) => setCalcBySource(prev => ({
+        ...prev, [areaSource]: { ...prev[areaSource], fabricResult: val }
+    }));
+
+    const scanAreaM2 = (scanAreaCm2 ??
+        measurements.filter(m => !m.source || m.source === 'scan')
+            .reduce((s, m) => s + Number(m.area_cm2) * (m.quantity || 1), 0)
     ) / 10000;
+
+    const polygonRawCm2_local = measurements
+        .filter(m => m.source === 'polygon')
+        .reduce((s, m) => s + Number(m.area_cm2) * (m.quantity || 1), 0);
+    const polygonBtpCm2_local = btpPct != null
+        ? polygonRawCm2_local * (1 + btpPct / 100)
+        : polygonRawCm2_local;
+    const polygonAreaM2 = polygonBtpCm2_local / 10000;
+
+    const totalAreaM2 = areaSource === 'scan' ? scanAreaM2 : polygonAreaM2;
+
+    // Khổ vải hiệu dụng
+    const effectiveWidth = khoVai - bienVai;
 
     useEffect(() => {
         if (!folderId) return;
@@ -1290,19 +1322,23 @@ function FabricCalcSection({ measurements, folderId, onCalcChange }) {
                 setKhoVai(Number(data.kho_vai) || 1.5);
                 setHaoPhiNorm(Number(data.hao_phi_norm) || 3);
                 setHaoPhiVai(Number(data.hao_phi_vai) || 3);
-                if (data.norm_result) setNormResult(Number(data.norm_result));
+                if (data.bien_vai != null) setBienVai(Number(data.bien_vai) || 1.5);
                 if (data.order_qty) setOrderQty(String(data.order_qty));
-                if (data.fabric_result) setFabricResult(Number(data.fabric_result));
-                setLastSaved(data.updated_at);
+                if (data.btp_pct != null) onBtpPctChange?.(Number(data.btp_pct));
+                if (data.area_source) setAreaSource(data.area_source);
 
-                onCalcChange?.({
-                    khoVai: Number(data.kho_vai) || 1.5,
-                    haoPhiNorm: Number(data.hao_phi_norm) || 3,
-                    normResult: data.norm_result ? Number(data.norm_result) : null,
-                    orderQty: data.order_qty ? String(data.order_qty) : '',
-                    haoPhiVai: Number(data.hao_phi_vai) || 3,
-                    fabricResult: data.fabric_result ? Number(data.fabric_result) : null,
+                setCalcBySource({
+                    scan: {
+                        normResult: data.norm_result_scan ? Number(data.norm_result_scan) : null,
+                        fabricResult: data.fabric_result_scan ? Number(data.fabric_result_scan) : null,
+                    },
+                    polygon: {
+                        normResult: data.norm_result_polygon ? Number(data.norm_result_polygon) : null,
+                        fabricResult: data.fabric_result_polygon ? Number(data.fabric_result_polygon) : null,
+                    },
                 });
+
+                setLastSaved(data.updated_at);
             })
             .catch(() => { })
             .finally(() => setLoadingCalc(false));
@@ -1312,20 +1348,25 @@ function FabricCalcSection({ measurements, folderId, onCalcChange }) {
         if (!folderId) return;
         setSavingCalc(true);
         try {
-            const kv = 'khoVai' in patch ? patch.khoVai : khoVai;
-            const hn = 'haoPhiNorm' in patch ? patch.haoPhiNorm : haoPhiNorm;
-            const nr = 'normResult' in patch ? patch.normResult : normResult;
-            const oq = 'orderQty' in patch ? patch.orderQty : orderQty;
-            const hv = 'haoPhiVai' in patch ? patch.haoPhiVai : haoPhiVai;
-            const fr = 'fabricResult' in patch ? patch.fabricResult : fabricResult;
+            const src = 'areaSource' in patch ? patch.areaSource : areaSource;
+            const calcPatch = 'calcBySource' in patch ? patch.calcBySource : calcBySource;
 
             const data = await api.saveFabricCalc(folderId, {
-                kho_vai: kv,
-                hao_phi_norm: hn,
-                norm_result: nr ?? null,
-                order_qty: oq ? parseInt(oq) : null,
-                hao_phi_vai: hv,
-                fabric_result: fr ?? null,
+                kho_vai: 'khoVai' in patch ? patch.khoVai : khoVai,
+                bien_vai: 'bienVai' in patch ? patch.bienVai : bienVai,
+                hao_phi_norm: 'haoPhiNorm' in patch ? patch.haoPhiNorm : haoPhiNorm,
+                order_qty: ('orderQty' in patch ? patch.orderQty : orderQty)
+                    ? parseInt('orderQty' in patch ? patch.orderQty : orderQty) : null,
+                hao_phi_vai: 'haoPhiVai' in patch ? patch.haoPhiVai : haoPhiVai,
+                btp_pct: ('btpPct' in patch ? patch.btpPct : btpPct) ?? null,
+                area_source: src,
+                norm_result_scan: calcPatch.scan?.normResult ?? null,
+                fabric_result_scan: calcPatch.scan?.fabricResult ?? null,
+                norm_result_polygon: calcPatch.polygon?.normResult ?? null,
+                fabric_result_polygon: calcPatch.polygon?.fabricResult ?? null,
+
+                norm_result: calcPatch[src]?.normResult ?? null,
+                fabric_result: calcPatch[src]?.fabricResult ?? null,
             });
             setLastSaved(data.updated_at);
         } catch (e) {
@@ -1338,33 +1379,52 @@ function FabricCalcSection({ measurements, folderId, onCalcChange }) {
 
     const calcNorm = async () => {
         if (!measurements.length) return;
-        const norm = (totalAreaM2 * (1 + haoPhiNorm / 100)) / khoVai;
-        setNormResult(norm);
-        setFabricResult(null);
-        onCalcChange?.({ khoVai, haoPhiNorm, normResult: norm, orderQty, haoPhiVai, fabricResult: null });
-        await saveToDb({ normResult: norm, fabricResult: null });
+        const norm = (totalAreaM2 * (1 + haoPhiNorm / 100)) / effectiveWidth;
+        const newCalc = {
+            ...calcBySource,
+            [areaSource]: { ...calcBySource[areaSource], normResult: norm, fabricResult: null }
+        };
+        setCalcBySource(newCalc);
+        onCalcChange?.({
+            khoVai, bienVai, haoPhiNorm, normResult: norm,
+            orderQty, haoPhiVai, fabricResult: null, areaSource, calcBySource: newCalc
+
+        });
+        await saveToDb({ calcBySource: newCalc });
     };
 
     const calcFabric = async () => {
         const qty = parseInt(orderQty);
         if (!normResult || !qty || qty <= 0) return;
         const fabric = qty * normResult * (1 + haoPhiVai / 100);
-        setFabricResult(fabric);
-        onCalcChange?.({ khoVai, haoPhiNorm, normResult, orderQty, haoPhiVai, fabricResult: fabric });
-        await saveToDb({ fabricResult: fabric, orderQty });
+        const newCalc = {
+            ...calcBySource,
+            [areaSource]: { ...calcBySource[areaSource], fabricResult: fabric }
+        };
+        setCalcBySource(newCalc);
+        onCalcChange?.({
+            khoVai, bienVai, haoPhiNorm, normResult, orderQty, haoPhiVai,
+            fabricResult: fabric, areaSource, calcBySource: newCalc
+        });
+        await saveToDb({ calcBySource: newCalc, orderQty });
     };
 
     const handleReset = async () => {
         if (!confirm(t('reset_calc_confirm'))) return;
-        setNormResult(null);
-        setFabricResult(null);
+        const emptyCalc = {
+            scan: { normResult: null, fabricResult: null },
+            polygon: { normResult: null, fabricResult: null },
+        };
+        setCalcBySource(emptyCalc);
         setOrderQty('');
-        setKhoVai(1.5);
-        setHaoPhiNorm(3);
-        setHaoPhiVai(3);
-        setLastSaved(null);
+        setKhoVai(1.5); setBienVai(1.5); setHaoPhiNorm(3); setHaoPhiVai(3); setLastSaved(null);
         onCalcChange?.(null);
-        await saveToDb({ normResult: null, fabricResult: null, orderQty: null, khoVai: 1.5, haoPhiNorm: 3, haoPhiVai: 3 });
+        // onBtpPctChange?.(null);
+        await saveToDb({
+            calcBySource: emptyCalc, normResult: null, fabricResult: null,
+            orderQty: null, khoVai: 1.5, bienVai: 1.5, haoPhiNorm: 3, haoPhiVai: 3
+            // btpPct: null
+        });
     };
 
     const PresetBtn = ({ value, active, onClick, label }) => (
@@ -1377,13 +1437,20 @@ function FabricCalcSection({ measurements, folderId, onCalcChange }) {
         }}>{label ?? value}</button>
     );
 
+    PresetBtn.propTypes = {
+        value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        active: PropTypes.bool,
+        onClick: PropTypes.func,
+        label: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    };
+
     return (
         <div style={{
             marginBottom: 12, background: 'rgba(255,255,255,0.95)',
             borderRadius: 14, border: '1.5px solid #bfdbfe',
             overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,101,179,0.08)',
         }}>
-            {/* Header */}
+            {/* Header — giữ nguyên */}
             <button onClick={() => setOpen(o => !o)} style={{
                 width: '100%', display: 'flex', alignItems: 'center',
                 justifyContent: 'space-between', padding: '13px 16px',
@@ -1391,72 +1458,92 @@ function FabricCalcSection({ measurements, folderId, onCalcChange }) {
                 borderBottom: open ? '1px solid #bfdbfe' : 'none',
                 cursor: 'pointer', gap: 8,
             }}>
-                <span style={{
-                    fontWeight: 700, fontSize: 14, color: '#0065b3',
-                    display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
-                }}>
+                <span style={{ fontWeight: 700, fontSize: 14, color: '#0065b3', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                     🧮 {t('calc_fabric_title')}
                     {loadingCalc && <span style={{ fontSize: 11, color: '#9ca3af' }}>⏳</span>}
                     {savingCalc && <span style={{ fontSize: 11, color: '#9ca3af' }}>💾...</span>}
                     {lastSaved && !savingCalc && (
                         <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 400 }}>
-                            · {t('calc_saved_at', {
-                                time: new Date(lastSaved).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-                            })}
+                            · {t('calc_saved_at', { time: new Date(lastSaved).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) })}
                         </span>
                     )}
                     {normResult !== null && (
-                        <span style={{
-                            fontSize: 11, background: '#dbeafe', color: '#0065b3',
-                            borderRadius: 20, padding: '2px 8px', fontWeight: 700, whiteSpace: 'nowrap',
-                        }} translate="no">📐 {normResult.toFixed(3)} m</span>
+                        <span style={{ fontSize: 11, background: '#dbeafe', color: '#0065b3', borderRadius: 20, padding: '2px 8px', fontWeight: 700, whiteSpace: 'nowrap' }} translate="no">
+                            📐 {normResult.toFixed(3)} m
+                        </span>
                     )}
                     {fabricResult !== null && (
-                        <span style={{
-                            // fontSize: 11, background: '#fef9c3', color: '#b45309',
-                            fontSize: 11, background: '#dbeafe', color: '#0065b3',
-                            borderRadius: 20, padding: '2px 8px', fontWeight: 700, whiteSpace: 'nowrap',
-                        }} translate="no">🧵 {fabricResult.toFixed(2)} m</span>
+                        <span style={{ fontSize: 11, background: '#dbeafe', color: '#0065b3', borderRadius: 20, padding: '2px 8px', fontWeight: 700, whiteSpace: 'nowrap' }} translate="no">
+                            🧵 {fabricResult.toFixed(2)} m
+                        </span>
                     )}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    {(normResult !== null || fabricResult !== null) && (
-                        <button
-                            onClick={e => { e.stopPropagation(); handleReset(); }}
-                            style={{
+                    {(calcBySource.scan.normResult !== null || calcBySource.scan.fabricResult !== null ||
+                        calcBySource.polygon.normResult !== null || calcBySource.polygon.fabricResult !== null) && (
+
+                            <button onClick={e => { e.stopPropagation(); handleReset(); }} style={{
                                 padding: '4px 10px', borderRadius: 6, fontSize: 12,
                                 border: '1px solid #ef4444', background: '#fff',
                                 color: '#ef4444', cursor: 'pointer', fontWeight: 600,
-                            }}
-                        >
-                            🗑 {t('reset_calc')}
-                        </button>
-                    )}
-                    <span style={{
-                        fontSize: 16, color: '#0065b3', flexShrink: 0,
-                        transform: open ? 'rotate(180deg)' : 'none',
-                        transition: 'transform .2s', display: 'inline-block',
-                    }}>⌄</span>
+                            }}>🗑 {t('reset_calc')}</button>
+                        )}
+                    <span style={{ fontSize: 16, color: '#0065b3', flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s', display: 'inline-block' }}>⌄</span>
                 </div>
             </button>
 
             {open && (
                 <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {/* SOURCE SELECTOR */}
+                    <div style={{
+                        display: 'flex', gap: 8, marginBottom: 14,
+                        background: '#f0f7ff', borderRadius: 10,
+                        padding: '10px 12px', border: '1px solid #bfdbfe',
+                        alignItems: 'center', flexWrap: 'wrap',
+                    }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: '#0065b3', marginRight: 4 }}>
+                            📐 {t('area_source_label')}
+                        </span>
+                        {[
+                            { value: 'scan', label: '🔍 ' + t('scan_tab'), color: '#0065b3', bg: '#dbeafe' },
+                            { value: 'polygon', label: '✏️ ' + t('manual_tab'), color: '#0065b3', bg: '#ffedd5' },
+                        ].map(opt => (
+                            <button key={opt.value} onClick={async () => {
+                                // setAreaSource(opt.value);
+                                // setNormResult(null);
+                                // setFabricResult(null);
+                                // await saveToDb({ areaSource: opt.value, normResult: null, fabricResult: null });
+                                setAreaSource(opt.value);
+                                await saveToDb({ areaSource: opt.value });
+                            }} style={{
+                                padding: '7px 16px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
+                                fontWeight: 700, border: 'none', transition: 'all .15s',
+                                background: areaSource === opt.value ? opt.color : '#fff',
+                                color: areaSource === opt.value ? '#fff' : '#6b7280',
+                                boxShadow: areaSource === opt.value ? `0 2px 8px ${opt.bg}` : 'none',
+                                outline: areaSource !== opt.value ? `1.5px solid #e5e7eb` : 'none',
+                            }}>
+                                {opt.label}
+                            </button>
+                        ))}
+                        <span style={{
+                            fontSize: 11, color: '#6b7280', marginLeft: 'auto',
+                            fontFamily: 'DM Mono, monospace', fontWeight: 600,
+                        }} translate="no">
+                            {areaSource === 'scan'
+                                ? `${((scanAreaCm2 ?? 0) / 10000).toFixed(4)} m²`
+                                : `${((polygonBtpCm2 ?? 0) / 10000).toFixed(4)} m² ${btpPct != null ? `(+${btpPct}% BTP)` : ''}`
+                            }
+                        </span>
+                    </div>
 
                     {/* BLOCK 1: ĐỊNH MỨC */}
                     <div style={{ background: '#f0f7ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 14px' }}>
-                        <div style={{
-                            fontSize: 11, color: '#0065b3', fontWeight: 600, marginBottom: 12,
-                            lineHeight: 1.5, background: '#dbeafe', borderRadius: 6, padding: '6px 10px',
-                        }}>
+                        <div style={{ fontSize: 11, color: '#0065b3', fontWeight: 600, marginBottom: 12, lineHeight: 1.5, background: '#dbeafe', borderRadius: 6, padding: '6px 10px' }}>
                             📐 {t('formula_norm')}
                         </div>
 
-                        <div style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            marginBottom: 12, padding: '8px 10px',
-                            background: '#fff', borderRadius: 8, border: '1px solid #e0e7ff',
-                        }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, padding: '8px 10px', background: '#fff', borderRadius: 8, border: '1px solid #e0e7ff' }}>
                             <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>{t('total_area_input')}</span>
                             <span style={{ fontSize: 15, fontWeight: 700, color: '#0065b3', fontFamily: 'DM Mono, monospace' }} translate="no">
                                 {totalAreaM2.toFixed(4)} m²
@@ -1464,33 +1551,49 @@ function FabricCalcSection({ measurements, folderId, onCalcChange }) {
                         </div>
 
                         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                            {/* Khổ vải */}
                             <div style={{ flex: '1 1 140px', minWidth: 0 }}>
-                                <label style={{ fontSize: 12, color: '#374151', fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                                    {t('fabric_width')}
-                                </label>
+                                <label style={{ fontSize: 12, color: '#374151', fontWeight: 600, display: 'block', marginBottom: 6 }}>{t('fabric_width')}</label>
                                 <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
                                     {[1.3, 1.4, 1.5, 1.6].map(v => (
-                                        <PresetBtn key={v} value={v} active={khoVai === v}
-                                            onClick={() => setKhoVai(v)} label={`${v}m`} />
+                                        <PresetBtn key={v} value={v} active={khoVai === v} onClick={() => setKhoVai(v)} label={`${v}m`} />
                                     ))}
                                     <input type="number" min="0.1" step="0.1" value={khoVai}
                                         onChange={e => setKhoVai(parseFloat(e.target.value) || 1.5)}
                                         style={{ width: 60, padding: '6px 6px', borderRadius: 7, border: '1.5px solid #d1d5db', fontSize: 13, textAlign: 'center', fontFamily: 'DM Mono, monospace' }} />
                                 </div>
                             </div>
+
+                            {/* % Hao phí */}
                             <div style={{ flex: '1 1 140px', minWidth: 0 }}>
-                                <label style={{ fontSize: 12, color: '#374151', fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                                    {t('waste_pct')}
-                                </label>
+                                <label style={{ fontSize: 12, color: '#374151', fontWeight: 600, display: 'block', marginBottom: 6 }}>{t('waste_pct')}</label>
                                 <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
                                     {[2, 3, 4, 5].map(v => (
-                                        <PresetBtn key={v} value={v} active={haoPhiNorm === v}
-                                            onClick={() => setHaoPhiNorm(v)} label={`${v}%`} />
+                                        <PresetBtn key={v} value={v} active={haoPhiNorm === v} onClick={() => setHaoPhiNorm(v)} label={`${v}%`} />
                                     ))}
                                     <input type="number" min="0" max="100" step="0.5" value={haoPhiNorm}
                                         onChange={e => setHaoPhiNorm(parseFloat(e.target.value) || 0)}
                                         style={{ width: 52, padding: '6px 4px', borderRadius: 7, border: '1.5px solid #d1d5db', fontSize: 13, textAlign: 'center', fontFamily: 'DM Mono, monospace' }} />
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Biên vải — hàng riêng */}
+                        <div style={{ marginTop: 12 }}>
+                            <label style={{ fontSize: 12, color: '#374151', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                                {t('seam_allowance')}
+                                {/* Hiển thị khổ hiệu dụng */}
+                                <span style={{ marginLeft: 8, fontSize: 11, color: '#0065b3', fontWeight: 400, fontFamily: 'DM Mono, monospace' }} translate="no">
+                                    → {t('effective_width')}: {effectiveWidth} m
+                                </span>
+                            </label>
+                            <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
+                                {[1, 1.5, 2, 2.5, 3].map(v => (
+                                    <PresetBtn key={v} value={v} active={bienVai === v} onClick={() => setBienVai(v)} label={`${v}m`} />
+                                ))}
+                                <input type="number" min="0" max="10" step="0.5" value={bienVai}
+                                    onChange={e => setBienVai(parseFloat(e.target.value) ?? 1.5)}
+                                    style={{ width: 60, padding: '6px 6px', borderRadius: 7, border: '1.5px solid #d1d5db', fontSize: 13, textAlign: 'center', fontFamily: 'DM Mono, monospace' }} />
                             </div>
                         </div>
 
@@ -1509,7 +1612,7 @@ function FabricCalcSection({ measurements, folderId, onCalcChange }) {
                                 </div>
                                 <div style={{ fontSize: 11, opacity: .8, lineHeight: 1.8, textAlign: 'right' }}>
                                     <div translate="no">{totalAreaM2.toFixed(4)} m² × (1 + {haoPhiNorm}%)</div>
-                                    <div translate="no">÷ {khoVai} m = {normResult.toFixed(3)} m</div>
+                                    <div translate="no">÷ ({khoVai} - {bienVai}) m = {normResult.toFixed(3)} m</div>
                                 </div>
                             </div>
                         )}
@@ -1616,8 +1719,13 @@ function FabricCalcSection({ measurements, folderId, onCalcChange }) {
 
 FabricCalcSection.propTypes = {
     measurements: PropTypes.array.isRequired,
+    totalAreaCm2: PropTypes.number,
+    scanAreaCm2: PropTypes.number,
+    polygonBtpCm2: PropTypes.number,
     folderId: PropTypes.string,
     onCalcChange: PropTypes.func,
+    btpPct: PropTypes.number,
+    onBtpPctChange: PropTypes.func,
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -1627,42 +1735,60 @@ function DownloadPanel({ folder, measurements, fabricCalcData }) {
     const { t } = useTranslation();
 
     const downloadCSV = () => {
-        const headers = [t('col_name'), t('area_cm2'), t('area_m2'), t('col_quantity'), t('col_total_area_cm2'), t('col_total_area_m2'), t('col_date')];
+        const headers = [
+            t('col_name'),
+            t('col_area_one'),
+            t('col_quantity'),
+            t('col_total_area'),
+            t('col_date')
+        ];
+
         const rows = measurements.map(m => {
-            const area = Number(m.area_cm2); const qty = m.quantity || 1; const total = area * qty;
-            const date = new Date(m.created_at).toLocaleDateString();
-            return [m.name, area.toFixed(2), (area / 10000).toFixed(4), qty, total.toFixed(2), (total / 10000).toFixed(4), date];
+            const area = Number(m.area_cm2);
+            const qty = m.quantity || 1;
+            const total = area * qty;
+            const date = new Date(m.created_at).toLocaleDateString('vi-VN');
+            return [
+                m.name,
+                area.toFixed(2) + " cm²",
+                qty,
+                (total / 10000).toFixed(4) + " m²",
+                date
+            ];
         });
+
         const totalArea = measurements.reduce((s, m) => s + Number(m.area_cm2) * (m.quantity || 1), 0);
         const totalQty = measurements.reduce((s, m) => s + (m.quantity || 1), 0);
-        rows.push([]);
-        rows.push([t('grand_total'), '', '', totalQty, totalArea.toFixed(2), (totalArea / 10000).toFixed(4), '']);
 
-        // === SECTION ĐỊNH MỨC ===
+        rows.push([]);
+        rows.push([t('grand_total'), '', totalQty, (totalArea / 10000).toFixed(4) + " m²", '']);
+
+        // Thêm thông số định mức nếu có
         if (fabricCalcData) {
             const norm = fabricCalcData.normResult ?? fabricCalcData.norm_result;
             const fabric = fabricCalcData.fabricResult ?? fabricCalcData.fabric_result;
             const qty = fabricCalcData.orderQty ?? fabricCalcData.order_qty;
+
             rows.push([]);
-            rows.push(['─── ' + t('export_calc_params') + ' ───', '', '', '', '', '', '']);
-            rows.push([t('export_fabric_width'), fabricCalcData.khoVai ?? fabricCalcData.kho_vai ?? '', 'm', '', '', '', '']);
-            rows.push([t('export_waste_norm'), (fabricCalcData.haoPhiNorm ?? fabricCalcData.hao_phi_norm ?? '') + '%', '', '', '', '', '']);
-            if (norm) rows.push([t('export_fabric_norm'), Number(norm).toFixed(4), 'm/sp', '', '', '', '']);
-            if (qty) rows.push([t('export_order_qty'), qty, 'sp', '', '', '', '']);
-            if (fabricCalcData.haoPhiVai ?? fabricCalcData.hao_phi_vai)
-                rows.push([t('export_waste_fab'), (fabricCalcData.haoPhiVai ?? fabricCalcData.hao_phi_vai) + '%', '', '', '', '', '']);
-            if (fabric) rows.push([t('export_fabric_needed'), Number(fabric).toFixed(2), 'm', '', '', '', '']);
+            rows.push(['─── THÔNG SỐ TÍNH ĐỊNH MỨC ───', '', '', '', '']);
+            rows.push([t('export_fabric_width'), (fabricCalcData.khoVai ?? fabricCalcData.kho_vai ?? '') + ' m', '', '', '']);
+            rows.push([t('export_waste_norm'), (fabricCalcData.haoPhiNorm ?? fabricCalcData.hao_phi_norm ?? '') + '%', '', '', '']);
+            if (norm) rows.push([t('export_fabric_norm'), Number(norm).toFixed(4) + ' m/sp', '', '', '']);
+            if (qty) rows.push([t('export_order_qty'), qty + ' sp', '', '', '']);
+            if (fabric) rows.push([t('export_fabric_needed'), Number(fabric).toFixed(2) + ' m', '', '', '']);
         }
 
         const csvContent = [headers, ...rows]
             .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
             .join('\n');
+
         const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${folder.name}_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
-        a.click(); URL.revokeObjectURL(url);
+        a.download = `${folder.name}_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
     };
 
     return (
@@ -1674,11 +1800,13 @@ function DownloadPanel({ folder, measurements, fabricCalcData }) {
                     <span dangerouslySetInnerHTML={{ __html: t('export_sub', { name: folder.name }) }} />
                 </div>
             </div>
+
             <div className="pd-csv-preview">
                 <div className="pd-csv-header">
                     <h3>{t('preview_title')}</h3>
                     <span className="pd-badge accent">{measurements.length} {t('total_items')}</span>
                 </div>
+
                 <div className="pd-csv-table-wrap">
                     <table className="pd-csv-table">
                         <thead>
@@ -1694,14 +1822,15 @@ function DownloadPanel({ folder, measurements, fabricCalcData }) {
                             {measurements.length === 0 ? (
                                 <tr><td colSpan={5} style={{ textAlign: 'center', color: '#9ca3af', padding: '24px' }}>{t('no_data')}</td></tr>
                             ) : measurements.map(m => {
-                                const area = Number(m.area_cm2); const qty = m.quantity || 1;
+                                const area = Number(m.area_cm2);
+                                const qty = m.quantity || 1;
                                 return (
                                     <tr key={m.id}>
                                         <td>{m.name}</td>
                                         <td translate="no">{area.toFixed(2)} cm²</td>
                                         <td>{qty}</td>
                                         <td translate="no">{(area * qty / 10000).toFixed(4)} m²</td>
-                                        <td>{new Date(m.created_at).toLocaleDateString()}</td>
+                                        <td>{new Date(m.created_at).toLocaleDateString('vi-VN')}</td>
                                     </tr>
                                 );
                             })}
@@ -1719,31 +1848,8 @@ function DownloadPanel({ folder, measurements, fabricCalcData }) {
                         )}
                     </table>
                 </div>
-
-                {/* Preview thông số định mức nếu có */}
-                {fabricCalcData && (fabricCalcData.normResult ?? fabricCalcData.norm_result) && (
-                    <div style={{
-                        margin: '0 20px 16px', padding: '12px 16px',
-                        background: '#f0f7ff', borderRadius: 10,
-                        border: '1px solid #bfdbfe', fontSize: 13,
-                    }}>
-                        <div style={{ fontWeight: 700, color: '#0065b3', marginBottom: 8 }}>
-                            📐 {t('export_calc_params')}
-                        </div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 24px', color: '#374151' }}>
-                            <span>{t('export_fabric_width')}: <strong translate="no">{fabricCalcData.khoVai ?? fabricCalcData.kho_vai}m</strong></span>
-                            <span>{t('export_waste_norm')}: <strong translate="no">{fabricCalcData.haoPhiNorm ?? fabricCalcData.hao_phi_norm}%</strong></span>
-                            <span>{t('export_fabric_norm')}: <strong style={{ color: '#0065b3' }} translate="no">{Number(fabricCalcData.normResult ?? fabricCalcData.norm_result).toFixed(4)}m</strong></span>
-                            {(fabricCalcData.orderQty ?? fabricCalcData.order_qty) && (
-                                <span>{t('export_order_qty')}: <strong translate="no">{fabricCalcData.orderQty ?? fabricCalcData.order_qty}</strong></span>
-                            )}
-                            {(fabricCalcData.fabricResult ?? fabricCalcData.fabric_result) && (
-                                <span>{t('export_fabric_needed')}: <strong style={{ color: '#d97706' }} translate="no">{Number(fabricCalcData.fabricResult ?? fabricCalcData.fabric_result).toFixed(2)}m</strong></span>
-                            )}
-                        </div>
-                    </div>
-                )}
             </div>
+
             <div className="pd-actions">
                 <button className="pd-btn primary" onClick={downloadCSV} disabled={measurements.length === 0}>
                     <Download size={16} /> {t('download_csv')}
@@ -1752,6 +1858,159 @@ function DownloadPanel({ folder, measurements, fabricCalcData }) {
         </div>
     );
 }
+
+function MeasurementCard({ m, deletingId, onSelect, onDelete, onEdit, fmt, t, accent }) {
+    const isOrange = accent === 'orange';
+    return (
+        <div className={`pd-card${deletingId === m.id ? ' is-deleting' : ''}`} onClick={() => onSelect(m)}
+            style={{ borderColor: isOrange ? '#fed7aa' : undefined }}>
+            {m.thumbnail_url ? (
+                <img className="pd-card-thumb" src={m.thumbnail_url} alt={m.name}
+                    onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
+                <div className="pd-card-thumb-placeholder"><Layers size={40} /></div>
+            )}
+            <div className="pd-card-hint"><ZoomIn size={12} /> {t('view_detail')}</div>
+            <button className="pd-delete-btn" onClick={e => onDelete(e, m.id)} title={t('delete_confirm')}>
+                <Trash2 size={13} />
+            </button>
+            <div className="pd-card-body">
+                <h3 className="pd-card-title" style={{ color: isOrange ? '#0065B3' : undefined }}>{m.name}</h3>
+                <div className="pd-card-meta">
+                    <div className="pd-meta-row"><span className="pd-meta-dot" /><span className="pd-meta-text">{fmt(m.created_at)}</span></div>
+                    <div className="pd-meta-row"><span className="pd-meta-dot" /><span className="pd-meta-text">SL: {m.quantity || 1} {t('total_items')}</span></div>
+                </div>
+                <div className="pd-card-area">
+                    <span className="pd-area-value" style={{ color: isOrange ? '#0065B3' : undefined }} translate="no">
+                        {(Number(m.area_cm2) * (m.quantity || 1) / 10000).toFixed(4)}
+                    </span>
+                    <span className="pd-area-unit" translate="no">m²</span>
+                </div>
+                <button className="pd-btn ghost"
+                    style={{ marginTop: 8, width: '100%', justifyContent: 'center', fontSize: 12, padding: '6px 0' }}
+                    onClick={e => { e.stopPropagation(); onEdit(m); }}>
+                    <Pencil size={12} /> {t('edit_name_qty')}
+                </button>
+            </div>
+        </div>
+    );
+}
+MeasurementCard.propTypes = {
+    m: PropTypes.object.isRequired, deletingId: PropTypes.string,
+    onSelect: PropTypes.func, onDelete: PropTypes.func, onEdit: PropTypes.func,
+    fmt: PropTypes.func, t: PropTypes.func, accent: PropTypes.string,
+};
+
+function PaginatedGrid({ items, renderItem, pageSize = 6 }) {
+    const { t } = useTranslation();
+    const [visibleCount, setVisibleCount] = useState(pageSize);
+    const visibleItems = items.slice(0, visibleCount);
+    const hasMore = visibleCount < items.length;
+    const isExpanded = visibleCount > pageSize;
+
+    return (
+        <>
+            <div className="pd-grid">
+                {visibleItems.map((item) => (
+                    <React.Fragment key={item.id}>
+                        {renderItem(item)}
+                    </React.Fragment>
+                ))}
+            </div>
+
+            {(hasMore || isExpanded) && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 14 }}>
+                    {isExpanded && (
+                        <button
+                            onClick={() => setVisibleCount(pageSize)}
+                            style={{
+                                padding: '7px 18px', borderRadius: 20, fontSize: 13,
+                                border: '1.5px solid #e0e4ef', background: '#fff',
+                                color: '#6b7280', cursor: 'pointer', fontWeight: 600,
+                                display: 'flex', alignItems: 'center', gap: 6,
+                                transition: 'all .15s',
+                            }}
+                        >
+                            {t('collapse')}
+                        </button>
+                    )}
+                    {hasMore && (
+                        <button
+                            onClick={() => setVisibleCount(c => Math.min(c + pageSize, items.length))}
+                            style={{
+                                padding: '7px 18px', borderRadius: 20, fontSize: 13,
+                                border: '1.5px solid #bfdbfe', background: '#eff6ff',
+                                color: '#0065b3', cursor: 'pointer', fontWeight: 600,
+                                display: 'flex', alignItems: 'center', gap: 6,
+                                transition: 'all .15s',
+                            }}
+                        >
+                            {t('show_more', { count: items.length - visibleCount })}
+                        </button>
+                    )}
+                </div>
+            )}
+        </>
+    );
+}
+
+PaginatedGrid.propTypes = {
+    items: PropTypes.array.isRequired,
+    renderItem: PropTypes.func.isRequired,
+    pageSize: PropTypes.number,
+};
+
+function CollapsibleBox({ icon, accentColor, bgColor, borderColor, title, children, defaultOpen = true }) {
+    const [open, setOpen] = useState(defaultOpen);
+
+    return (
+        <div style={{
+            background: 'rgba(255,255,255,0.95)',
+            borderRadius: 14,
+            border: `1.5px solid ${borderColor}`,
+            overflow: 'hidden',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+        }}>
+            <button onClick={() => setOpen(o => !o)} style={{
+                width: '100%', display: 'flex', alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '13px 16px',
+                background: 'none', border: 'none',
+                borderBottom: open ? `1px solid ${borderColor}` : 'none',
+                cursor: 'pointer', gap: 8,
+            }}>
+                <span style={{
+                    fontWeight: 700, fontSize: 14, color: accentColor,
+                    display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
+                }}>
+                    {icon} {title}
+                </span>
+                <span style={{
+                    fontSize: 16, color: accentColor, flexShrink: 0,
+                    transform: open ? 'rotate(180deg)' : 'none',
+                    transition: 'transform .2s', display: 'inline-block',
+                }}>⌄</span>
+            </button>
+
+            {open && (
+                // key={Date.now()} sẽ remount children mỗi lần mở → reset visibleCount
+                <div key="content" style={{ padding: '14px 16px', background: bgColor }}>
+                    {children}
+                </div>
+            )}
+        </div>
+    );
+}
+
+CollapsibleBox.propTypes = {
+    icon: PropTypes.node,
+    accentColor: PropTypes.string,
+    bgColor: PropTypes.string,
+    borderColor: PropTypes.string,
+    title: PropTypes.node,
+    children: PropTypes.node,
+    defaultOpen: PropTypes.bool,
+};
 
 /* ══════════════════════════════════════════════════════════
    PROJECT DETAIL — MAIN COMPONENT
@@ -1765,11 +2024,13 @@ export default function ProjectDetail({ folder, onBack }) {
     const [deletingId, setDeletingId] = useState(null);
     const [cvReady, setCvReady] = useState(false);
     const [fabricCalcData, setFabricCalcData] = useState(null);
+    const [btpPct, setBtpPct] = useState(null);
 
     const [editingId, setEditingId] = useState(null);
     const [editName, setEditName] = useState('');
     const [editQuantity, setEditQuantity] = useState(1);
     const [editSaving, setEditSaving] = useState(false);
+    const [calcLoaded, setCalcLoaded] = useState(false);
 
     useEffect(() => {
         const check = () => { if (window.cv && window.cv.Mat) setCvReady(true); else setTimeout(check, 100); };
@@ -1784,8 +2045,18 @@ export default function ProjectDetail({ folder, onBack }) {
 
     const loadDetail = async () => {
         setLoading(true);
-        try { const data = await api.getFolder(folder.id); setMeasurements(data.measurements || []); }
-        catch (err) { console.error(err); } finally { setLoading(false); }
+        try {
+            const [folderData, calcData] = await Promise.all([
+                api.getFolder(folder.id),
+                api.getFabricCalc(folder.id),
+            ]);
+            setMeasurements(folderData.measurements || []);
+            if (calcData?.btp_pct != null) {
+                setBtpPct(Number(calcData.btp_pct));
+            }
+            setCalcLoaded(true);
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
     };
 
     const handleDelete = async (e, id) => {
@@ -1799,8 +2070,37 @@ export default function ProjectDetail({ folder, onBack }) {
         } catch { alert(t('delete_failed')); } finally { setDeletingId(null); }
     };
 
+    useEffect(() => {
+        if (!folder?.id || !calcLoaded) return;
+        const timer = setTimeout(() => {
+            api.saveFabricCalc(folder.id, {
+                kho_vai: fabricCalcData?.khoVai ?? 1.5,
+                bien_vai: fabricCalcData?.bienVai ?? 1.5,
+                hao_phi_norm: fabricCalcData?.haoPhiNorm ?? 3,
+                norm_result: fabricCalcData?.normResult ?? null,
+                order_qty: fabricCalcData?.orderQty ? parseInt(fabricCalcData.orderQty) : null,
+                hao_phi_vai: fabricCalcData?.haoPhiVai ?? 3,
+                fabric_result: fabricCalcData?.fabricResult ?? null,
+                btp_pct: btpPct ?? null,
+                area_source: fabricCalcData?.areaSource ?? 'scan',
+                norm_result_scan: fabricCalcData?.calcBySource?.scan?.normResult ?? null,
+                fabric_result_scan: fabricCalcData?.calcBySource?.scan?.fabricResult ?? null,
+                norm_result_polygon: fabricCalcData?.calcBySource?.polygon?.normResult ?? null,
+                fabric_result_polygon: fabricCalcData?.calcBySource?.polygon?.fabricResult ?? null,
+            }).catch(console.error);
+        }, 600);
+        return () => clearTimeout(timer);
+    }, [btpPct, calcLoaded]);
+
     const fmt = d => new Date(d).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const totalArea = measurements.reduce((s, m) => s + (Number(m.area_cm2) * (m.quantity || 1)), 0);
+    const scanMeasurements = measurements.filter(m => !m.source || m.source === 'scan');
+    const polygonMeasurements = measurements.filter(m => m.source === 'polygon');
+
+    const scanAreaCm2 = scanMeasurements.reduce((s, m) => s + Number(m.area_cm2) * (m.quantity || 1), 0);
+    const polygonRawCm2 = polygonMeasurements.reduce((s, m) => s + Number(m.area_cm2) * (m.quantity || 1), 0);
+    const polygonBtpCm2 = btpPct != null ? polygonRawCm2 * (1 + btpPct / 100) : polygonRawCm2;
+
+    const totalArea = scanAreaCm2 + polygonBtpCm2;
     const totalQty = measurements.reduce((s, m) => s + (m.quantity || 1), 0);
 
     const saveEdit = async () => {
@@ -1821,6 +2121,11 @@ export default function ProjectDetail({ folder, onBack }) {
         { key: 'manual', icon: <MousePointer size={15} />, label: t('manual_tab') },
         { key: 'export', icon: <Download size={15} />, label: t('export_tab') },
     ];
+
+    const handleCalcChange = (data) => {
+        setFabricCalcData(data);
+        if (data?.btpPct !== undefined) setBtpPct(data.btpPct);
+    };
 
     return (
         <div className="pd-wrap" style={{
@@ -1866,14 +2171,6 @@ export default function ProjectDetail({ folder, onBack }) {
                         ))}
                     </div>
 
-                    <div style={{ padding: '0 16px' }}>
-                        <FabricCalcSection
-                            measurements={measurements}
-                            folderId={folder.id}
-                            onCalcChange={setFabricCalcData}
-                        />
-                    </div>
-
                     <main className="pd-main">
                         {loading ? (
                             <div className="pd-loading"><div className="pd-spinner" /> {t('loading')}</div>
@@ -1885,39 +2182,240 @@ export default function ProjectDetail({ folder, onBack }) {
                                 <button className="pd-empty-action" onClick={() => setTab('scan')}><Plus size={15} /> {t('measure_first')}</button>
                             </div>
                         ) : (
-                            <div className="pd-grid">
-                                {measurements.map(m => (
-                                    <div key={m.id} className={`pd-card${deletingId === m.id ? ' is-deleting' : ''}`} onClick={() => setSelected(m)}>
-                                        {m.thumbnail_url ? (
-                                            <img className="pd-card-thumb" src={m.thumbnail_url} alt={m.name}
-                                                onError={e => { e.target.style.display = 'none'; }} />
-                                        ) : (
-                                            <div className="pd-card-thumb-placeholder"><Layers size={40} /></div>
-                                        )}
-                                        <div className="pd-card-hint"><ZoomIn size={12} /> {t('view_detail')}</div>
-                                        <button className="pd-delete-btn" onClick={e => handleDelete(e, m.id)} title={t('delete_confirm')}>
-                                            <Trash2 size={13} />
-                                        </button>
-                                        <div className="pd-card-body">
-                                            <h3 className="pd-card-title">{m.name}</h3>
-                                            <div className="pd-card-meta">
-                                                <div className="pd-meta-row"><span className="pd-meta-dot" /><span className="pd-meta-text">{fmt(m.created_at)}</span></div>
-                                                <div className="pd-meta-row"><span className="pd-meta-dot" /><span className="pd-meta-text">SL: {m.quantity || 1} {t('total_items')}</span></div>
-                                            </div>
-                                            <div className="pd-card-area">
-                                                <span className="pd-area-value" translate="no">{(Number(m.area_cm2) * (m.quantity || 1) / 10000).toFixed(4)}</span>
-                                                <span className="pd-area-unit" translate="no">m²</span>
-                                            </div>
-                                            <button
-                                                className="pd-btn ghost"
-                                                style={{ marginTop: 8, width: '100%', justifyContent: 'center', fontSize: 12, padding: '6px 0' }}
-                                                onClick={e => { e.stopPropagation(); setEditingId(m.id); setEditName(m.name); setEditQuantity(m.quantity || 1); }}
-                                            >
-                                                <Pencil size={12} /> {t('edit_name_qty')}
-                                            </button>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+                                {/* BOX 1 — ĐO TỰ ĐỘNG */}
+                                <CollapsibleBox
+                                    icon="🔍"
+                                    accentColor="#0065b3"
+                                    bgColor="#f0f7ff"
+                                    borderColor="#bfdbfe"
+                                    title={
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                            {t('scan_tab')}
+                                            <span style={{ fontWeight: 400, color: '#9ca3af', fontSize: 13 }}>
+                                                ({scanMeasurements.length} {t('total_items')})
+                                            </span>
+                                            <span style={{ marginLeft: 4, fontSize: 13, fontWeight: 700, color: '#0065b3', fontFamily: 'DM Mono,monospace' }} translate="no">
+                                                · {(scanAreaCm2 / 10000).toFixed(4)} m²
+                                            </span>
+                                        </span>
+                                    }
+                                    defaultOpen={scanMeasurements.length > 0}
+                                >
+                                    {scanMeasurements.length === 0 ? (
+                                        <div style={{ textAlign: 'center', color: '#9ca3af', padding: '20px 0', fontSize: 13 }}>
+                                            {t('no_data')}
                                         </div>
-                                    </div>
-                                ))}
+                                    ) : (
+                                        <PaginatedGrid
+                                            items={scanMeasurements}
+                                            pageSize={6}
+                                            renderItem={m => (
+                                                <MeasurementCard m={m} deletingId={deletingId}
+                                                    onSelect={setSelected} onDelete={handleDelete}
+                                                    onEdit={(m) => { setEditingId(m.id); setEditName(m.name); setEditQuantity(m.quantity || 1); }}
+                                                    fmt={fmt} t={t} />
+                                            )}
+                                        />
+                                    )}
+                                </CollapsibleBox>
+
+                                {/* BOX 2 — VẼ POLYGON + BTP */}
+                                <CollapsibleBox
+                                    icon="✏️"
+                                    accentColor="#0065b3"
+                                    bgColor="#f0f7ff"
+                                    borderColor="#bfdbfe"
+                                    title={
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                            {t('manual_tab')}
+                                            <span style={{ fontWeight: 400, color: '#9ca3af', fontSize: 13 }}>
+                                                ({polygonMeasurements.length} {t('total_items')})
+                                            </span>
+                                            <span style={{ marginLeft: 4, fontSize: 13, fontWeight: 700, color: '#0065b3', fontFamily: 'DM Mono,monospace' }} translate="no">
+                                                · {(polygonRawCm2 / 10000).toFixed(4)} m²
+                                            </span>
+                                            {btpPct != null && (
+                                                <span style={{
+                                                    fontSize: 11, background: '#dbeafe', color: '#0065b3',
+                                                    borderRadius: 20, padding: '2px 8px', fontWeight: 700,
+                                                }} translate="no">
+                                                    BTP {(polygonBtpCm2 / 10000).toFixed(4)} m²
+                                                </span>
+                                            )}
+                                        </span>
+                                    }
+                                    defaultOpen={polygonMeasurements.length > 0}
+                                >
+                                    {polygonMeasurements.length === 0 ? (
+                                        <div style={{ textAlign: 'center', color: '#9ca3af', padding: '20px 0', fontSize: 13 }}>
+                                            {t('no_data')}
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div style={{ marginBottom: 16 }}>
+                                                <PaginatedGrid
+                                                    items={polygonMeasurements}
+                                                    pageSize={6}
+                                                    renderItem={m => (
+                                                        <MeasurementCard m={m} deletingId={deletingId}
+                                                            onSelect={setSelected} onDelete={handleDelete}
+                                                            onEdit={(m) => { setEditingId(m.id); setEditName(m.name); setEditQuantity(m.quantity || 1); }}
+                                                            fmt={fmt} t={t} accent="orange" />
+                                                    )}
+                                                />
+                                            </div>
+
+                                            {/* TÍNH BTP — ĐÃ ĐỔI SANG MÀU XANH */}
+                                            <div style={{
+                                                background: '#fff',
+                                                border: '1.5px solid #bfdbfe',
+                                                borderRadius: 12,
+                                                overflow: 'hidden',
+                                                boxShadow: '0 2px 8px rgba(0,101,179,0.08)',
+                                            }}>
+                                                <div style={{
+                                                    background: 'linear-gradient(135deg, #f0f7ff, #dbeafe)',
+                                                    padding: '12px 16px',
+                                                    borderBottom: '1px solid #bfdbfe',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                    flexWrap: 'wrap', gap: 8,
+                                                }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                        <div style={{
+                                                            width: 32, height: 32, borderRadius: 8,
+                                                            background: '#0065b3',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            fontSize: 16, flexShrink: 0, color: 'white',
+                                                        }}>📐</div>
+                                                        <div>
+                                                            <div style={{ fontWeight: 700, fontSize: 13, color: '#1e40af' }}>
+                                                                {t('semi_finished_title')}
+                                                            </div>
+                                                            <div style={{ fontSize: 11, color: '#3b82f6', marginTop: 1 }}>
+                                                                {t('semi_finished_formula')}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {btpPct != null && (
+                                                        <div style={{
+                                                            background: 'linear-gradient(135deg,#0065b3,#1e40af)',
+                                                            borderRadius: 8, padding: '6px 14px', color: '#fff',
+                                                            display: 'flex', alignItems: 'baseline', gap: 4,
+                                                        }}>
+                                                            <span style={{ fontSize: 18, fontWeight: 800, fontFamily: 'DM Mono,monospace' }} translate="no">
+                                                                {(polygonBtpCm2 / 10000).toFixed(4)}
+                                                            </span>
+                                                            <span style={{ fontSize: 12, opacity: .85 }}>m²</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div style={{ padding: '14px 16px' }}>
+                                                    <div style={{
+                                                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                                        background: '#f0f7ff', borderRadius: 8, border: '1px solid #bfdbfe',
+                                                        padding: '8px 12px', marginBottom: 12,
+                                                    }}>
+                                                        <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>
+                                                            {t('finished_area_label')}
+                                                        </span>
+                                                        <span style={{ fontSize: 14, fontWeight: 700, color: '#0065b3', fontFamily: 'DM Mono,monospace' }} translate="no">
+                                                            {(polygonRawCm2 / 10000).toFixed(4)} m²
+                                                        </span>
+                                                    </div>
+
+                                                    <div style={{ marginBottom: btpPct != null ? 12 : 0 }}>
+                                                        <div style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8 }}>
+                                                            {t('semi_waste_pct')}
+                                                        </div>
+                                                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                                                            {[12, 15, 17, 20].map(v => (
+                                                                <button key={v} onClick={() => setBtpPct(v)} style={{
+                                                                    padding: '6px 14px', borderRadius: 20, fontSize: 13,
+                                                                    cursor: 'pointer', fontWeight: 600, border: 'none',
+                                                                    background: btpPct === v ? '#0065b3' : '#f3f4f6',
+                                                                    color: btpPct === v ? '#fff' : '#374151',
+                                                                    transition: 'all .15s',
+                                                                    boxShadow: btpPct === v ? '0 2px 8px rgba(0,101,179,0.3)' : 'none',
+                                                                }}>{v}%</button>
+                                                            ))}
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                <input type="number" min="0" max="100" step="0.5"
+                                                                    placeholder={t('custom_pct')}
+                                                                    value={btpPct != null && ![12, 15, 17, 20].includes(btpPct) ? btpPct : ''}
+                                                                    onChange={e => { const v = parseFloat(e.target.value); setBtpPct(isNaN(v) ? null : v); }}
+                                                                    style={{
+                                                                        width: 100, padding: '6px 8px', borderRadius: 20, fontSize: 13,
+                                                                        textAlign: 'center', fontFamily: 'DM Mono,monospace', outline: 'none',
+                                                                        border: (btpPct != null && ![12, 15, 17, 20].includes(btpPct))
+                                                                            ? '2px solid #0065b3' : '1.5px solid #d1d5db',
+                                                                        background: (btpPct != null && ![12, 15, 17, 20].includes(btpPct))
+                                                                            ? '#dbeafe' : '#f9fafb',
+                                                                        color: (btpPct != null && ![12, 15, 17, 20].includes(btpPct))
+                                                                            ? '#0065b3' : '#374151',
+                                                                    }} />
+                                                                <span style={{ fontSize: 12, color: '#9ca3af' }}>%</span>
+                                                            </div>
+                                                            {btpPct != null && (
+                                                                <button onClick={() => setBtpPct(null)} style={{
+                                                                    width: 28, height: 28, borderRadius: 50,
+                                                                    border: 'none', background: '#fee2e2',
+                                                                    color: '#ef4444', cursor: 'pointer',
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    fontSize: 14, fontWeight: 700, flexShrink: 0,
+                                                                }}>×</button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {btpPct != null && (
+                                                        <div style={{
+                                                            background: 'linear-gradient(135deg,#f0f7ff,#dbeafe)',
+                                                            borderRadius: 10, border: '1px solid #bfdbfe',
+                                                            padding: '10px 14px',
+                                                            display: 'flex', justifyContent: 'space-between',
+                                                            alignItems: 'center', flexWrap: 'wrap', gap: 8,
+                                                            marginTop: 12,
+                                                        }}>
+                                                            <div style={{ fontSize: 12, color: '#1e40af' }}>
+                                                                <span translate="no">{(polygonRawCm2 / 10000).toFixed(4)} m²</span>
+                                                                <span style={{ margin: '0 6px' }}>×</span>
+                                                                <span>(1 + {btpPct}%)</span>
+                                                            </div>
+                                                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                                                                <span style={{ fontSize: 22, fontWeight: 800, color: '#0065b3', fontFamily: 'DM Mono,monospace' }} translate="no">
+                                                                    {(polygonBtpCm2 / 10000).toFixed(4)}
+                                                                </span>
+                                                                <span style={{ fontSize: 12, color: '#1e40af', fontWeight: 600 }}>m²</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {btpPct != null && (
+                                                        <div style={{ marginTop: 8, fontSize: 11, color: '#1e40af', textAlign: 'center', opacity: .8 }}>
+                                                            💡 {t('semi_finished_hint')}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </CollapsibleBox>
+
+                                {/* BOX 3 — TÍNH ĐỊNH MỨC */}
+                                <FabricCalcSection
+                                    measurements={measurements}
+                                    scanAreaCm2={scanAreaCm2}
+                                    polygonBtpCm2={polygonBtpCm2}
+                                    totalAreaCm2={scanAreaCm2 + polygonBtpCm2}
+                                    folderId={folder.id}
+                                    onCalcChange={handleCalcChange}
+                                    btpPct={btpPct}
+                                    onBtpPctChange={setBtpPct}
+                                />
+
                             </div>
                         )}
                     </main>
