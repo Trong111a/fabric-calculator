@@ -1268,7 +1268,7 @@ function FabricCalcSection({ measurements, totalAreaCm2, scanAreaCm2, polygonBtp
     folderId, onCalcChange, btpPct, onBtpPctChange }) {
     const { t } = useTranslation();
     const [khoVai, setKhoVai] = useState(1.5);
-    const [bienVai, setBienVai] = useState(1.5);
+    const [bienVai, setBienVai] = useState(0.015);
     const [haoPhiNorm, setHaoPhiNorm] = useState(3);
     // const [normResult, setNormResult] = useState(null);
     const [orderQty, setOrderQty] = useState('');
@@ -1417,12 +1417,12 @@ function FabricCalcSection({ measurements, totalAreaCm2, scanAreaCm2, polygonBtp
         };
         setCalcBySource(emptyCalc);
         setOrderQty('');
-        setKhoVai(1.5); setBienVai(1.5); setHaoPhiNorm(3); setHaoPhiVai(3); setLastSaved(null);
+        setKhoVai(1.5); setBienVai(0.015); setHaoPhiNorm(3); setHaoPhiVai(3); setLastSaved(null);
         onCalcChange?.(null);
         // onBtpPctChange?.(null);
         await saveToDb({
             calcBySource: emptyCalc, normResult: null, fabricResult: null,
-            orderQty: null, khoVai: 1.5, bienVai: 1.5, haoPhiNorm: 3, haoPhiVai: 3
+            orderQty: null, khoVai: 1.5, bienVai: 0.015, haoPhiNorm: 3, haoPhiVai: 3
             // btpPct: null
         });
     };
@@ -1578,22 +1578,23 @@ function FabricCalcSection({ measurements, totalAreaCm2, scanAreaCm2, polygonBtp
                             </div>
                         </div>
 
-                        {/* Biên vải — hàng riêng */}
+                        {/* Biên vải — hàng riêng (nhập/hiển thị cm, lưu mét) */}
                         <div style={{ marginTop: 12 }}>
                             <label style={{ fontSize: 12, color: '#374151', fontWeight: 600, display: 'block', marginBottom: 6 }}>
                                 {t('seam_allowance')}
-                                {/* Hiển thị khổ hiệu dụng */}
                                 <span style={{ marginLeft: 8, fontSize: 11, color: '#0065b3', fontWeight: 400, fontFamily: 'DM Mono, monospace' }} translate="no">
-                                    → {t('effective_width')}: {effectiveWidth} m
+                                    → {t('effective_width')}: {effectiveWidth.toFixed(2)} m
                                 </span>
                             </label>
                             <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
                                 {[1, 1.5, 2, 2.5, 3].map(v => (
-                                    <PresetBtn key={v} value={v} active={bienVai === v} onClick={() => setBienVai(v)} label={`${v}m`} />
+                                    <PresetBtn key={v} value={v / 100} active={bienVai === v / 100} onClick={() => setBienVai(v / 100)} label={`${v}cm`} />
                                 ))}
-                                <input type="number" min="0" max="10" step="0.5" value={bienVai}
-                                    onChange={e => setBienVai(parseFloat(e.target.value) ?? 1.5)}
+                                <input type="number" min="0" max="30" step="0.5"
+                                    value={parseFloat((bienVai * 100).toFixed(4))}
+                                    onChange={e => setBienVai((parseFloat(e.target.value) || 0) / 100)}
                                     style={{ width: 60, padding: '6px 6px', borderRadius: 7, border: '1.5px solid #d1d5db', fontSize: 13, textAlign: 'center', fontFamily: 'DM Mono, monospace' }} />
+                                <span style={{ fontSize: 12, color: '#9ca3af' }}>cm</span>
                             </div>
                         </div>
 
@@ -1612,7 +1613,7 @@ function FabricCalcSection({ measurements, totalAreaCm2, scanAreaCm2, polygonBtp
                                 </div>
                                 <div style={{ fontSize: 11, opacity: .8, lineHeight: 1.8, textAlign: 'right' }}>
                                     <div translate="no">{totalAreaM2.toFixed(4)} m² × (1 + {haoPhiNorm}%)</div>
-                                    <div translate="no">÷ ({khoVai} - {bienVai}) m = {normResult.toFixed(3)} m</div>
+                                    <div translate="no">÷ ({khoVai} - {(bienVai * 100).toFixed(1)}cm) m = {normResult.toFixed(3)} m</div>
                                 </div>
                             </div>
                         )}
