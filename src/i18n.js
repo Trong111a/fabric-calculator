@@ -563,7 +563,7 @@ const resources = {
             "btn_calc_fabric": "Tính số lượng vải cần",
             "fabric_result_label": "Số lượng vải cần",
             "fabric_detail": "SL: {{qty}} sp · Định mức: {{norm}}m · Hao phí: {{pct}}%",
-            "seam_allowance": "Biên vải (m)",
+            "seam_allowance": "Biên vải (cm)",
             "effective_width": "Khổ hiệu dụng",
             "formula_norm": "Chiều dài vải sơ bộ = Tổng DT × (1 + %Hao phí) ÷ (Khổ vải - Biên vải)",
             "formula_fabric": "Số lượng vải cần = SL đơn hàng × Định mức × (1 + %Hao phí)",
