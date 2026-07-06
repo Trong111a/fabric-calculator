@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import cv from '@techstark/opencv-js';
 import {
     ArrowLeft, Folder, Layers, TrendingUp, Package,
     Trash2, X, ZoomIn, Calendar, Ruler, Hash,
@@ -912,7 +913,7 @@ function ScanPanel({ folder, cvReady, onSaved }) {
         if (!rawImageData || !cvReady || !pixelsPerCm) { alert(t('calibrate_warning')); return; }
         setLoading(true);
         try {
-            const cv = window.cv;
+            // const cv = window.cv;
             const src = cv.matFromImageData(rawImageData);
             const hsv = new cv.Mat();
             cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB); cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
@@ -2033,13 +2034,28 @@ export default function ProjectDetail({ folder, onBack }) {
     const [editSaving, setEditSaving] = useState(false);
     const [calcLoaded, setCalcLoaded] = useState(false);
 
+    // useEffect(() => {
+    //     const check = () => { if (window.cv && window.cv.Mat) setCvReady(true); else setTimeout(check, 100); };
+    //     if (!document.getElementById('opencv-script')) {
+    //         const s = document.createElement('script');
+    //         s.id = 'opencv-script'; s.src = 'https://docs.opencv.org/4.5.2/opencv.js';
+    //         s.async = true; s.onload = check; document.body.appendChild(s);
+    //     } else check();
+    // }, []);
+
     useEffect(() => {
-        const check = () => { if (window.cv && window.cv.Mat) setCvReady(true); else setTimeout(check, 100); };
-        if (!document.getElementById('opencv-script')) {
-            const s = document.createElement('script');
-            s.id = 'opencv-script'; s.src = 'https://docs.opencv.org/4.5.2/opencv.js';
-            s.async = true; s.onload = check; document.body.appendChild(s);
-        } else check();
+        let cancelled = false;
+
+        if (cv.getBuildInformation) {
+            // cv đã sẵn sàng từ trước (hiếm khi xảy ra ở lần load đầu)
+            setCvReady(true);
+        } else {
+            cv.onRuntimeInitialized = () => {
+                if (!cancelled) setCvReady(true);
+            };
+        }
+
+        return () => { cancelled = true; };
     }, []);
 
     useEffect(() => { loadDetail(); }, [folder.id]);

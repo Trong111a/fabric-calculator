@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import cv from '@techstark/opencv-js';
 import {
     Camera, Upload, RotateCcw, Ruler, CheckCircle,
     Folder, LogOut, X, Save, Pipette
@@ -85,18 +86,33 @@ export default function ViewMain({ user, onLogout, onOpenFolders }) {
     const cameraRef = useRef(null);
     const containerRef = useRef(null);
 
+    // useEffect(() => {
+    //     const load = () => {
+    //         if (window.cv && window.cv.Mat) setCvReady(true);
+    //         else setTimeout(load, 100);
+    //     };
+    //     if (!document.getElementById('opencv-script')) {
+    //         const s = document.createElement('script');
+    //         s.id = 'opencv-script';
+    //         s.src = 'https://docs.opencv.org/4.5.2/opencv.js';
+    //         s.async = true; s.onload = load;
+    //         document.body.appendChild(s);
+    //     } else load();
+    // }, []);
+
     useEffect(() => {
-        const load = () => {
-            if (window.cv && window.cv.Mat) setCvReady(true);
-            else setTimeout(load, 100);
-        };
-        if (!document.getElementById('opencv-script')) {
-            const s = document.createElement('script');
-            s.id = 'opencv-script';
-            s.src = 'https://docs.opencv.org/4.5.2/opencv.js';
-            s.async = true; s.onload = load;
-            document.body.appendChild(s);
-        } else load();
+        let cancelled = false;
+
+        if (cv.getBuildInformation) {
+            // cv đã sẵn sàng từ trước (hiếm khi xảy ra ở lần load đầu)
+            setCvReady(true);
+        } else {
+            cv.onRuntimeInitialized = () => {
+                if (!cancelled) setCvReady(true);
+            };
+        }
+
+        return () => { cancelled = true; };
     }, []);
 
     const handleWheel = useCallback((e) => {
@@ -365,7 +381,8 @@ export default function ViewMain({ user, onLogout, onOpenFolders }) {
         }
         setLoading(true);
         try {
-            const cv = window.cv;
+            // const cv = window.cv;
+            // const src = cv.matFromImageData(rawImageData);
             const src = cv.matFromImageData(rawImageData);
             const hsv = new cv.Mat();
             cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB);

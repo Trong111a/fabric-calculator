@@ -9,5 +9,8 @@ export default defineConfig({
   ],
   server: {
     historyApiFallback: true,
-  }
+  },
+  optimizeDeps: {
+    exclude: ['@techstark/opencv-js'],
+  },
 })
